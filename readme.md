@@ -13,9 +13,7 @@ This is the initial MVP (Minimum Viable Product) version of the plugin. It's des
 - **RTL/LTR Support**: Basic compatibility for right-to-left languages like Persian.
 
 ## Screenshots
-- Dashboard View: ![Dashboard Screenshot](path/to/screenshot-dashboard.png)  <!-- Replace with your actual screenshot path or URL -->
-- Settings Page: ![Settings Screenshot](path/to/screenshot-settings.png)
-- Admin Bar Badge: ![Badge Screenshot](path/to/screenshot-badge.png)
+- Dashboard View - Settings Page - Admin Bar Badge: ![Dashboard Screenshot](/assets/screenshots/screenshot.png)
 
 ## Installation
 1. Download the ZIP file from this repository.
