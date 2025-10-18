@@ -1,0 +1,9 @@
+/* Custom styles for Notification Hub dashboard */
+.wp-list-table th, .wp-list-table td {  /* Basic table styling for responsiveness */
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+.wrap {  /* Container styling */
+    max-width: 100%;
+    overflow-x: auto;  /* Responsive for mobile */
+}
