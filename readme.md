@@ -56,6 +56,35 @@ This is the initial MVP (Minimum Viable Product) version of the plugin. It's des
 - **Mid-term (v2.0)**: AI prioritization using APIs (e.g., OpenAI for categorizing notifications). Push notifications with OneSignal. Full async sending for performance.
 - **Long-term (v3.0+)**: SaaS mode for multi-site syncing. Add-ons for Slack/Discord. Advanced reporting (CSV export). Full i18n/translation support.
 
+## 🚀 Version 1.1.0 – Phase 2: WooCommerce, CF7, Email & Slack Integration
+
+In this version, the plugin evolved from a basic MVP into a multi-source, multi-channel notification hub.
+
+### 🔧 Summary of Phase 2
+- **New Notification Sources:**
+  - WooCommerce orders (frontend, status changes, admin-created).
+  - Contact Form 7 submissions (form data captured and stored).
+  - WordPress core comments (existing).
+
+- **New Sending Channels:**
+  - Email notifications (via `wp_mail`).
+  - Slack integration via Webhook.
+  - Telegram (existing).
+
+- **Improved Settings Page:**
+  - Added fields for Email and Slack Webhook.
+  - All settings (Telegram, Email, Slack) managed via WordPress Settings API.
+
+- **Logging Enhancements:**
+  - Added debug logs for each hook and send operation.
+  - Handles errors like missing configuration or API issues.
+
+- **Conditional Loading:**
+  - Checks if WooCommerce and CF7 are active before registering hooks.
+
+This update makes Notification Hub a more complete system for real-time alerts across multiple platforms.
+
+
 ## Contribution
 This is a private repository for now. If you're collaborating, fork and submit pull requests. Follow WordPress coding standards (OOP, sanitization, etc.).
 
