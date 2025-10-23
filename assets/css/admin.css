@@ -1,0 +1,10 @@
+/* NH v1.2.0 — Admin styles */
+.nh-tab { padding-top: 10px; }
+.nh-badge { border:1px solid #ccc; padding:2px 6px; border-radius:4px; font-size:11px; }
+.nh-badge--ok { background:#e6ffed; border-color:#b3f0c1; }
+
+.nh-modal{position:fixed;inset:0;z-index:100000;display:none}
+.nh-modal__backdrop{position:absolute;inset:0;background:rgba(0,0,0,.4)}
+.nh-modal__panel{position:relative;max-width:720px;margin:5vh auto;background:#fff;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,.2);padding:20px}
+.nh-modal__close{position:absolute;top:8px;right:12px;border:none;background:transparent;font-size:22px;cursor:pointer}
+.nh-modal__content pre{white-space:pre-wrap;word-break:break-word;}

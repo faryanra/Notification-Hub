@@ -1,0 +1,42 @@
+/* NH v1.2.0 — Dashboard table styles */
+.table .status-unread { font-weight: 600; }
+/* ============================================================
+   Dashboard Layout – Tabs & Search alignment
+   (Notification Hub v1.3.8+)
+============================================================ */
+
+.nh-dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.nh-dashboard-header .subsubsub {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.nh-dashboard-header .subsubsub li {
+    display: inline;
+}
+
+.nh-dashboard-header .subsubsub a {
+    text-decoration: none;
+    color: #2271b1;
+    font-weight: 500;
+}
+
+.nh-dashboard-header .subsubsub a.current {
+    font-weight: 700;
+    color: #000;
+}
+
+.nh-dashboard-header .search-box {
+    margin: 0;
+}
