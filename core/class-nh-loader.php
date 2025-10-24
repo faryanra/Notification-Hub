@@ -1,37 +1,110 @@
 <?php
-// NH v1.2.0 — Loader: wire modules & free+pro integrations
+// NH v1.3.1 — Loader
+// Wires registry services into admin UI, integrations, REST API, etc.
 
-if (!defined('ABSPATH')) exit;
-
-require_once NH_PLUGIN_DIR.'modules/class-nh-admin-ui.php';
-require_once NH_PLUGIN_DIR.'modules/class-nh-dashboard.php';
-require_once NH_PLUGIN_DIR.'modules/class-nh-notifier.php';
-require_once NH_PLUGIN_DIR.'modules/class-nh-custom-hooks.php';
-
-require_once NH_PLUGIN_DIR.'integrations/class-nh-email.php';
-require_once NH_PLUGIN_DIR.'integrations/class-nh-telegram.php';
-require_once NH_PLUGIN_DIR.'integrations/class-nh-slack.php';
-require_once NH_PLUGIN_DIR.'integrations/class-nh-wp-core.php';
-require_once NH_PLUGIN_DIR.'integrations/class-nh-woocommerce.php';
-require_once NH_PLUGIN_DIR.'integrations/class-nh-cf7.php';
+if (!defined('ABSPATH')) {
+    exit;
+}
 
 class NH_Loader {
-    protected $r;
 
-    public function __construct($registry) { $this->r = $registry; }
+    protected $r; // NH_Core_Registry instance
 
+    public function __construct($registry) {
+        $this->r = $registry;
+    }
+
+    /**
+     * boot()
+     * - expose shared services (notifier, license)
+     * - init admin UI modules
+     * - init integrations
+     * - init REST / webhook layer
+     */
     public function boot() {
-        // NH v1.2.0 — Modules
-        new NH_Admin_UI($this->r);
-        new NH_Dashboard($this->r);
-        new NH_Custom_Hooks($this->r);
 
-
-        // NH v1.2.0 — Notifier with Free+Pro channels
-        $this->r->set('notifier', new NH_Notifier($this->r));
-        // NH v1.2.0 — Integrations
-        (new NH_Int_WP_Core($this->r))->hooks();
-        (new NH_Int_WooCommerce($this->r))->hooks();
-        (new NH_Int_CF7($this->r))->hooks();
+        // === Shared services ============================================
+        if (!$this->r->get_svc('notifier') && class_exists('NH_Notifier')) {
+            $this->r->set('notifier', new NH_Notifier($this->r));
         }
+
+        if (!$this->r->get_svc('license') && class_exists('NH_License')) {
+            $this->r->set('license', new NH_License());
+        }
+
+        // === Admin UI / Dashboard / Hooks ==============================
+        if (class_exists('NH_Admin_UI')) {
+            if (method_exists('NH_Admin_UI', 'init')) {
+                NH_Admin_UI::init($this->r);
+            } else {
+                // fallback: some versions register menus via constructor
+                new NH_Admin_UI($this->r);
+            }
+        }
+
+        if (class_exists('NH_Dashboard')) {
+            if (method_exists('NH_Dashboard', 'init')) {
+                NH_Dashboard::init($this->r);
+            }
+        }
+
+        if (class_exists('NH_Custom_Hooks')) {
+            if (method_exists('NH_Custom_Hooks', 'init')) {
+                NH_Custom_Hooks::init($this->r);
+            }
+        }
+
+        // NH_Admin_Actions already hooked via admin_init inside the class file.
+        if (!class_exists('NH_Admin_Actions')) {
+            error_log('Notification Hub: NH_Admin_Actions missing');
+        }
+
+        // === Integrations ==============================================
+        // these listen to WordPress/Woo/CF7 events and insert notifications
+        if (class_exists('NH_Int_WP_Core') && method_exists('NH_Int_WP_Core', 'init')) {
+            NH_Int_WP_Core::init($this->r);
+        }
+
+        if (class_exists('NH_Int_WooCommerce') && method_exists('NH_Int_WooCommerce', 'init')) {
+            NH_Int_WooCommerce::init($this->r);
+        }
+
+        if (class_exists('NH_Int_CF7') && method_exists('NH_Int_CF7', 'init')) {
+            NH_Int_CF7::init($this->r);
+        }
+
+        // === API / Webhook =============================================
+        // REST API route registration
+        if (class_exists('NH_REST_API')) {
+            // allow both __construct($r) or no-arg __construct()
+            try {
+                $api = (new ReflectionClass('NH_REST_API'));
+                $ctor = $api->getConstructor();
+                if ($ctor && $ctor->getNumberOfParameters() > 0) {
+                    $api->newInstance($this->r);
+                } else {
+                    $api->newInstance();
+                }
+            } catch (Throwable $e) {
+                error_log('Notification Hub: NH_REST_API init failed: ' . $e->getMessage());
+            }
+        } else {
+            error_log('Notification Hub: NH_REST_API missing');
+        }
+
+        // inbound webhooks placeholder for future
+        if (class_exists('NH_Webhook')) {
+            try {
+                $wh = (new ReflectionClass('NH_Webhook'));
+                $ctor = $wh->getConstructor();
+                if ($ctor && $ctor->getNumberOfParameters() > 0) {
+                    $wh->newInstance($this->r);
+                } else {
+                    $wh->newInstance();
+                }
+            } catch (Throwable $e) {
+                error_log('Notification Hub: NH_Webhook init failed: ' . $e->getMessage());
+            }
+        }
+    }
 }
