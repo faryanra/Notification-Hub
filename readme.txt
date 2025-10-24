@@ -4,7 +4,7 @@ Tags: notifications, telegram, slack, email, woocommerce, contact form 7, hooks,
 Requires at least: 6.0
 Tested up to: 6.6
 Requires PHP: 8.0
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPLv3 or later
 
 A powerful notification manager for WordPress. Collects alerts from WordPress Core, WooCommerce, and Contact Form 7, and sends them via Email, Telegram, and Slack.
@@ -30,6 +30,16 @@ Notification Hub centralizes all your WordPress notifications in one place.
 4. Configure your Email, Telegram, and Slack options.
 
 == Changelog ==
+= 1.3.1 =
+* Introduced safe bootstrap (no fatal if a file is missing)
+* Moved admin actions (test, save hook, archive, etc.) out of /core into /modules
+* Restored proper admin redirects & notices after test/send
+* Added uninstall.php with cleanup of cron + options
+* Added runtime i18n loader (load_plugin_textdomain on init)
+* Added service container boot sequence (registry, loader) as stable pattern
+* Prepared for API/Webhook without forcing Fatal
+* Version header updated to 1.3.1
+
 = 1.3.0 =
 * Rebuilt Dashboard (All / Active / Archived)
 * Added Custom Hooks Manager (CRUD + Test)
