@@ -4,7 +4,7 @@ Tags: notifications, telegram, slack, email, woocommerce, contact form 7, hooks,
 Requires at least: 6.0
 Tested up to: 6.6
 Requires PHP: 8.0
-Stable tag: 1.3.2
+Stable tag: 1.3.3
 License: GPLv3 or later
 
 A powerful notification manager for WordPress. Collects alerts from WordPress Core, WooCommerce, and Contact Form 7, and sends them via Email, Telegram, and Slack.
@@ -30,6 +30,19 @@ Notification Hub centralizes all your WordPress notifications in one place.
 4. Configure your Email, Telegram, and Slack options.
 
 == Changelog ==
+= 1.3.3 =
+* Added centralized security layer (`core/class-nh-security.php`) with unified nonce + capability checks.
+* Rewritten `class-nh-admin-actions.php` — consistent redirects, safe DB operations, and proper notices.
+* Updated all forms (`templates/settings.php` + `templates/hooks.php`) to use standardized nonces and matching action names.
+* Rebuilt integrations:
+  * CF7: now triggers Email, Telegram, and Slack notifications.
+  * WooCommerce: hooks registered directly in constructor, sends multi-channel notifications.
+  * WP Core: hooks now active automatically, includes custom hooks from DB.
+* Improved `NH_Loader` fallback for constructor-only integrations.
+* Added validation for `action_name` and channel sanitization.
+* Fixed rare permission and nonce mismatch issues during Send Test / Save / Update / Delete.
+* Fully compatible with WordPress 6.6.
+
 = 1.3.2 =
 * Fixed Dashboard counters: "All" now shows total (Active + Archived)
 * Fixed filter logic for Active / Archived tabs in Dashboard
@@ -46,26 +59,6 @@ Notification Hub centralizes all your WordPress notifications in one place.
 * Late textdomain loading (init)
 * Loader now wires Registry, Services, UI, Integrations, REST API/Webhook with graceful fallbacks
 * Version header updated to 1.3.1
-
-= 1.3.0 =
-* Rebuilt Dashboard (All / Active / Archived)
-* Added Custom Hooks Manager (CRUD + Test)
-* Added REST API endpoint
-* Added admin bar unread counter
-* Refactored integrations (WooCommerce, CF7, Core)
-* Improved security, performance, and UI
-
-= 1.2.0 =
-* Persistent tabs after save/test
-* Admin notices
-* Pro-only fields with disabled message
-
-= 1.1.0 =
-* WooCommerce + CF7 integration
-* Slack + Email support
-
-= 1.0.0 =
-* Initial release
 
 == Author ==
 Developed by Faryan Rajabi Jorshari (HelloCode)

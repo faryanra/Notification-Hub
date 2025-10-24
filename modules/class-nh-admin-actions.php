@@ -1,36 +1,51 @@
 <?php
-// NH v1.3.2 — Admin Actions (refactored from old Test Controller)
-// Same logic, safer execution, no white screens, fully compatible with new loader.
+// NH v1.3.3 — Admin Actions / Test Send / Hook CRUD
+// Same UX as 1.3.2 (no regression), but now using NH_Security for cap + nonce + sanitization.
 
 if (!defined('ABSPATH')) exit;
 
 class NH_Admin_Actions {
 
     public static function init() {
-        // register admin_post actions
-        add_action('admin_post_nh_test_channel', [__CLASS__, 'handle']);
-        add_action('admin_post_nh_test_hook',    [__CLASS__, 'test_hook']);
-        add_action('admin_post_nh_save_hook',    [__CLASS__, 'save_hook']);
-        add_action('admin_post_nh_update_hook',  [__CLASS__, 'update_hook']);
-        add_action('admin_post_nh_delete_hook',  [__CLASS__, 'delete_hook']);
+        add_action('admin_post_nh_test_channel', [__CLASS__, 'handle_test_channel']);
+        add_action('admin_post_nh_test_hook',    [__CLASS__, 'handle_test_hook']);
+
+        add_action('admin_post_nh_save_hook',    [__CLASS__, 'handle_save_hook']);
+        add_action('admin_post_nh_update_hook',  [__CLASS__, 'handle_update_hook']);
+        add_action('admin_post_nh_delete_hook',  [__CLASS__, 'handle_delete_hook']);
     }
 
-    /* ============================================================
-       1️⃣ Channel Test (Email / Telegram / Slack)
-    ============================================================ */
-    public static function handle() {
-        try {
-            if (!current_user_can('manage_options')) {
-                wp_die(__('Access denied.', 'notification-hub'));
-            }
+    /**
+     * Build redirect URL back to admin page, optionally adding status flags.
+     */
+    private static function redirect_with($base_args) {
+        $ref = wp_get_referer();
+        if (!$ref) {
+            $ref = admin_url('admin.php');
+        }
+        $url = add_query_arg($base_args, $ref);
+        wp_safe_redirect($url);
+        exit;
+    }
 
-            // Safe nonce check (older forms may not include tab)
-            if (!isset($_GET['_wpnonce']) || !wp_verify_nonce($_GET['_wpnonce'], 'nh_test_channel')) {
-                wp_die(__('Invalid request (nonce).', 'notification-hub'));
-            }
+    /**
+     * GET helper: current tab from request for settings redirect.
+     */
+    private static function current_tab() {
+        return isset($_GET['tab']) ? sanitize_key($_GET['tab']) : 'general';
+    }
+
+    /**
+     * 1) Send test alert (Email / Telegram / Slack)
+     */
+    public static function handle_test_channel() {
+        try {
+            NH_Security::ensure_cap();
+            // was: check_admin_referer('nh_test_channel');
+            NH_Security::verify_nonce('nh_test_channel');
 
             $channel  = sanitize_text_field($_GET['channel'] ?? '');
-            $tab      = sanitize_key($_GET['tab'] ?? 'general');
+            $tab      = self::current_tab();
 
             $registry = NH_Core_Registry::get();
             $notifier = $registry->get_svc('notifier');
@@ -45,50 +60,59 @@ class NH_Admin_Actions {
                 'source'  => 'test'
             ]);
 
-            // Redirect back to settings tab (maintains previous tab + notice)
-            $redirect = add_query_arg([
+            // redirect back to same settings screen, same tab, with success flag
+            $redirect_args = [
                 'page'    => 'nh-settings',
                 'tab'     => $tab,
                 'nh_test' => $channel,
                 'success' => $ok ? '1' : '0'
-            ], admin_url('admin.php'));
+            ];
 
-            wp_safe_redirect($redirect);
+            $url = add_query_arg($redirect_args, admin_url('admin.php'));
+            wp_safe_redirect($url);
             exit;
 
         } catch (Throwable $e) {
-            error_log('❌ NH_Admin_Actions::handle(): ' . $e->getMessage());
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log('❌ NH_Admin_Actions::handle_test_channel: ' . $e->getMessage());
+            }
             wp_die('Test failed: ' . esc_html($e->getMessage()));
         }
     }
 
-    /* ============================================================
-       2️⃣ Trigger Test for Custom Hook
-    ============================================================ */
-    public static function test_hook() {
+    /**
+     * 2) Manually fire a specific hook ("Test Hook")
+     */
+    public static function handle_test_hook() {
         try {
-            if (!current_user_can('manage_options')) wp_die(__('Access denied.', 'notification-hub'));
+            NH_Security::ensure_cap();
 
-            $id = intval($_GET['id'] ?? 0);
-            $nonce = $_GET['_wpnonce'] ?? '';
-
-            if (!$id || !wp_verify_nonce($nonce, 'nh_test_' . $id)) {
+            $id = NH_Security::request_int('id');
+            $nonce_ok = isset($_GET['_wpnonce']) && wp_verify_nonce($_GET['_wpnonce'], 'nh_test_' . $id);
+            if (!$id || !$nonce_ok) {
                 wp_die(__('Invalid nonce.', 'notification-hub'));
             }
 
             global $wpdb;
             $table = $wpdb->prefix . 'nh_hooks';
             $row = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$table} WHERE id=%d", $id));
-
-            if (!$row) wp_die(__('Hook not found.', 'notification-hub'));
+            if (!$row) {
+                wp_die(__('Hook not found.', 'notification-hub'));
+            }
 
             $registry = NH_Core_Registry::get();
             $notifier = $registry->get_svc('notifier');
-            if (!$notifier) wp_die(__('Notifier missing.', 'notification-hub'));
+            if (!$notifier) {
+                wp_die(__('Notifier missing.', 'notification-hub'));
+            }
 
-            $channels = json_decode($row->channels, true) ?: ['email'];
-            $primary  = $channels[0];
-            $multi    = array_slice($channels, 1);
+            $channels = json_decode($row->channels, true);
+            if (!is_array($channels) || empty($channels)) {
+                $channels = ['email'];
+            }
+
+            $primary = $channels[0];
+            $multi   = array_slice($channels, 1);
 
             $notifier->send([
                 'channel' => $primary,
@@ -100,28 +124,34 @@ class NH_Admin_Actions {
 
             wp_safe_redirect(admin_url('admin.php?page=nh-hooks&hook_tested=1'));
             exit;
+
         } catch (Throwable $e) {
-            error_log('❌ NH_Admin_Actions::test_hook(): ' . $e->getMessage());
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log('❌ NH_Admin_Actions::handle_test_hook: ' . $e->getMessage());
+            }
             wp_die('Hook test failed: ' . esc_html($e->getMessage()));
         }
     }
 
-    /* ============================================================
-       3️⃣ CRUD: Save / Update / Delete Hooks
-    ============================================================ */
-
-    public static function save_hook() {
+    /**
+     * 3) Create new hook
+     */
+    public static function handle_save_hook() {
         try {
-            if (!current_user_can('manage_options')) wp_die('Not allowed');
-            check_admin_referer('nh_save_hook');
+            NH_Security::ensure_cap();
+            NH_Security::verify_nonce('nh_save_hook');
 
             global $wpdb;
             $table = $wpdb->prefix . 'nh_hooks';
 
-            $title  = sanitize_text_field($_POST['title'] ?? '');
-            $action = sanitize_text_field($_POST['action_name'] ?? '');
-            $chs    = isset($_POST['channels']) ? array_map('sanitize_text_field', (array)$_POST['channels']) : [];
-            $json   = wp_json_encode($chs);
+            $title_raw   = $_POST['title']        ?? '';
+            $action_raw  = $_POST['action_name']  ?? '';
+            $channels_in = $_POST['channels']     ?? [];
+
+            $title   = sanitize_text_field($title_raw);
+            $action  = NH_Security::validate_action_name($action_raw);
+            $chs     = NH_Security::sanitize_channels($channels_in);
+            $json    = wp_json_encode($chs);
 
             if ($title && $action) {
                 $wpdb->insert($table, [
@@ -129,64 +159,101 @@ class NH_Admin_Actions {
                     'action_name' => $action,
                     'channels'    => $json,
                     'status'      => 1
+                ], [
+                    '%s','%s','%s','%d'
                 ]);
+
+                if (!empty($wpdb->last_error) && defined('WP_DEBUG') && WP_DEBUG) {
+                    error_log('❌ NH_Admin_Actions::handle_save_hook DB: ' . $wpdb->last_error);
+                }
             }
 
             wp_safe_redirect(admin_url('admin.php?page=nh-hooks&hook_saved=1'));
             exit;
 
         } catch (Throwable $e) {
-            error_log('❌ NH_Admin_Actions::save_hook(): ' . $e->getMessage());
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log('❌ NH_Admin_Actions::handle_save_hook: ' . $e->getMessage());
+            }
             wp_die('Save failed: ' . esc_html($e->getMessage()));
         }
     }
 
-    public static function update_hook() {
+    /**
+     * 4) Update existing hook
+     */
+    public static function handle_update_hook() {
         try {
-            if (!current_user_can('manage_options')) wp_die('Not allowed');
-            $id = intval($_POST['id'] ?? 0);
-            check_admin_referer('nh_update_hook_' . $id);
+            NH_Security::ensure_cap();
+
+            $id = NH_Security::request_int('id');
+            NH_Security::verify_nonce('nh_update_hook', $id);
 
             global $wpdb;
             $table = $wpdb->prefix . 'nh_hooks';
 
-            $title  = sanitize_text_field($_POST['title'] ?? '');
-            $action = sanitize_text_field($_POST['action_name'] ?? '');
-            $chs    = isset($_POST['channels']) ? array_map('sanitize_text_field', (array)$_POST['channels']) : [];
+            $title_raw   = $_POST['title']        ?? '';
+            $action_raw  = $_POST['action_name']  ?? '';
+            $channels_in = $_POST['channels']     ?? [];
+
+            $title  = sanitize_text_field($title_raw);
+            $action = NH_Security::validate_action_name($action_raw);
+            $chs    = NH_Security::sanitize_channels($channels_in);
             $json   = wp_json_encode($chs);
 
             if ($id > 0) {
-                $wpdb->update($table, [
-                    'title'       => $title,
-                    'action_name' => $action,
-                    'channels'    => $json
-                ], ['id' => $id], ['%s','%s','%s'], ['%d']);
+                $wpdb->update(
+                    $table,
+                    [
+                        'title'       => $title,
+                        'action_name' => $action,
+                        'channels'    => $json
+                    ],
+                    ['id' => $id],
+                    ['%s','%s','%s'],
+                    ['%d']
+                );
+
+                if (!empty($wpdb->last_error) && defined('WP_DEBUG') && WP_DEBUG) {
+                    error_log('❌ NH_Admin_Actions::handle_update_hook DB: ' . $wpdb->last_error);
+                }
             }
 
             wp_safe_redirect(admin_url('admin.php?page=nh-hooks&hook_updated=1'));
             exit;
+
         } catch (Throwable $e) {
-            error_log('❌ NH_Admin_Actions::update_hook(): ' . $e->getMessage());
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log('❌ NH_Admin_Actions::handle_update_hook: ' . $e->getMessage());
+            }
             wp_die('Update failed: ' . esc_html($e->getMessage()));
         }
     }
 
-    public static function delete_hook() {
+    /**
+     * 5) Delete hook
+     */
+    public static function handle_delete_hook() {
         try {
-            if (!current_user_can('manage_options')) wp_die('Not allowed');
-            $id = intval($_GET['id'] ?? 0);
-            check_admin_referer('nh_delete_hook_' . $id);
+            NH_Security::ensure_cap();
+
+            $id = NH_Security::request_int('id');
+            NH_Security::verify_nonce('nh_delete_hook', $id);
 
             global $wpdb;
             $wpdb->delete($wpdb->prefix . 'nh_hooks', ['id' => $id], ['%d']);
 
             wp_safe_redirect(admin_url('admin.php?page=nh-hooks&hook_deleted=1'));
             exit;
+
         } catch (Throwable $e) {
-            error_log('❌ NH_Admin_Actions::delete_hook(): ' . $e->getMessage());
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log('❌ NH_Admin_Actions::handle_delete_hook: ' . $e->getMessage());
+            }
             wp_die('Delete failed: ' . esc_html($e->getMessage()));
         }
     }
 }
 
+// hook into admin lifecycle
 add_action('admin_init', ['NH_Admin_Actions', 'init']);

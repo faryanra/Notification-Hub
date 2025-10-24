@@ -60,17 +60,43 @@ class NH_Loader {
         }
 
         // === Integrations ==============================================
-        // these listen to WordPress/Woo/CF7 events and insert notifications
-        if (class_exists('NH_Int_WP_Core') && method_exists('NH_Int_WP_Core', 'init')) {
-            NH_Int_WP_Core::init($this->r);
-        }
+        $integrations = [
+            'NH_Int_WP_Core',
+            'NH_Int_WooCommerce',
+            'NH_Int_CF7',
+        ];
 
-        if (class_exists('NH_Int_WooCommerce') && method_exists('NH_Int_WooCommerce', 'init')) {
-            NH_Int_WooCommerce::init($this->r);
-        }
+        $registry = is_object($this->r) ? $this->r : NH_Core_Registry::get();
 
-        if (class_exists('NH_Int_CF7') && method_exists('NH_Int_CF7', 'init')) {
-            NH_Int_CF7::init($this->r);
+        foreach ($integrations as $cls) {
+            if (!class_exists($cls)) continue;
+
+            try {
+                // If class has static init()
+                if (method_exists($cls, 'init')) {
+                    call_user_func([$cls, 'init'], $registry);
+                    if (defined('WP_DEBUG') && WP_DEBUG) {
+                        error_log("✅ $cls initialized via ::init()");
+                    }
+                }
+                // Else if it has a constructor
+                elseif (method_exists($cls, '__construct')) {
+                    new $cls($registry);
+                    if (defined('WP_DEBUG') && WP_DEBUG) {
+                        error_log("✅ $cls initialized via constructor");
+                    }
+                }
+                // If neither found, log warning
+                else {
+                    if (defined('WP_DEBUG') && WP_DEBUG) {
+                        error_log("⚠️ $cls has no init() or constructor — skipped");
+                    }
+                }
+            } catch (Throwable $e) {
+                if (defined('WP_DEBUG') && WP_DEBUG) {
+                    error_log("❌ Integration load failed for $cls: " . $e->getMessage());
+                }
+            }
         }
 
         // === API / Webhook =============================================

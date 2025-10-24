@@ -8,6 +8,7 @@ class NH_Int_WP_Core {
 
     public function __construct($registry){ 
         $this->r = $registry; 
+        $this->hooks(); // ✅ Active hook in a second
     }
 
     /**

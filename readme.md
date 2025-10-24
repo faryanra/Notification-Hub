@@ -1,57 +1,61 @@
-# 🚨 Notification Hub v1.3.2
+# 🚀 Notification Hub v1.3.3
 
-WordPress notification hub for Email, Telegram (Pro), Slack (Pro), WooCommerce, CF7, and custom hooks — with a live dashboard, bulk actions, REST API, and admin bar badge.
-
----
-
-## 🔄 What's new in v1.3.2
-
-### Dashboard polish
-- "All" tab now truly shows ALL notifications (Active + Archived)
-- Active / Archived filters are correct and consistent
-- Action URLs (Archive / Unarchive / Delete) now all use `wp_nonce_url()` for consistency
-
-### API hardening
-- REST API now checks DB tables gracefully to avoid fatals on fresh installs
-- Telegram/Slack tokens no longer get logged unless `WP_DEBUG` is true
-
-### Accessibility
-- The notification preview modal now includes `role="dialog"`, `aria-modal="true"`, and `aria-labelledby` for better a11y
+WordPress notification hub for Email, Telegram (Pro), Slack (Pro), WooCommerce, CF7, and custom hooks —  
+with a live dashboard, security layer, unified nonces, and multi-channel integrations.
 
 ---
 
-## From v1.3.1
-- Safe bootstrap (no white screen if a file is missing)
-- `class-nh-test-controller.php` moved out of `/core` → now `/modules/class-nh-admin-actions.php`
-- Fixed admin redirects and success notices after:
-  - Send Test Email / Telegram / Slack
-  - Save / Update / Archive custom hooks
-- Added `uninstall.php` (cleans cron + options)
-- Late `load_plugin_textdomain()` on `init`
-- Central `NH_Loader` wires Registry, UI, Integrations, REST API/Webhook with graceful fallbacks
+## 🔒 What's new in v1.3.3
+
+### Security Layer
+- Added `NH_Security` class for unified `ensure_cap()`, `verify_nonce()`, and `sanitize_channels()`.
+- All admin actions now go through centralized nonce + capability validation.
+- Prevents "Invalid nonce" and "Sorry, you are not allowed" errors.
+
+### Integrations Rebuild
+- Contact Form 7: now sends to Email, Slack, and Telegram (plus DB log).
+- WooCommerce: events (new order, low stock) now fire correctly from constructor.
+- WP Core: automatically registers comment/post/user hooks and DB-defined custom hooks.
+- Loader improved with constructor/init detection for older integrations.
+
+### Admin UX
+- Updated forms (`settings.php`, `hooks.php`) with consistent nonce and tab handling.
+- Redirects after Save/Test/Delete always restore the same tab + proper notices.
+- Full compatibility with `class-nh-admin-actions.php` (v1.3.3).
+
+### Code Improvements
+- Input sanitization for `action_name` and channels.
+- Unified security across all admin endpoints.
+- Simplified notifier logic for multi-channel send (email + slack + telegram).
 
 ---
 
-## Core Features
+## 🧱 Core Features
 - 📊 Dashboard (WP_List_Table): search, pagination, status filters, bulk actions
 - 📨 Email notifications (with test)
 - 🔗 WooCommerce: new order, low stock
 - 📮 Contact Form 7: success/fail events
-- 🏷 WP Core: comments, post status, new user
-- 🧱 Custom Hooks Manager: define your own `do_action` triggers and send them to multi-channels
+- 🏷 WP Core: comments, post status, new user, and custom hooks
+- 🧱 Custom Hooks Manager: Add / Edit / Test / Delete your own triggers
 - 🔔 Admin bar unread badge
 - 🔐 Pro channels: Telegram Bot, Slack Webhook
-- 🔑 License key gate for Pro features
+- 🔑 License key validation (Pro only)
 
 ---
 
-## Author
+## 🧩 From previous versions
+- v1.3.2: Dashboard counter + REST API hardening  
+- v1.3.1: Safe bootstrap, uninstall cleanup, and late textdomain loading
+
+---
+
+## 🧑‍💻 Author
 **Faryan Rajabi Jorshari (HelloCode)**  
-🌐 https://www.hellocode.ir  
-🐙 https://github.com/faryanra  
-💼 https://linkedin.com/in/reza-rajabi-jorshari
+🌐 [hellocode.ir](https://www.hellocode.ir)  
+🐙 [GitHub](https://github.com/faryanra)  
+💼 [LinkedIn](https://linkedin.com/in/reza-rajabi-jorshari)
 
 ---
 
-## License
+## 📄 License
 GPL v3 or later
