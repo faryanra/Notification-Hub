@@ -1,91 +1,52 @@
-# 🚨 Notification Hub (v1.3.7)
+# 🚨 Notification Hub (v1.3.8)
 
 A modular, secure, and extensible plugin to collect, manage, and route WordPress notifications through Email, Telegram (Pro), and Slack (Pro).  
-Includes a real dashboard, custom hook system, REST API & Webhook endpoints — built for developers and admins who want total control over notifications.
+Built with a modern UI, real dashboard, REST API & Webhook support — now fully accessible and visually polished.
 
 ---
 
-## ✨ Features
+## ✨ What’s New in v1.3.8
+**Focus:** UX & Accessibility Polish (A11y + UI Refinement)
 
-### 🧩 Core (Free)
-- 🗂 **Dashboard:** Real-time notification table (All / Active / Archived / Search / Bulk actions)
-- 📨 **Email channel:** Native wp_mail() integration + “Send Test” button
-- ⚙️ **Admin bar badge:** Shows unread (active) count in real-time
-- 🔗 **Integrations:**
-  - WooCommerce → New orders & low stock alerts
-  - Contact Form 7 → Form success/failure tracking
-  - WordPress Core → Comments, post status changes, and user registration
-- 🧱 **Custom Hooks Manager:**  
-  - Add / Edit / Delete / Test your own actions  
-  - Store hook metadata in `nh_hooks`  
-  - Trigger via REST or programmatically (`do_action()`)
-
-### 💎 Pro Features
-- 💬 **Telegram Bot integration**
-- 🔔 **Slack Webhook integration**
-- 🔐 **License activation system** (unlocks Pro channels)
+- 🪟 Full accessibility support (`role="dialog"`, `aria-*`, `tabindex`)
+- ⌨️ Esc key closes modal, focus trap & page scroll lock
+- 💅 CSS sections: Layout / Tabs / Table / Modal / Buttons
+- 🧠 Improved spacing, alignment, and hover feedback
+- 🌍 100% i18n coverage for PHP + JS strings
 
 ---
 
-## 🌐 REST API (v1.3.7)
-The REST API is now **fully active** and safe for use.
-
-### Test Trigger Endpoint
-Trigger custom hooks remotely:
-```
-POST /wp-json/nh/v1/test-trigger/{id}
-```
-**Access:** Requires `manage_options` (Admin)  
-**Response Example:**
-```json
-{ "ok": true, "msg": "Hook triggered" }
-```
-
-Includes:
-- ✅ Table existence check (no fatal errors if plugin freshly installed)
-- ✅ Safe permission callback
-- ✅ JSON structured responses
-- ✅ Error logging under WP_DEBUG
-
----
-
-## 🪝 Webhook Receiver (v1.3.7)
-External systems can now post messages to:
-```
-POST /wp-json/nh/v1/inbound
-```
-**Payload Example:**
-```json
-{ "message": "Test from external app" }
-```
-
-This automatically triggers an internal Email notification:
-- Title: “Inbound Webhook”
-- Body: message content
-- Source: “webhook”
+## 🧩 Core Features
+- Real dashboard (All / Active / Archived / Search / Bulk actions)
+- Email channel with Send Test button
+- Admin bar unread counter
+- WooCommerce, CF7, and Core integrations
+- Custom Hook Manager (CRUD + Test)
+- REST API `/nh/v1/test-trigger/{id}`
+- Webhook `/nh/v1/inbound`
 
 ---
 
 ## 📅 Changelog
 
+### v1.3.8 — UX & Accessibility Polish
+- Added: A11y modal (`role`, `aria-*`, `tabindex`)
+- Added: Esc key closes modal + focus trap
+- Improved: CSS structure and layout spacing
+- Fixed: Scroll overflow issue on open modal
+- Verified: Full textdomain coverage for PHP & JS
+
 ### v1.3.7 — REST & Webhook Activation
-- Added: REST API `/nh/v1/test-trigger/{id}` (secure trigger endpoint)
-- Added: Webhook receiver `/nh/v1/inbound` for external POSTs
-- Added: Database table existence check before any REST query
-- Fix: Loader now safely skips REST/Webhook if DB not ready
-- Improvement: Standardized REST JSON responses (`ok`, `msg`)
-- Internal: Debug logging added for REST/Webhook initialization
+- Added: REST API `/nh/v1/test-trigger/{id}`
+- Added: Webhook `/nh/v1/inbound`
+- Safe: Table existence check before REST query
+- Secure: Access limited to `manage_options`
+- Logging: Debug logs under WP_DEBUG
 
 ### v1.3.6 — Settings & i18n Cleanup
-- Fixed: Redirect after Send Test now works correctly
-- Fixed: Unified `nh_settings` slug across tabs/menus
-- Improved: Localized JS alerts with `nh_i18n`
-- Added: `.pot` translation file and verified text domain
-
-### v1.3.5 — Dashboard Accuracy
-- Fixed: Tab counters and filters fully synchronized
-- Added: `$wpdb->last_error` logging
-- Moved: Bulk and delete actions to `class-nh-admin-actions.php`
+- Fixed: Redirect after Send Test
+- Unified: `nh_settings` slug for tabs & URLs
+- Added: `.pot` translation file
 
 ---
 

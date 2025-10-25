@@ -3,63 +3,47 @@ Contributors: faryanra
 Tags: notifications, admin alerts, Slack, Telegram, Email, WooCommerce, CF7
 Requires at least: 5.6
 Tested up to: 6.5.3
-Stable tag: 1.3.7
+Stable tag: 1.3.8
 Requires PHP: 7.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-A powerful, modular notification manager for WordPress. Collects alerts from Core, WooCommerce, and Contact Form 7, then routes them via Email, Telegram, or Slack.  
-Includes a real admin dashboard, custom hook manager, REST API, and webhook support.
+Notification Hub centralizes all WordPress notifications in one place — with REST API, Webhook support, and a fully accessible interface.
 
 == Description ==
-**Notification Hub** centralizes all your WordPress notifications into one clean dashboard — and lets you send them to multiple channels.  
-Track, archive, and test notifications directly from your admin panel.
+Send alerts from WordPress Core, WooCommerce, and Contact Form 7 through Email, Telegram, or Slack.  
+Track, archive, and test notifications directly from your dashboard.
 
-**New in v1.3.7:**
-- ✅ REST API `/nh/v1/test-trigger/{id}` is now active
-- ✅ Webhook `/nh/v1/inbound` can receive external POSTs
-- ✅ Database table existence check prevents REST-related fatals
-- ✅ Loader safely skips REST/Webhook if database is missing
-- ✅ Standardized JSON REST responses (`ok`, `msg`)
-- ✅ Debug logging for REST/Webhook startup under WP_DEBUG
-
-**From previous versions (1.3.6 & 1.3.5):**
-- Fixed redirect after Send Test (no more "Sorry, you are not allowed…")
-- Unified Settings tab slug (`nh_settings`)
-- Localized JS alerts with `wp_localize_script`
-- Added `.pot` file for translation
-- Added `$wpdb->last_error` logging
-- Moved admin actions into `class-nh-admin-actions.php`
-- Improved dashboard filtering, counts, and modal previews
+**New in v1.3.8 (UX & Accessibility Polish):**
+- 🪟 Accessible modal preview (`role`, `aria-*`, `tabindex`)
+- ⌨️ Esc key closes modal and focus returns correctly
+- 💅 CSS sections (Layout / Tabs / Table / Modal / Buttons)
+- 🧠 Improved spacing, alignment, and hover feedback
+- 🌍 100% i18n coverage for PHP + JS
 
 == Installation ==
 1. Upload `notification-hub` to `/wp-content/plugins/`
-2. Activate via WordPress → Plugins
-3. Access **Notification Hub** in the admin menu
-
-== Usage ==
-- **Dashboard:** View, search, and archive notifications  
-- **Hooks:** Create custom actions and trigger them programmatically  
-- **Settings:** Configure Email and (Pro) Telegram / Slack channels  
-- **REST:** POST to `/wp-json/nh/v1/test-trigger/{id}` to trigger saved hooks remotely  
-- **Webhook:** POST to `/wp-json/nh/v1/inbound` to send external alerts into your system
+2. Activate via Plugins menu
+3. Visit “Notification Hub” in the WordPress admin
 
 == Changelog ==
 
+= 1.3.8 =
+* Added: Full accessibility modal (role, aria-*)
+* Added: Keyboard Esc close & focus management
+* Improved: CSS structure and layout spacing
+* Fixed: Scroll overflow issue with modal open
+* Verified: Full localization coverage
+
 = 1.3.7 =
-* Added: REST API endpoint `/nh/v1/test-trigger/{id}` (secure trigger)
-* Added: Webhook `/nh/v1/inbound` (external POST)
-* Added: Table existence check before REST queries
-* Improved: Loader no longer causes 500s on first install
-* Improved: REST response structure (`ok`, `msg`)
-* Internal: Added debug logs for REST/Webhook boot
-* Security: REST access limited to `manage_options` capability
+* Added: REST API `/nh/v1/test-trigger/{id}`
+* Added: Webhook `/nh/v1/inbound`
+* Secure: REST only for admins, table check before query
 
 = 1.3.6 =
-* Fixed: “Sorry, you are not allowed…” bug after Send Test
-* Fixed: Unified `nh_settings` slug (tabs, menu, redirects)
-* Improved: Localized JS alerts (`nh_i18n`)
-* Added: Translation file `/languages/notification-hub.pot`
+* Fixed: Redirect issue after Send Test
+* Unified: Settings slug `nh_settings`
+* Added: Translation `.pot` file
 
 = 1.3.5 =
 * Fixed: Accurate tab counts for All / Active / Archived
