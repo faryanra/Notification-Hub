@@ -1,18 +1,17 @@
 <?php
-// REST API (Hook Test Endpoint)
+// REST API (safe activation)
 
 if (!defined('ABSPATH')) exit;
 
 class NH_REST_API {
 
-    public function __construct() {
-        // Register REST routes
+    protected $r;
+
+    public function __construct($registry = null) {
+        $this->r = $registry;
         add_action('rest_api_init', [$this, 'register_routes']);
     }
 
-    /**
-     * Register REST endpoints
-     */
     public function register_routes() {
         register_rest_route('nh/v1', '/test-trigger/(?P<id>\d+)', [
             'methods'  => 'POST',
@@ -20,34 +19,40 @@ class NH_REST_API {
                 return current_user_can('manage_options');
             },
             'callback' => [$this, 'handle_test_trigger'],
-            'args' => [
-                'id' => [
-                    'validate_callback' => 'is_numeric'
-                ]
-            ]
         ]);
     }
 
-    /**
-     * Handle REST request: trigger hook by ID
-     */
     public function handle_test_trigger(WP_REST_Request $req) {
-        $id = intval($req['id']);
         global $wpdb;
+        $table = $wpdb->prefix . 'nh_hooks';
 
-        $row = $wpdb->get_row( $wpdb->prepare("SELECT * FROM {$wpdb->prefix}nh_hooks WHERE id=%d", $id) );
-        if (!$row) {
-            return new WP_REST_Response(['ok'=>false, 'msg'=>'not found'], 404);
+        // 🧱 Check table existence
+        $exists = $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $wpdb->esc_like($table)));
+        if (!$exists) {
+            return new WP_REST_Response(['ok' => false, 'msg' => 'Database table missing'], 500);
         }
 
-        // Fire the custom hook
-        do_action($row->action_name, [
-            'test'    => true,
-            'source'  => 'rest_test',
-            'message' => 'Test triggered via REST API',
-            'context' => ['hook_id' => $row->id]
-        ]);
+        $id = intval($req['id']);
+        $row = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$table} WHERE id=%d", $id));
+        if (!$row) {
+            return new WP_REST_Response(['ok' => false, 'msg' => 'Hook not found'], 404);
+        }
 
-        return new WP_REST_Response(['ok'=>true, 'msg'=>'triggered'], 200);
+        $registry = class_exists('NH_Core_Registry') ? NH_Core_Registry::get() : null;
+        $notifier = $registry ? $registry->get_svc('notifier') : null;
+        if (!$notifier) {
+            return new WP_REST_Response(['ok' => false, 'msg' => 'Notifier not available'], 500);
+        }
+
+        try {
+            do_action($row->action_name, [
+                'test'    => true,
+                'source'  => 'rest_test',
+                'message' => 'Triggered via REST API',
+            ]);
+            return new WP_REST_Response(['ok' => true, 'msg' => 'Hook triggered'], 200);
+        } catch (Throwable $e) {
+            return new WP_REST_Response(['ok' => false, 'msg' => $e->getMessage()], 500);
+        }
     }
 }

@@ -1,10 +1,7 @@
 <?php
-// Loader
-// Wires registry services into admin UI, integrations, REST API, etc.
+// Loader: REST & Webhook activation with safety
 
-if (!defined('ABSPATH')) {
-    exit;
-}
+if (!defined('ABSPATH')) exit;
 
 class NH_Loader {
 
@@ -14,13 +11,6 @@ class NH_Loader {
         $this->r = $registry;
     }
 
-    /**
-     * boot()
-     * - expose shared services (notifier, license)
-     * - init admin UI modules
-     * - init integrations
-     * - init REST / webhook layer
-     */
     public function boot() {
 
         // === Shared services ============================================
@@ -37,101 +27,67 @@ class NH_Loader {
             if (method_exists('NH_Admin_UI', 'init')) {
                 NH_Admin_UI::init($this->r);
             } else {
-                // fallback: some versions register menus via constructor
                 new NH_Admin_UI($this->r);
             }
         }
 
-        if (class_exists('NH_Dashboard')) {
-            if (method_exists('NH_Dashboard', 'init')) {
-                NH_Dashboard::init($this->r);
-            }
-        }
-        
-        if (class_exists('NH_Custom_Hooks')) {
-            if (method_exists('NH_Custom_Hooks', 'init')) {
-                NH_Custom_Hooks::init($this->r);
-            }
+        if (class_exists('NH_Dashboard') && method_exists('NH_Dashboard', 'init')) {
+            NH_Dashboard::init($this->r);
         }
 
-        // NH_Admin_Actions already hooked via admin_init inside the class file.
-        if (!class_exists('NH_Admin_Actions')) {
-            error_log('Notification Hub: NH_Admin_Actions missing');
+        if (class_exists('NH_Custom_Hooks') && method_exists('NH_Custom_Hooks', 'init')) {
+            NH_Custom_Hooks::init($this->r);
         }
 
         // === Integrations ==============================================
-        $integrations = [
-            'NH_Int_WP_Core',
-            'NH_Int_WooCommerce',
-            'NH_Int_CF7',
-        ];
-
+        $integrations = ['NH_Int_WP_Core','NH_Int_WooCommerce','NH_Int_CF7'];
         $registry = is_object($this->r) ? $this->r : NH_Core_Registry::get();
 
         foreach ($integrations as $cls) {
             if (!class_exists($cls)) continue;
-
             try {
-                // If class has static init()
-                if (method_exists($cls, 'init')) {
-                    call_user_func([$cls, 'init'], $registry);
-                    if (defined('WP_DEBUG') && WP_DEBUG) {
-                        error_log("✅ $cls initialized via ::init()");
-                    }
-                }
-                // Else if it has a constructor
-                elseif (method_exists($cls, '__construct')) {
-                    new $cls($registry);
-                    if (defined('WP_DEBUG') && WP_DEBUG) {
-                        error_log("✅ $cls initialized via constructor");
-                    }
-                }
-                // If neither found, log warning
-                else {
-                    if (defined('WP_DEBUG') && WP_DEBUG) {
-                        error_log("⚠️ $cls has no init() or constructor — skipped");
-                    }
-                }
+                if (method_exists($cls, 'init')) call_user_func([$cls, 'init'], $registry);
+                else new $cls($registry);
             } catch (Throwable $e) {
                 if (defined('WP_DEBUG') && WP_DEBUG) {
-                    error_log("❌ Integration load failed for $cls: " . $e->getMessage());
+                    error_log("❌ Integration $cls failed: " . $e->getMessage());
                 }
             }
         }
 
-        // === API / Webhook =============================================
-        // ⚠️ Temporarily disabled in v1.3.6
-        // These will be safely activated in v1.3.7 once schema checks and endpoint validation are added.
-        /*
-        if (class_exists('NH_REST_API')) {
-            try {
-                $api = (new ReflectionClass('NH_REST_API'));
-                $ctor = $api->getConstructor();
-                if ($ctor && $ctor->getNumberOfParameters() > 0) {
-                    $api->newInstance($this->r);
-                } else {
-                    $api->newInstance();
+        // === REST / Webhook ============================================
+        global $wpdb;
+        $table_hooks = $wpdb->prefix . 'nh_hooks';
+        $table_exists = $wpdb->get_var($wpdb->prepare(
+            "SHOW TABLES LIKE %s", $wpdb->esc_like($table_hooks)
+        ));
+
+        if ($table_exists) {
+            // ✅ Load REST API
+            if (class_exists('NH_REST_API')) {
+                try {
+                    new NH_REST_API($this->r);
+                    if (defined('WP_DEBUG') && WP_DEBUG) {
+                        error_log('✅ NH_REST_API initialized successfully.');
+                    }
+                } catch (Throwable $e) {
+                    error_log('❌ NH_REST_API failed: ' . $e->getMessage());
                 }
-            } catch (Throwable $e) {
-                error_log('Notification Hub: NH_REST_API init failed: ' . $e->getMessage());
+            }
+
+            // ✅ Load Webhook listener
+            if (class_exists('NH_Webhook')) {
+                try {
+                    $wh = new NH_Webhook($this->r);
+                    $wh->init();
+                } catch (Throwable $e) {
+                    error_log('❌ NH_Webhook failed: ' . $e->getMessage());
+                }
             }
         } else {
-            error_log('Notification Hub: NH_REST_API missing');
-        }
-
-        if (class_exists('NH_Webhook')) {
-            try {
-                $wh = (new ReflectionClass('NH_Webhook'));
-                $ctor = $wh->getConstructor();
-                if ($ctor && $ctor->getNumberOfParameters() > 0) {
-                    $wh->newInstance($this->r);
-                } else {
-                    $wh->newInstance();
-                }
-            } catch (Throwable $e) {
-                error_log('Notification Hub: NH_Webhook init failed: ' . $e->getMessage());
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log('⚠️ NH_Loader: Skipped REST/Webhook — nh_hooks table not found.');
             }
         }
-        */
     }
 }

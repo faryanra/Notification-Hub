@@ -3,7 +3,7 @@
  * Plugin Name: Notification Hub
  * Plugin URI: https://www.hellocode.ir/
  * Description: Central hub for collecting and managing WordPress notifications (Telegram, Email, Slack, WooCommerce, CF7).
- * Version: 1.3.6
+ * Version: 1.3.7
  * Author: Faryan Rajabi (HelloCode)
  * Author URI: https://www.linkedin.com/in/reza-rajabi-jorshari/
  * License: GPLv3 or later
@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) {
 define('NH_PLUGIN_FILE', __FILE__);
 define('NH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('NH_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('NH_VERSION', '1.3.6');
+define('NH_VERSION', '1.3.7');
 
 /**
  * === i18n / Textdomain ================================================
