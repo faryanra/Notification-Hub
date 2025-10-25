@@ -28,7 +28,9 @@ class NH_Admin_UI {
         // Submenu items
         add_submenu_page('nh-dashboard', 'Dashboard', 'Dashboard', 'manage_options', 'nh-dashboard', [$this, 'render_dashboard']);
         add_submenu_page('nh-dashboard', 'Hooks', 'Hooks', 'manage_options', 'nh-hooks', [$this, 'render_hooks']);
-        add_submenu_page('nh-dashboard', 'Settings', 'Settings', 'manage_options', 'nh-settings', [$this, 'render_settings']);
+        
+        // ✅ Slug fixed: nh-settings → nh_settings
+        add_submenu_page('nh-dashboard', 'Settings', 'Settings', 'manage_options', 'nh_settings', [$this, 'render_settings']);
     }
 
     public function register_settings() {
@@ -48,7 +50,16 @@ class NH_Admin_UI {
         wp_enqueue_style('nh-notifications', NH_PLUGIN_URL . 'assets/css/notifications.css', [], NH_VERSION);
 
         wp_enqueue_script('nh-dashboard', NH_PLUGIN_URL . 'assets/js/dashboard.js', ['jquery'], NH_VERSION, true);
-        wp_localize_script('nh-dashboard', 'nhAdmin', [
+        wp_enqueue_script('nh-admin', NH_PLUGIN_URL . 'assets/js/admin.js', ['jquery'], NH_VERSION, true);
+
+        // ✅ Localize i18n strings for JS alerts
+        wp_localize_script('nh-dashboard', 'nh_i18n', [
+            'no_ajax'      => __('AJAX URL not available.', 'notification-hub'),
+            'load_error'   => __('Failed to load notification.', 'notification-hub'),
+            'request_fail' => __('Request failed', 'notification-hub'),
+        ]);
+
+        wp_localize_script('nh-admin', 'nhAdmin', [
             'ajax_url' => admin_url('admin-ajax.php'),
         ]);
     }

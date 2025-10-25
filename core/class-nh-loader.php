@@ -100,9 +100,10 @@ class NH_Loader {
         }
 
         // === API / Webhook =============================================
-        // REST API route registration
+        // ⚠️ Temporarily disabled in v1.3.6
+        // These will be safely activated in v1.3.7 once schema checks and endpoint validation are added.
+        /*
         if (class_exists('NH_REST_API')) {
-            // allow both __construct($r) or no-arg __construct()
             try {
                 $api = (new ReflectionClass('NH_REST_API'));
                 $ctor = $api->getConstructor();
@@ -118,7 +119,6 @@ class NH_Loader {
             error_log('Notification Hub: NH_REST_API missing');
         }
 
-        // inbound webhooks placeholder for future
         if (class_exists('NH_Webhook')) {
             try {
                 $wh = (new ReflectionClass('NH_Webhook'));
@@ -132,5 +132,6 @@ class NH_Loader {
                 error_log('Notification Hub: NH_Webhook init failed: ' . $e->getMessage());
             }
         }
+        */
     }
 }

@@ -38,7 +38,7 @@ class NH_Test_Controller {
 
             $tab = sanitize_key($_GET['tab'] ?? 'general');
             $redirect = add_query_arg([
-                'page'    => 'nh-settings',
+                'page'    => 'nh_settings',
                 'tab'     => $tab,
                 'nh_test' => $channel,
                 'success' => $ok ? '1' : '0'

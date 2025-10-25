@@ -20,7 +20,7 @@
       const nonce = btn.dataset.nonce;
 
       if (!window.nhAdmin || !nhAdmin.ajax_url) {
-        alert('AJAX URL not available.');
+        alert(nh_i18n?.no_ajax || 'AJAX URL not available.');
         return;
       }
 
@@ -35,10 +35,10 @@
             if (meta) meta.innerHTML = `<small>${data.data.created_at || ''}</small>`;
             openModal();
           } else {
-            alert(data?.data?.message || 'Failed to load notification.');
+            alert(data?.data?.message || nh_i18n?.load_error || 'Failed to load notification.');
           }
         })
-        .catch(() => alert('Request failed'));
+        .catch(() => alert(nh_i18n?.request_fail || 'Request failed'));
     }
 
     if (

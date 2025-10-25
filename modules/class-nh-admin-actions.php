@@ -62,7 +62,7 @@ class NH_Admin_Actions {
 
             // redirect back to same settings screen, same tab, with success flag
             $redirect_args = [
-                'page'    => 'nh-settings',
+                'page'    => 'nh_settings',
                 'tab'     => $tab,
                 'nh_test' => $channel,
                 'success' => $ok ? '1' : '0'
