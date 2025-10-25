@@ -1,45 +1,56 @@
 <?php
 // Security helper
-// Centralizes capability check, nonce verification, and nonce generation.
+// Centralizes capability check, nonce verification, sanitization utilities.
 
 if (!defined('ABSPATH')) exit;
 
 class NH_Security {
 
     /**
-     * Check if current user is allowed to manage plugin settings.
-     * Dies with message if not.
+     * ensure_cap()
+     * Abort if current user cannot manage plugin settings.
+     * All admin_post handlers should call this first.
      */
     public static function ensure_cap() {
         if (!current_user_can('manage_options')) {
-            wp_die(__('Access denied.', 'notification-hub'));
+            wp_die(
+                esc_html__('Access denied.', 'notification-hub')
+            );
         }
     }
 
     /**
-     * Verify nonce for an action, optionally scoped by an ID.
-     * Example usage:
-     *  NH_Security::verify_nonce('nh_update_hook', $id);
+     * verify_nonce()
+     * Validate request nonce.
      *
-     * This expects the form to have:
-     *  wp_nonce_field('nh_update_hook_' . $id);
+     * $action_base: string like 'nh_save_hook'
+     * $id: optional numeric context, e.g. hook ID
+     *
+     * Form must have:
+     *   NH_Security::nonce_field('nh_save_hook');
+     * or:
+     *   NH_Security::nonce_field('nh_update_hook', $id);
      */
     public static function verify_nonce($action_base, $id = 0) {
-
-        $nonce = $_REQUEST['_wpnonce'] ?? '';
+        $nonce  = isset($_REQUEST['_wpnonce']) ? $_REQUEST['_wpnonce'] : '';
         $action = $id ? $action_base . '_' . $id : $action_base;
 
         if (!$nonce || !wp_verify_nonce($nonce, $action)) {
-            wp_die(__('Invalid request (nonce). Please refresh and try again.', 'notification-hub'));
+
+            // only log in debug mode so production users نترسن
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log('Notification Hub: nonce check failed for ' . $action);
+            }
+
+            wp_die(
+                esc_html__('Invalid request (nonce). Please refresh and try again.', 'notification-hub')
+            );
         }
     }
 
     /**
-     * Echoes a hidden nonce field in forms.
-     * Usage in templates:
-     *   NH_Security::nonce_field('nh_save_hook');
-     * or:
-     *   NH_Security::nonce_field('nh_update_hook', $hook_id);
+     * nonce_field()
+     * Output nonce field for use in forms.
      */
     public static function nonce_field($action_base, $id = 0) {
         $action = $id ? $action_base . '_' . $id : $action_base;
@@ -47,13 +58,14 @@ class NH_Security {
     }
 
     /**
-     * Sanitize a list of channels.
-     * Guarantees it's an array of clean strings and strips empties.
+     * sanitize_channels()
+     * Clean & normalize list of channels selected (email/telegram/slack).
      */
     public static function sanitize_channels($maybe_channels) {
         if (!is_array($maybe_channels)) {
             return [];
         }
+
         $clean = [];
         foreach ($maybe_channels as $ch) {
             $s = sanitize_text_field($ch);
@@ -65,19 +77,18 @@ class NH_Security {
     }
 
     /**
-     * Validate a custom hook action name.
-     * We don't want spaces or weird chars in `action_name` because it can become a WP hook.
-     * Allowed: letters, numbers, underscore, dash, dot.
+     * validate_action_name()
+     * Make sure a custom hook action_name is safe to be used in do_action().
      */
     public static function validate_action_name($raw) {
-        $raw = sanitize_text_field($raw);
-        // Replace illegal chars with underscore
+        $raw  = sanitize_text_field($raw);
         $safe = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $raw);
         return $safe;
     }
 
     /**
-     * Safe integer getter from request.
+     * request_int()
+     * Safely pull an integer from either POST or GET.
      */
     public static function request_int($key) {
         if (isset($_POST[$key])) return intval($_POST[$key]);

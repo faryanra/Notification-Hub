@@ -3,23 +3,24 @@ Contributors: faryanra
 Tags: notifications, admin alerts, Slack, Telegram, Email, WooCommerce, CF7
 Requires at least: 5.6
 Tested up to: 6.5.3
-Stable tag: 1.3.8
+Stable tag: 1.3.9
 Requires PHP: 7.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-Notification Hub centralizes all WordPress notifications in one place — with REST API, Webhook support, and a fully accessible interface.
+Notification Hub centralizes all WordPress notifications into one dashboard — now fully secure, stable, and Pro-ready.
 
 == Description ==
-Send alerts from WordPress Core, WooCommerce, and Contact Form 7 through Email, Telegram, or Slack.  
-Track, archive, and test notifications directly from your dashboard.
+Collect, manage, and route WordPress notifications through Email, Telegram (Pro), and Slack (Pro).  
+Includes a complete dashboard, REST API, and webhook support.
 
-**New in v1.3.8 (UX & Accessibility Polish):**
-- 🪟 Accessible modal preview (`role`, `aria-*`, `tabindex`)
-- ⌨️ Esc key closes modal and focus returns correctly
-- 💅 CSS sections (Layout / Tabs / Table / Modal / Buttons)
-- 🧠 Improved spacing, alignment, and hover feedback
-- 🌍 100% i18n coverage for PHP + JS
+**New in v1.3.9 — Final Cleanup & Pro Ready**
+- ✅ Standardized file versions and headers
+- 🔐 Enforced full nonce + capability checks across admin forms
+- 🧱 Cleaned and stabilized folder structure
+- 🪪 License system ready (`validate()`, `deactivate()`)
+- 🧹 Removed leftover debug/test logs
+- 🗂 uninstall.php now keeps user data safely
 
 == Installation ==
 1. Upload `notification-hub` to `/wp-content/plugins/`
@@ -27,6 +28,14 @@ Track, archive, and test notifications directly from your dashboard.
 3. Visit “Notification Hub” in the WordPress admin
 
 == Changelog ==
+
+= 1.3.9 =
+* Final Cleanup & Security Review
+* Added: License validate/deactivate
+* Added: uninstall.php safe cleanup (keeps data)
+* Security: All forms now nonce-protected
+* Security: Full `manage_options` enforcement
+* Cleanup: Removed dev logs & redundant comments
 
 = 1.3.8 =
 * Added: Full accessibility modal (role, aria-*)
