@@ -1,5 +1,5 @@
 <?php
-// NH v1.2.0 — Webhook skeleton
+// Webhook skeleton
 
 if (!defined('ABSPATH')) exit;
 

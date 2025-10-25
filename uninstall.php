@@ -23,7 +23,7 @@ $opts = [
     'nh_db_version',
 ];
 foreach ($opts as $opt) {
-    delete_option($opt);
+    delete_option($opt); 
 }
 
 // We do NOT drop tables nh_notifications / nh_hooks here.

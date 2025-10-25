@@ -1,5 +1,5 @@
 <?php
-// NH v1.2.0 — Email channel adapter (Free)
+// Email channel adapter (Free)
 
 if (!defined('ABSPATH')) exit;
 
@@ -18,7 +18,7 @@ class NH_Channel_Email implements NH_Notifier_Channel {
         $body    = $payload['body'] ?? '';
         $headers = ['Content-Type: text/html; charset=UTF-8'];
 
-        // NH v1.2.0 — Basic email via wp_mail
+        // Basic email via wp_mail
         return wp_mail($to, $subject, wp_kses_post($body), $headers);
     }
 }

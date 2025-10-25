@@ -1,4 +1,4 @@
-// NH v1.2.0 — Tabs + Safe redirect tab persistence
+// Tabs + Safe redirect tab persistence
 document.addEventListener('DOMContentLoaded', function(){
 
   // --- Tabs ---

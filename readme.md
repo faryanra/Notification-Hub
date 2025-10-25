@@ -1,51 +1,47 @@
-# 🚀 Notification Hub v1.3.3
+# 🚀 Notification Hub v1.3.4
 
-WordPress notification hub for Email, Telegram (Pro), Slack (Pro), WooCommerce, CF7, and custom hooks —  
-with a live dashboard, security layer, unified nonces, and multi-channel integrations.
+Centralized notification manager for WordPress with multi-channel support, live dashboard, AJAX modal preview, REST API, and admin badge.
 
 ---
 
-## 🔒 What's new in v1.3.3
+## ✨ What’s New in v1.3.4
 
-### Security Layer
-- Added `NH_Security` class for unified `ensure_cap()`, `verify_nonce()`, and `sanitize_channels()`.
-- All admin actions now go through centralized nonce + capability validation.
-- Prevents "Invalid nonce" and "Sorry, you are not allowed" errors.
+### Modal Preview
+- New `View` button in dashboard list opens modal via AJAX.
+- Includes Title, Message, Source, and Created Date.
+- Clean UX with backdrop and close button (ESC-supported).
 
-### Integrations Rebuild
-- Contact Form 7: now sends to Email, Slack, and Telegram (plus DB log).
-- WooCommerce: events (new order, low stock) now fire correctly from constructor.
-- WP Core: automatically registers comment/post/user hooks and DB-defined custom hooks.
-- Loader improved with constructor/init detection for older integrations.
+### Toolbar Badge
+- 🔔 Bell icon added to Admin Bar with live unread count.
+- Click to open dashboard.
+- Available on every admin page.
 
-### Admin UX
-- Updated forms (`settings.php`, `hooks.php`) with consistent nonce and tab handling.
-- Redirects after Save/Test/Delete always restore the same tab + proper notices.
-- Full compatibility with `class-nh-admin-actions.php` (v1.3.3).
+### Code & UX Improvements
+- Clean separation of concerns across PHP and JS files.
+- No inline JS or CSS.
+- dashboard.js fully modularized, handles modal + refresh only.
+- `render_dashboard()` now includes fallback modal load.
 
-### Code Improvements
-- Input sanitization for `action_name` and channels.
-- Unified security across all admin endpoints.
-- Simplified notifier logic for multi-channel send (email + slack + telegram).
+### Security
+- All AJAX and admin POST requests validated via:
+  - `current_user_can('manage_options')`
+  - `wp_verify_nonce()`
+  - `wp_send_json_success/error()` with error context
 
 ---
 
 ## 🧱 Core Features
-- 📊 Dashboard (WP_List_Table): search, pagination, status filters, bulk actions
-- 📨 Email notifications (with test)
-- 🔗 WooCommerce: new order, low stock
-- 📮 Contact Form 7: success/fail events
-- 🏷 WP Core: comments, post status, new user, and custom hooks
-- 🧱 Custom Hooks Manager: Add / Edit / Test / Delete your own triggers
-- 🔔 Admin bar unread badge
-- 🔐 Pro channels: Telegram Bot, Slack Webhook
-- 🔑 License key validation (Pro only)
-
----
-
-## 🧩 From previous versions
-- v1.3.2: Dashboard counter + REST API hardening  
-- v1.3.1: Safe bootstrap, uninstall cleanup, and late textdomain loading
+- 📊 Unified Dashboard: search, pagination, filters, bulk archive/delete
+- 📨 Email notifications
+- 🔗 WooCommerce: new orders, low stock
+- 📮 Contact Form 7: submit success/failure
+- 🏷 WordPress Core: post/comment/user hooks + DB-defined triggers
+- 🎛 Custom Hook Manager
+- 🔔 Admin Bar Badge (🔔 NH: 7)
+- 🧪 Test buttons for each channel
+- 🧩 REST API `/nh/v1/test-trigger/{id}`
+- 💬 Pro Channels: Telegram Bot + Slack Webhook
+- 🔑 License system (Free + Pro)
 
 ---
 

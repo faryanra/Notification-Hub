@@ -1,5 +1,5 @@
 <?php
-// NH v1.2.0 — Telegram Integration (Pro Feature)
+// Telegram Integration (Pro Feature)
 // Handles sending notifications via Telegram Bot API.
 // Settings: nh_telegram_bot_token, nh_telegram_chat_id
 
@@ -25,7 +25,7 @@ class NH_Channel_Telegram implements NH_Notifier_Channel {
         $body   = $payload['body']   ?? '';
         $source = ucfirst($payload['source'] ?? 'system');
 
-        // NH v1.2.0 — safer text (no Markdown issues)
+        // safer text (no Markdown issues)
         $text = sprintf(
             "<b>%s</b>\n%s\n\n<i>Source: %s | %s</i>",
             htmlspecialchars($title),

@@ -1,5 +1,5 @@
 <?php
-// NH v1.3.3 — Security helper
+// Security helper
 // Centralizes capability check, nonce verification, and nonce generation.
 
 if (!defined('ABSPATH')) exit;

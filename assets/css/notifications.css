@@ -1,8 +1,7 @@
-/* NH v1.2.0 — Dashboard table styles */
+/* Dashboard table styles */
 .table .status-unread { font-weight: 600; }
 /* ============================================================
    Dashboard Layout – Tabs & Search alignment
-   (Notification Hub v1.3.8+)
 ============================================================ */
 
 .nh-dashboard-header {
@@ -39,4 +38,19 @@
 
 .nh-dashboard-header .search-box {
     margin: 0;
+}
+
+.nh-modal { 
+    position: fixed; inset: 0; z-index: 9999; display: none; 
+}
+.nh-modal__backdrop {
+  position: absolute; inset: 0; background: rgba(0,0,0,0.5);
+}
+.nh-modal__content {
+  position: relative; z-index: 2; background: #fff; border-radius: 8px;
+  max-width: 600px; margin: 10% auto; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.nh-modal__close {
+  position: absolute; top: 10px; right: 10px;
+  background: none; border: none; font-size: 22px; cursor: pointer;
 }

@@ -1,5 +1,5 @@
 <?php
-// NH v1.2.0 — Slack Integration (Pro Feature)
+// Slack Integration (Pro Feature)
 // Sends messages using Slack Incoming Webhook URL.
 // Setting: nh_slack_webhook
 

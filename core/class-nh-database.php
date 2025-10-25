@@ -1,5 +1,5 @@
 <?php
-// NH v1.3.0 — Database schema, CRUD, and Hook migration
+// Database schema, CRUD, and Hook migration
 
 if (!defined('ABSPATH')) exit;
 
@@ -13,8 +13,8 @@ class NH_Database {
     }
 
     /**
-     * NH v1.2.0 — Ensure notifications table exists/updated
-     * NH v1.3.0 — Add nh_hooks table for custom hook management
+     * Ensure notifications table exists/updated
+     * Add nh_hooks table for custom hook management
      */
     public function maybe_upgrade_database() {
         $installed = get_option('nh_db_version');
@@ -27,7 +27,7 @@ class NH_Database {
     }
 
     /**
-     * NH v1.2.0 — Notifications table
+     * Notifications table
      */
     private function schema_notifications() {
         global $wpdb;
@@ -50,7 +50,7 @@ class NH_Database {
     }
 
     /**
-     * NH v1.3.0 — Create nh_hooks table for custom hook definitions
+     * Create nh_hooks table for custom hook definitions
      */
     private function create_hooks_table() {
         global $wpdb;
@@ -73,7 +73,7 @@ class NH_Database {
     }
 
     /**
-     * NH v1.2.0 — Insert new notification record
+     * Insert new notification record
      */
     public function insert_notification(array $e) {
         global $wpdb;
@@ -92,7 +92,7 @@ class NH_Database {
     }
 
     /**
-     * NH v1.2.0 — Fetch notifications with pagination
+     * Fetch notifications with pagination
      */
     public function get_list(array $filters=[], $page=1, $per_page=20) {
         global $wpdb;
@@ -110,7 +110,7 @@ class NH_Database {
     }
 
     /**
-     * NH v1.2.0 — Update notification status
+     * Update notification status
      */
     public function mark_status($id, $status) {
         global $wpdb;
@@ -121,7 +121,7 @@ class NH_Database {
     }
 
     /**
-     * NH v1.2.0 — Cleanup old records (retention)
+     * Cleanup old records (retention)
      */
     public function cleanup_old($days=90) {
         global $wpdb;

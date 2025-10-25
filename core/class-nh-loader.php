@@ -1,5 +1,5 @@
 <?php
-// NH v1.3.1 — Loader
+// Loader
 // Wires registry services into admin UI, integrations, REST API, etc.
 
 if (!defined('ABSPATH')) {

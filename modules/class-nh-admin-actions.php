@@ -1,6 +1,6 @@
 <?php
-// NH v1.3.3 — Admin Actions / Test Send / Hook CRUD
-// Same UX as 1.3.2 (no regression), but now using NH_Security for cap + nonce + sanitization.
+// Admin Actions / Test Send / Hook CRUD
+// no regression, but now using NH_Security for cap + nonce + sanitization.
 
 if (!defined('ABSPATH')) exit;
 

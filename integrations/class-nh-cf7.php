@@ -1,5 +1,5 @@
 <?php
-// NH v1.3.3 — Contact Form 7 integration (Free, fixed)
+// Contact Form 7 integration (Free, fixed)
 
 if (!defined('ABSPATH')) exit;
 

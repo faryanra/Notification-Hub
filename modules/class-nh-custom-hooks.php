@@ -1,5 +1,5 @@
 <?php
-// NH v1.3.0 — Custom Hooks Manager (Save, Test, Register Dynamic Actions)
+// Custom Hooks Manager (Save, Test, Register Dynamic Actions)
 
 if (!defined('ABSPATH')) exit;
 
@@ -9,12 +9,12 @@ class NH_Custom_Hooks {
     add_action('admin_post_nh_save_hook', [$this,'save_hook']);
     add_action('admin_post_nh_test_hook', [$this,'test_hook']);
 
-    // NH v1.3.0 — Dynamic registration of custom actions
+    // Dynamic registration of custom actions
     add_action('init', [$this,'register_dynamic_actions']);
   }
 
   /**
-   * NH v1.3.0 — Save new hook to database
+   * Save new hook to database
    */
   public function save_hook() {
     if ( ! current_user_can('manage_options') ) wp_die('Access denied');
@@ -50,7 +50,7 @@ class NH_Custom_Hooks {
   }
 
   /**
-   * NH v1.3.0 — Trigger a test event for a saved hook
+   * Trigger a test event for a saved hook
    */
   public function test_hook() {
     if ( ! current_user_can('manage_options') ) wp_die('Access denied');
@@ -77,7 +77,7 @@ class NH_Custom_Hooks {
   }
 
   /**
-   * NH v1.3.0 — Register all active custom hooks dynamically
+   * Register all active custom hooks dynamically
    */
   public function register_dynamic_actions() {
     global $wpdb;

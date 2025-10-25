@@ -1,5 +1,5 @@
 <?php
-// NH v1.2.1 — WP Core integration (Free) + Custom Hooks loader
+// WP Core integration (Free) + Custom Hooks loader
 
 if (!defined('ABSPATH')) exit;
 
@@ -198,4 +198,24 @@ class NH_Int_WP_Core {
             'multi'   => ['slack','telegram']
         ]);
     }
+    
+}
+
+add_action('admin_bar_menu', 'nh_global_admin_bar_badge', 100);
+
+function nh_global_admin_bar_badge($wp_admin_bar) {
+    if (!current_user_can('manage_options')) return;
+
+    global $wpdb;
+    $count = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}nh_notifications WHERE status = 0");
+
+    $title = '<span class="ab-icon dashicons dashicons-bell"></span>';
+    $title .= '<span class="ab-label"> ' . $count . ' Unread</span>';
+
+    $wp_admin_bar->add_node([
+        'id'    => 'nh_unread',
+        'title' => $title,
+        'href'  => admin_url('admin.php?page=nh-dashboard'),
+        'meta'  => ['title' => __('View Notifications', 'notification-hub')],
+    ]);
 }

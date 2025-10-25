@@ -1,5 +1,5 @@
 <?php
-// NH v1.2.0 — Service Container (Registry)
+// Service Container (Registry)
 
 if (!defined('ABSPATH')) exit;
 

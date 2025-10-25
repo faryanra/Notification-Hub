@@ -1,5 +1,5 @@
 <?php
-// NH v1.3.3 — WooCommerce integration (Free, fixed)
+// WooCommerce integration (Free, fixed)
 
 if (!defined('ABSPATH')) exit;
 

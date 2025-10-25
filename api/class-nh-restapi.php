@@ -1,17 +1,17 @@
 <?php
-// NH v1.3.0 — REST API (Hook Test Endpoint)
+// REST API (Hook Test Endpoint)
 
 if (!defined('ABSPATH')) exit;
 
 class NH_REST_API {
 
     public function __construct() {
-        // NH v1.3.0 — Register REST routes
+        // Register REST routes
         add_action('rest_api_init', [$this, 'register_routes']);
     }
 
     /**
-     * NH v1.3.0 — Register REST endpoints
+     * Register REST endpoints
      */
     public function register_routes() {
         register_rest_route('nh/v1', '/test-trigger/(?P<id>\d+)', [
@@ -29,7 +29,7 @@ class NH_REST_API {
     }
 
     /**
-     * NH v1.3.0 — Handle REST request: trigger hook by ID
+     * Handle REST request: trigger hook by ID
      */
     public function handle_test_trigger(WP_REST_Request $req) {
         $id = intval($req['id']);
