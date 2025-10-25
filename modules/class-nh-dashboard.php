@@ -1,5 +1,5 @@
 <?php
-// Dashboard Controller & Table Logic
+// NH v1.3.5 — Dashboard Controller & Table Logic (fixed counts + filters + URLs)
 
 if (!defined('ABSPATH')) exit;
 
@@ -96,11 +96,9 @@ class NH_Dashboard_Table extends WP_List_Table {
         global $wpdb;
         $table = $wpdb->prefix . 'nh_notifications';
 
-        $this->counts = [
-            'all' => (int) $wpdb->get_var("SELECT COUNT(*) FROM $table"),
-            '0'   => (int) $wpdb->get_var("SELECT COUNT(*) FROM $table WHERE status = 0"),
-            '1'   => (int) $wpdb->get_var("SELECT COUNT(*) FROM $table WHERE status = 1"),
-        ];
+        $this->counts['all'] = (int) $wpdb->get_var("SELECT COUNT(*) FROM $table");
+        $this->counts['0']   = (int) $wpdb->get_var("SELECT COUNT(*) FROM $table WHERE status = 0");
+        $this->counts['1']   = (int) $wpdb->get_var("SELECT COUNT(*) FROM $table WHERE status = 1");
     }
 
     protected function get_views() {
@@ -150,11 +148,11 @@ class NH_Dashboard_Table extends WP_List_Table {
                 $view_nonce = wp_create_nonce('nh_view_' . $id);
                 $toggle_nonce = wp_create_nonce('nh_toggle_' . $id);
                 $do = $item->status == 1 ? 'unarchive' : 'archive';
-                $view_btn = '<a href="#" class="button nh-view" data-id="' . $id . '" data-nonce="' . $view_nonce . '">View</a>';
+                $view_btn = sprintf('<a href="#" class="button nh-view" data-id="%d" data-nonce="%s">View</a>', $id, $view_nonce);
                 $toggle_url = add_query_arg(['action' => 'nh_toggle_archive', 'id' => $id, 'do' => $do, '_wpnonce' => $toggle_nonce], admin_url('admin-post.php'));
                 $toggle_btn = '<a href="' . esc_url($toggle_url) . '" class="button-link">' . ucfirst($do) . '</a>';
                 $delete_url = wp_nonce_url(admin_url('admin-post.php?action=nh_delete_notification&id=' . $id), 'nh_delete_' . $id);
-                return $view_btn . ' ' . $toggle_btn . ' <a href="' . $delete_url . '" class="button-link-delete">Delete</a>';
+                return $view_btn . ' ' . $toggle_btn . ' <a href="' . esc_url($delete_url) . '" class="button-link-delete">Delete</a>';
             default:
                 return esc_html($item->$column_name);
         }
@@ -173,10 +171,9 @@ class NH_Dashboard_Table extends WP_List_Table {
         $where = 'WHERE 1=1';
         $params = [];
 
-        if ($this->status_filter === '1') {
-            $where .= ' AND status = 1';
-        } else {
-            $where .= ' AND status = 0';
+        if (in_array($this->status_filter, ['0', '1'], true)) {
+            $where .= ' AND status = %d';
+            $params[] = (int)$this->status_filter;
         }
 
         if ($search !== '') {
@@ -204,12 +201,10 @@ class NH_Dashboard_Table extends WP_List_Table {
     }
 
     public function process_bulk_action() {
-        if (empty($_POST['_wpnonce']) || !wp_verify_nonce($_POST['_wpnonce'], 'bulk-notifications')) {
-            return;
-        }
+        if (empty($_POST['_wpnonce']) || !wp_verify_nonce($_POST['_wpnonce'], 'bulk-notifications')) return;
 
         $action = $this->current_action();
-        if (empty($action)) return;
+        if (!$action) return;
 
         $ids = isset($_POST['ids']) ? array_map('intval', (array) $_POST['ids']) : [];
         if (empty($ids)) return;
@@ -232,6 +227,7 @@ class NH_Dashboard_Table extends WP_List_Table {
         }
     }
 }
+
 add_action('wp_ajax_nh_view_notification', function(){
     if (!current_user_can('manage_options')) {
         wp_send_json_error(['message' => 'Forbidden'], 403);

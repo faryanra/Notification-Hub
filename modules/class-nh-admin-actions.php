@@ -253,7 +253,36 @@ class NH_Admin_Actions {
             wp_die('Delete failed: ' . esc_html($e->getMessage()));
         }
     }
+    public static function handle_delete() {
+    if (!current_user_can('manage_options')) wp_die('Access denied');
+    $id = intval($_GET['id'] ?? 0);
+    if (!$id || !wp_verify_nonce($_GET['_wpnonce'], 'nh_delete_' . $id)) wp_die('Invalid nonce');
+
+    global $wpdb;
+    $wpdb->delete($wpdb->prefix . 'nh_notifications', ['id' => $id], ['%d']);
+
+    wp_redirect(admin_url('admin.php?page=nh-dashboard&deleted=1'));
+    exit;
+    }
+
+    public static function handle_toggle() {
+        if (!current_user_can('manage_options')) wp_die('Access denied');
+        $id = intval($_GET['id'] ?? 0);
+        $do = sanitize_text_field($_GET['do'] ?? '');
+        if (!$id || !in_array($do, ['archive','unarchive'])) wp_die('Invalid action');
+        if (!wp_verify_nonce($_GET['_wpnonce'], 'nh_toggle_' . $id)) wp_die('Invalid nonce');
+
+        $status = ($do === 'archive') ? 1 : 0;
+        global $wpdb;
+        $wpdb->update($wpdb->prefix . 'nh_notifications', ['status' => $status], ['id' => $id], ['%d'], ['%d']);
+
+        wp_redirect(admin_url('admin.php?page=nh-dashboard&status_changed=1'));
+        exit;
+    }
+
 }
 
 // hook into admin lifecycle
 add_action('admin_init', ['NH_Admin_Actions', 'init']);
+add_action('admin_post_nh_delete_notification', ['NH_Admin_Actions', 'handle_delete']);
+add_action('admin_post_nh_toggle_archive', ['NH_Admin_Actions', 'handle_toggle']);

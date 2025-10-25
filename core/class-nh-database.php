@@ -1,10 +1,10 @@
 <?php
-// Database schema, CRUD, and Hook migration
+// NH v1.3.5 — Database schema, CRUD, and migration
 
 if (!defined('ABSPATH')) exit;
 
 class NH_Database {
-    const DB_VERSION = '1.3.0';
+    const DB_VERSION = '1.3.5';
     private $table;
 
     public function __construct() {
@@ -12,23 +12,16 @@ class NH_Database {
         $this->table = $wpdb->prefix . 'nh_notifications';
     }
 
-    /**
-     * Ensure notifications table exists/updated
-     * Add nh_hooks table for custom hook management
-     */
     public function maybe_upgrade_database() {
         $installed = get_option('nh_db_version');
         if ($installed !== self::DB_VERSION) {
             require_once ABSPATH . 'wp-admin/includes/upgrade.php';
             dbDelta($this->schema_notifications());
-            $this->create_hooks_table(); // ← New in v1.3.0
+            $this->create_hooks_table(); // v1.3.0+
             update_option('nh_db_version', self::DB_VERSION);
         }
     }
 
-    /**
-     * Notifications table
-     */
     private function schema_notifications() {
         global $wpdb;
         $charset = $wpdb->get_charset_collate();
@@ -49,36 +42,28 @@ class NH_Database {
         ) $charset;";
     }
 
-    /**
-     * Create nh_hooks table for custom hook definitions
-     */
     private function create_hooks_table() {
         global $wpdb;
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-        $charset_collate = $wpdb->get_charset_collate();
-
-        $hooks_table = $wpdb->prefix . 'nh_hooks';
-        $sql_hooks = "CREATE TABLE $hooks_table (
+        $charset = $wpdb->get_charset_collate();
+        $table = $wpdb->prefix . 'nh_hooks';
+        $sql = "CREATE TABLE $table (
             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
             title VARCHAR(160) NOT NULL,
             action_name VARCHAR(160) NOT NULL,
-            channels TEXT NULL, -- JSON: ['email','telegram',...]
-            status TINYINT(1) NOT NULL DEFAULT 1, -- 1 active, 0 inactive
+            channels LONGTEXT NULL, -- JSON (can be long)
+            status TINYINT(1) NOT NULL DEFAULT 1,
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
             KEY action_name (action_name)
-        ) $charset_collate;";
-
-        dbDelta($sql_hooks);
+        ) $charset;";
+        dbDelta($sql);
     }
 
-    /**
-     * Insert new notification record
-     */
     public function insert_notification(array $e) {
         global $wpdb;
         $now = current_time('mysql');
-        $wpdb->insert($this->table, [
+        $result = $wpdb->insert($this->table, [
             'source'     => $e['source'],
             'type'       => $e['type'],
             'title'      => $e['title'],
@@ -88,46 +73,65 @@ class NH_Database {
             'created_at' => $now,
             'updated_at' => null,
         ], ['%s','%s','%s','%s','%d','%s','%s','%s']);
+
+        if ($wpdb->last_error) {
+            error_log("❌ DB Insert Error: " . $wpdb->last_error);
+        }
+
         return (int) $wpdb->insert_id;
     }
 
-    /**
-     * Fetch notifications with pagination
-     */
+    public function mark_status($id, $status) {
+        global $wpdb;
+        $res = $wpdb->update($this->table, [
+            'status'     => (int)$status,
+            'updated_at' => current_time('mysql'),
+        ], ['id' => (int)$id], ['%d','%s'], ['%d']);
+
+        if ($wpdb->last_error) {
+            error_log("❌ DB Update Error: " . $wpdb->last_error);
+        }
+
+        return $res;
+    }
+
     public function get_list(array $filters=[], $page=1, $per_page=20) {
         global $wpdb;
         $wheres = ['1=1'];
         $args = [];
-        if (!empty($filters['source'])) { $wheres[]='source=%s'; $args[]=$filters['source']; }
-        if (isset($filters['status'])) { $wheres[]='status=%d'; $args[]=(int)$filters['status']; }
+
+        if (!empty($filters['source'])) {
+            $wheres[] = 'source = %s';
+            $args[] = $filters['source'];
+        }
+
+        if (isset($filters['status'])) {
+            $wheres[] = 'status = %d';
+            $args[] = (int)$filters['status'];
+        }
+
         $where = implode(' AND ', $wheres);
-        $offset = max(0, ($page-1)*$per_page);
+        $offset = max(0, ($page - 1) * $per_page);
+
         $sql = $wpdb->prepare(
-            "SELECT * FROM {$this->table} WHERE {$where} ORDER BY created_at DESC LIMIT %d OFFSET %d",
+            "SELECT * FROM {$this->table} WHERE $where ORDER BY created_at DESC LIMIT %d OFFSET %d",
             array_merge($args, [$per_page, $offset])
         );
+
         return $wpdb->get_results($sql, ARRAY_A);
     }
 
-    /**
-     * Update notification status
-     */
-    public function mark_status($id, $status) {
+    public function cleanup_old($days = 90) {
         global $wpdb;
-        return $wpdb->update($this->table, [
-            'status' => (int)$status,
-            'updated_at' => current_time('mysql'),
-        ], ['id'=>(int)$id], ['%d','%s'], ['%d']);
-    }
-
-    /**
-     * Cleanup old records (retention)
-     */
-    public function cleanup_old($days=90) {
-        global $wpdb;
-        $wpdb->query($wpdb->prepare(
+        $res = $wpdb->query($wpdb->prepare(
             "DELETE FROM {$this->table} WHERE created_at < DATE_SUB(NOW(), INTERVAL %d DAY)",
-            (int)$days
+            (int) $days
         ));
+
+        if ($wpdb->last_error) {
+            error_log("❌ DB Cleanup Error: " . $wpdb->last_error);
+        }
+
+        return $res;
     }
 }

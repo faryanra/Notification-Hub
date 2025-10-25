@@ -47,7 +47,7 @@ class NH_Loader {
                 NH_Dashboard::init($this->r);
             }
         }
-
+        
         if (class_exists('NH_Custom_Hooks')) {
             if (method_exists('NH_Custom_Hooks', 'init')) {
                 NH_Custom_Hooks::init($this->r);
