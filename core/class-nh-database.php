@@ -1,5 +1,5 @@
 <?php
-// NH v1.3.5 — Database schema, CRUD, and migration
+// Database schema, CRUD, and migration
 
 if (!defined('ABSPATH')) exit;
 
@@ -17,7 +17,7 @@ class NH_Database {
         if ($installed !== self::DB_VERSION) {
             require_once ABSPATH . 'wp-admin/includes/upgrade.php';
             dbDelta($this->schema_notifications());
-            $this->create_hooks_table(); // v1.3.0+
+            $this->create_hooks_table(); 
             update_option('nh_db_version', self::DB_VERSION);
         }
     }
@@ -51,7 +51,7 @@ class NH_Database {
             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
             title VARCHAR(160) NOT NULL,
             action_name VARCHAR(160) NOT NULL,
-            channels LONGTEXT NULL, -- JSON (can be long)
+            channels LONGTEXT NULL, 
             status TINYINT(1) NOT NULL DEFAULT 1,
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id),

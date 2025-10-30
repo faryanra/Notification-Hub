@@ -1,68 +1,90 @@
-# 🚨 Notification Hub (v1.3.9 — Final Cleanup & Pro Ready)
+# 🚨 Notification Hub (v1.4.0 — Async & Pro Edition)
 
 A modular, secure, and extensible plugin to collect, manage, and route WordPress notifications through Email, Telegram (Pro), and Slack (Pro).  
-This version finalizes the branch with complete security, structure, and Pro-ready foundation.
+Now powered by an async queue, local license system, and full multisite compatibility.
 
 ---
 
-## ✨ Highlights (v1.3.9)
+## ✨ Highlights (v1.4.0)
 
-### 🧩 Core Improvements
-- Standardized file headers and version numbers (`@version 1.3.9`)
-- Folder structure finalized and stable for long-term maintenance
-- All forms verified for nonce + capability checks
-- Security class (`NH_Security`) fully reviewed and cleaned
-- License class upgraded (now supports `validate()` and `deactivate()`)
-- uninstall.php now safely removes settings but keeps data tables for users who may reinstall
+### ⚙️ Core / Async System
+- Added background queue with Action Scheduler (fallback to WP-Cron)
+- Async execution prevents admin request blocking and timeouts
+- `NH_Notifier` redesigned for dual-mode: `queue_send()` + `send_now()`
 
-### 🔐 Security Review
-- Every form now has `wp_nonce_field()` in templates
-- Every handler calls `NH_Security::verify_nonce()` before DB operations
-- Capability checks enforced via `NH_Security::ensure_cap()`
-- Safe sanitization added for all user inputs and request params
+### 🔑 License System (Pro Activation)
+- Introduced `NH_License::is_pro()` and local activation logic
+- Telegram and Slack channels now gated under Pro mode
+- Future-ready for remote validation (Envato / Freemius)
 
-### 🪪 License System
-- `NH_License::validate($key)` sanitizes, checks length, and stores keys
-- `NH_License::deactivate()` removes key on request
-- Future-proof structure for Pro remote validation (coming in v1.4.0)
+### 🌐 Multisite Support
+- Each site uses isolated tables via `$wpdb->prefix`
+- Options stored per-blog; safe for large multisite installs
 
-### 🧹 Cleanup
-- Removed all leftover dev/test logs
-- WP_DEBUG logs restricted only to errors (`❌`), not successes (`✅`)
-- Removed redundant comments and unused variables
+### 🔗 Integrations Expansion
+Four native integrations, all now async and multi-channel:
+1. **WordPress Core** → comments, post updates, user registrations  
+2. **WooCommerce** → new orders, low stock alerts  
+3. **Contact Form 7** → form submissions  
+4. **Email (base)** → for system messages  
 
-### 🧾 uninstall.php (Safe Mode)
-- Removes plugin options (`nh_*`)
-- Unschedules cleanup cron job
-- Keeps `nh_hooks` and `nh_notifications` tables
-- Ready for future “Delete all data?” confirmation & feedback form
+### 🧱 Refactor & Cleanup
+- `NH_Notifier` moved from `/core/` to `/modules/` (single definition)
+- Loader rebuilt for dependency injection via `NH_Core_Registry`
+- Unified admin actions (CRUD + test) in `NH_Admin_Actions`
+- Removed redundant logs and unused dev comments
+- Clean, readable debug output with emojis for trace clarity
 
 ---
 
 ## 📅 Changelog
 
+### v1.4.0 — Async & Pro Edition
+- Added: Queue system (Action Scheduler + fallback)
+- Added: Local license validation
+- Added: Multisite database prefix support
+- Added: Multi-channel async send (Email, Telegram, Slack)
+- Refactored: Core, Loader, Notifier, and Admin Actions
+- Fixed: Duplicate Notifier class issue
+- Cleaned: All legacy logs and comments
+
 ### v1.3.9 — Final Cleanup & Pro Ready
-- Cleanup: Removed debug/test logs
-- Security: Full nonce & capability enforcement
-- Added: License `validate()` and `deactivate()` methods
-- Added: uninstall.php safe cleanup (keeps user data)
-- Finalized: Folder structure and file versions
-- Marked: End of v1.x branch — stable and production-ready
+- Nonce + capability enforcement
+- License validate/deactivate
+- Safe uninstall
+- Clean folder structure
 
-### v1.3.8 — UX & Accessibility Polish
-- Added: A11y modal support (`role`, `aria-*`, `tabindex`)
-- Improved: CSS layout and structure
-- Verified: Full i18n coverage for PHP & JS
+### v1.3.0 — Dashboard & Custom Hooks
+- Added hooks CRUD manager
+- REST API endpoints
+- Dashboard Active / Archived views
+- Security & performance upgrade
 
-### v1.3.7 — REST & Webhook Activation
-- Added: REST API `/nh/v1/test-trigger/{id}` and `/nh/v1/inbound`
-- Secure: Access limited to `manage_options`
-- Safe: Table existence checks before queries
+### 1.2.0 
+* Persistent tabs after save/test
+* Admin notices
+* Pro-only fields with disabled message
 
-### v1.3.6 — Settings & i18n Cleanup
-- Fixed: Redirect after Send Test Email/Telegram/Slack
-- Added: `.pot` translation file
-- Unified: Tab slug consistency (`nh_settings`)
+### 1.1.0 
+* WooCommerce + CF7 integration
+* Slack + Email support
+
+### 1.0.0 
+* Initial release
+
+---
+
+## 🧩 Technical Overview
+
+| Component | Purpose |
+|------------|----------|
+| **NH_Core_Registry** | Central dependency container |
+| **NH_Database** | Handles CRUD for notifications & hooks |
+| **NH_Queue** | Async worker (Action Scheduler / WP-Cron) |
+| **NH_Notifier** | Main delivery system for all channels |
+| **NH_License** | License validation & Pro gating |
+| **NH_Admin_Actions** | Unified admin post actions (send/test/save) |
+| **NH_Loader** | Boot sequence & integration loader |
 
 ---
 
@@ -70,7 +92,7 @@ This version finalizes the branch with complete security, structure, and Pro-rea
 **Faryan Rajabi Jorshari (HelloCode)**  
 🌐 [hellocode.ir](https://www.hellocode.ir)  
 🐙 [GitHub](https://github.com/faryanra)  
-💼 [LinkedIn](https://linkedin.com/in/reza-rajabi-jorshari)
+💼 [LinkedIn](https://www.linkedin.com/in/faryan-rajabi/)
 
 ---
 

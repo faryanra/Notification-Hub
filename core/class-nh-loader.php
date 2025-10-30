@@ -1,11 +1,11 @@
 <?php
-// Loader: REST & Webhook activation with safety
+// Loader (excerpt)
 
 if (!defined('ABSPATH')) exit;
 
 class NH_Loader {
 
-    protected $r; // NH_Core_Registry instance
+    protected $r;
 
     public function __construct($registry) {
         $this->r = $registry;
@@ -18,6 +18,10 @@ class NH_Loader {
             $this->r->set('notifier', new NH_Notifier($this->r));
         }
 
+        if (class_exists('NH_Queue')) {
+            NH_Queue::hook_processor($this->r);
+        }
+
         if (!$this->r->get_svc('license') && class_exists('NH_License')) {
             $this->r->set('license', new NH_License());
         }
@@ -25,8 +29,10 @@ class NH_Loader {
         // === Admin UI / Dashboard / Hooks ==============================
         if (class_exists('NH_Admin_UI')) {
             if (method_exists('NH_Admin_UI', 'init')) {
+                // (Pro future or refactored style)
                 NH_Admin_UI::init($this->r);
             } else {
+                // (Your current style: constructor does the add_menu_page etc.)
                 new NH_Admin_UI($this->r);
             }
         }
@@ -46,11 +52,14 @@ class NH_Loader {
         foreach ($integrations as $cls) {
             if (!class_exists($cls)) continue;
             try {
-                if (method_exists($cls, 'init')) call_user_func([$cls, 'init'], $registry);
-                else new $cls($registry);
+                if (method_exists($cls, 'init')) {
+                    call_user_func([$cls, 'init'], $registry);
+                } else {
+                    new $cls($registry);
+                }
             } catch (Throwable $e) {
                 if (defined('WP_DEBUG') && WP_DEBUG) {
-                    error_log("❌ Integration $cls failed: " . $e->getMessage());
+                    error_log("Integration $cls failed: " . $e->getMessage());
                 }
             }
         }
@@ -58,35 +67,30 @@ class NH_Loader {
         // === REST / Webhook ============================================
         global $wpdb;
         $table_hooks = $wpdb->prefix . 'nh_hooks';
-        $table_exists = $wpdb->get_var($wpdb->prepare(
-            "SHOW TABLES LIKE %s", $wpdb->esc_like($table_hooks)
-        ));
+        $table_exists = $wpdb->get_var(
+            $wpdb->prepare("SHOW TABLES LIKE %s", $wpdb->esc_like($table_hooks))
+        );
 
         if ($table_exists) {
-            // ✅ Load REST API
             if (class_exists('NH_REST_API')) {
                 try {
                     new NH_REST_API($this->r);
-                    if (defined('WP_DEBUG') && WP_DEBUG) {
-                        error_log('✅ NH_REST_API initialized successfully.');
-                    }
                 } catch (Throwable $e) {
-                    error_log('❌ NH_REST_API failed: ' . $e->getMessage());
+                    error_log('NH_REST_API failed: ' . $e->getMessage());
                 }
             }
 
-            // ✅ Load Webhook listener
             if (class_exists('NH_Webhook')) {
                 try {
                     $wh = new NH_Webhook($this->r);
                     $wh->init();
                 } catch (Throwable $e) {
-                    error_log('❌ NH_Webhook failed: ' . $e->getMessage());
+                    error_log('NH_Webhook failed: ' . $e->getMessage());
                 }
             }
         } else {
             if (defined('WP_DEBUG') && WP_DEBUG) {
-                error_log('⚠️ NH_Loader: Skipped REST/Webhook — nh_hooks table not found.');
+                error_log('NH_Loader: Skipped REST/Webhook — nh_hooks table not found.');
             }
         }
     }

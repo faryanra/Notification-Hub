@@ -37,9 +37,11 @@ class NH_Security {
 
         if (!$nonce || !wp_verify_nonce($nonce, $action)) {
 
-            // only log in debug mode so production users نترسن
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                error_log('Notification Hub: nonce check failed for ' . $action);
+            // only log in debug mode so production users
+            if (defined('WP_DEBUG') && WP_DEBUG && strpos(home_url(), 'localhost') !== false) {
+                error_log("⚡ NH_Queue: immediate execution (dev localhost) for {$channel}");
+                do_action('nh_process_send', $channel, $payload);
+                return;
             }
 
             wp_die(
@@ -95,4 +97,17 @@ class NH_Security {
         if (isset($_GET[$key]))  return intval($_GET[$key]);
         return 0;
     }
+
+    public static function anti_tamper_light() {
+    // v1.4.0: placeholder.
+    // v1.5.0+: we can scan for obvious hacks, compare hashes, etc.
+
+    // future example : 
+    // - detect if NH_License::is_pro() was manually hardcoded to always return true
+    // - detect if pro files were modified
+    // - if tampered => maybe mark nh_license_valid = 0
+
+    return true;
+}
+
 }

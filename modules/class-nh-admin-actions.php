@@ -7,6 +7,7 @@ if (!defined('ABSPATH')) exit;
 class NH_Admin_Actions {
 
     public static function init() {
+        add_action('admin_post_nh_save_license', [__CLASS__, 'handle_save_license']);
         add_action('admin_post_nh_test_channel', [__CLASS__, 'handle_test_channel']);
         add_action('admin_post_nh_test_hook',    [__CLASS__, 'handle_test_hook']);
 
@@ -35,13 +36,47 @@ class NH_Admin_Actions {
         return isset($_GET['tab']) ? sanitize_key($_GET['tab']) : 'general';
     }
 
+    public static function handle_save_license() {
+        // 1. Permission check
+        if (!current_user_can('manage_options')) {
+            wp_die(__('Access denied', 'notification-hub'));
+        }
+
+        // 2. Nonce check
+        check_admin_referer('nh_save_license');
+
+        // 3. Sanitize incoming license key
+        $raw_key = isset($_POST['nh_license_key']) ? sanitize_text_field($_POST['nh_license_key']) : '';
+
+        // 4. Save key
+        NH_License::save_key($raw_key);
+
+        // 5. TEMP: trust locally
+        // NH_License::set_valid(true/false) کنیم.
+        if (!empty($raw_key)) {
+            NH_License::set_valid(true);
+        } else {
+            NH_License::set_valid(false);
+        }
+
+        // 6. Redirect back with admin notice
+        // We'll append query arg so settings page can show "License Saved"
+        $url = add_query_arg([
+            'page' => 'notification-hub-settings',
+            'nh_license_saved' => 1,
+        ], admin_url('admin.php'));
+
+        wp_safe_redirect($url);
+        exit;
+    }
+
+
     /**
      * 1) Send test alert (Email / Telegram / Slack)
      */
     public static function handle_test_channel() {
         try {
             NH_Security::ensure_cap();
-            // was: check_admin_referer('nh_test_channel');
             NH_Security::verify_nonce('nh_test_channel');
 
             $channel  = sanitize_text_field($_GET['channel'] ?? '');
@@ -49,26 +84,20 @@ class NH_Admin_Actions {
 
             $registry = NH_Core_Registry::get();
             $notifier = $registry->get_svc('notifier');
-            if (!$notifier) {
-                wp_die(__('Notifier not found', 'notification-hub'));
-            }
+            if (!$notifier) wp_die(__('Notifier not found', 'notification-hub'));
 
-            $ok = $notifier->send([
-                'channel' => $channel,
-                'title'   => '🔔 Notification Hub Test',
-                'body'    => 'This is a test message from Notification Hub.',
-                'source'  => 'test'
+            $ok = $notifier->send($channel, [
+                'subject' => '🔔 Notification Hub Test',
+                'message' => 'This is a test message from Notification Hub.',
             ]);
 
-            // redirect back to same settings screen, same tab, with success flag
-            $redirect_args = [
+            $url = add_query_arg([
                 'page'    => 'nh_settings',
                 'tab'     => $tab,
                 'nh_test' => $channel,
                 'success' => $ok ? '1' : '0'
-            ];
+            ], admin_url('admin.php'));
 
-            $url = add_query_arg($redirect_args, admin_url('admin.php'));
             wp_safe_redirect($url);
             exit;
 
@@ -79,6 +108,7 @@ class NH_Admin_Actions {
             wp_die('Test failed: ' . esc_html($e->getMessage()));
         }
     }
+
 
     /**
      * 2) Manually fire a specific hook ("Test Hook")
@@ -110,17 +140,33 @@ class NH_Admin_Actions {
             if (!is_array($channels) || empty($channels)) {
                 $channels = ['email'];
             }
+            error_log('🔍 Channels raw = ' . print_r($channels, true));
+            foreach ($channels as $ch) {
+                if (defined('WP_DEBUG') && WP_DEBUG) {
+                    error_log("🔧 handle_test_hook: sending test via {$ch}");
+                }
 
-            $primary = $channels[0];
-            $multi   = array_slice($channels, 1);
+                $ok = $notifier->send_now($ch, [
+                    'title'  => '🔧 Test for ' . $row->title,
+                    'body'   => 'Triggered manually via Notification Hub.',
+                    'source' => 'hook',
+                ]);
 
-            $notifier->send([
-                'channel' => $primary,
+                if (!$ok && defined('WP_DEBUG') && WP_DEBUG) {
+                    error_log("❌ handle_test_hook: send_now failed for {$ch}");
+                }
+            }
+
+
+            $ok = $notifier->send_now($primary, [
                 'title'   => '🔧 Test for ' . $row->title,
                 'body'    => 'Triggered manually via Notification Hub.',
                 'source'  => 'hook',
-                'multi'   => $multi
             ]);
+
+            if (!$ok && defined('WP_DEBUG') && WP_DEBUG) {
+                error_log("❌ handle_test_hook: send_now failed for {$primary}");
+            }
 
             wp_safe_redirect(admin_url('admin.php?page=nh-hooks&hook_tested=1'));
             exit;
@@ -132,6 +178,7 @@ class NH_Admin_Actions {
             wp_die('Hook test failed: ' . esc_html($e->getMessage()));
         }
     }
+
 
     /**
      * 3) Create new hook

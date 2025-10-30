@@ -1,5 +1,7 @@
 <?php
 // WP Core integration (Free) + Custom Hooks loader
+// Handles built-in WP events (comment, post status, user register)
+// and loads custom hooks from DB.
 
 if (!defined('ABSPATH')) exit;
 
@@ -8,7 +10,7 @@ class NH_Int_WP_Core {
 
     public function __construct($registry){ 
         $this->r = $registry; 
-        $this->hooks(); // ✅ Active hook in a second
+        $this->hooks();
     }
 
     /**
@@ -16,23 +18,21 @@ class NH_Int_WP_Core {
      */
     public function hooks() {
         // Core events
-        add_action('wp_insert_comment',        [$this,'on_comment'],        10, 2);
-        add_action('transition_post_status',   [$this,'on_post_status'],    10, 3);
-        add_action('user_register',            [$this,'on_user_register'],  10, 1);
+        add_action('wp_insert_comment',       [$this, 'on_comment'],       10, 2);
+        add_action('transition_post_status',  [$this, 'on_post_status'],   10, 3);
+        add_action('user_register',           [$this, 'on_user_register'], 10, 1);
 
         // Custom hooks from DB (table: wp_nh_hooks)
         $this->register_custom_hooks();
     }
 
     /**
-     * Load custom hooks saved in DB and attach them with add_action()
+     * Load custom hooks saved in DB and attach them dynamically
      */
     protected function register_custom_hooks() {
         global $wpdb;
         $table = $wpdb->prefix . 'nh_hooks';
-        if ($wpdb->get_var($wpdb->prepare(
-            "SHOW TABLES LIKE %s", $table
-        )) !== $table) {
+        if ($wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $table)) !== $table) {
             return; // hooks table not found
         }
 
@@ -46,14 +46,10 @@ class NH_Int_WP_Core {
             // Decode channels JSON → default to ['email']
             $channels = $this->decode_channels($row->channels ?? '');
             $primary  = $channels[0] ?? 'email';
-            $multi    = array_values(array_slice($channels, 1));
 
-            // Attach!
-            add_action($hook_name, function(...$args) use ($row, $hook_name, $primary, $multi) {
-                // Prefer a payload array as first arg if provided
+            add_action($hook_name, function (...$args) use ($row, $hook_name, $primary) {
                 $payload = $this->normalize_payload_from_args($row, $hook_name, $args);
 
-                // Insert into DB (like core handlers do)
                 $event = [
                     'source'  => 'hook',
                     'type'    => $hook_name,
@@ -61,65 +57,61 @@ class NH_Int_WP_Core {
                     'message' => $payload['body']  ?? '',
                     'context' => ['hook' => $hook_name]
                 ];
+
                 $db = $this->r->get_svc('db');
                 if ($db && method_exists($db, 'insert_notification')) {
                     $db->insert_notification($event);
                 }
 
-                // Send via Notifier
                 $notifier = $this->r->get_svc('notifier');
-                if (!$notifier) return;
-
-                $notifier->send([
-                    'channel' => $primary,
-                    'title'   => $event['title'],
-                    'body'    => $event['message'],
-                    'source'  => $event['source'],
-                    'multi'   => $multi,
-                ]);
-            }, 10, 10); // allow up to 10 args
+                if ($notifier) {
+                    $notifier->queue_send($primary, [
+                        'title'   => $event['title'],
+                        'body'    => $event['message'],
+                        'source'  => $event['source'],
+                    ]);
+                }
+            }, 10, 10);
         }
     }
 
     /**
      * Decode channels JSON safely
      */
-    protected function decode_channels($json) : array {
+    protected function decode_channels($json): array {
         if (!is_string($json) || $json === '') return ['email'];
         $arr = json_decode($json, true);
         if (!is_array($arr) || empty($arr)) return ['email'];
-        // sanitize channel names
-        return array_values(array_filter(array_map(function($c){
+
+        return array_values(array_filter(array_map(function ($c) {
             $c = strtolower(trim((string)$c));
-            return in_array($c, ['email','telegram','slack'], true) ? $c : null;
+            return in_array($c, ['email', 'telegram', 'slack'], true) ? $c : null;
         }, $arr)));
     }
 
     /**
-     * Build a payload from args if the first arg is an array with keys,
-     * else fall back to a generic, readable message.
+     * Build payload from args if array provided, else fallback summary
      */
-    protected function normalize_payload_from_args($row, $hook_name, array $args) : array {
+    protected function normalize_payload_from_args($row, $hook_name, array $args): array {
         if (!empty($args) && is_array($args[0])) {
-            // Use developer-provided payload
             $p = $args[0];
             return [
-                'title' => isset($p['title']) ? sanitize_text_field($p['title']) : ($row->title ?: ('Hook: ' . $hook_name)),
-                'body'  => isset($p['body'])  ? sanitize_textarea_field($p['body']) : '',
-                'source'=> isset($p['source'])? sanitize_text_field($p['source']) : 'hook'
+                'title'  => isset($p['title']) ? sanitize_text_field($p['title']) : ($row->title ?: ('Hook: ' . $hook_name)),
+                'body'   => isset($p['body'])  ? sanitize_textarea_field($p['body']) : '',
+                'source' => isset($p['source'])? sanitize_text_field($p['source']) : 'hook'
             ];
         }
-        // Fallback: turn args into a brief text
+
         $summary = '';
         if (!empty($args)) {
-            // Limit verbosity
             $slice = array_slice($args, 0, 3);
             $summary = wp_json_encode($slice);
         }
+
         return [
-            'title' => $row->title ?: ('Hook: ' . $hook_name),
-            'body'  => $summary,
-            'source'=> 'hook'
+            'title'  => $row->title ?: ('Hook: ' . $hook_name),
+            'body'   => $summary,
+            'source' => 'hook'
         ];
     }
 
@@ -128,27 +120,61 @@ class NH_Int_WP_Core {
     ========================= */
 
     public function on_comment($id, $comment) {
-        $e = [
-            'source'  => 'wp_core',
-            'type'    => 'comment_new',
-            'title'   => sprintf(__('New comment by %s','notification-hub'), $comment->comment_author),
-            'message' => wp_kses_post(wp_trim_words($comment->comment_content, 20)),
-            'context' => ['comment_id' => $id, 'post_id' => $comment->comment_post_ID]
-        ];
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log("NH_Int_WP_Core::on_comment fired for comment_id={$id}");
+        }
 
-        $this->r->get_svc('db')->insert_notification($e);
+        $title = sprintf(__('New comment by %s', 'notification-hub'), $comment->comment_author);
+        $body  = wp_kses_post(wp_trim_words($comment->comment_content, 20));
 
+        // 1) Insert a human-readable event log entry (optional audit log)
+        $db = $this->r->get_svc('db');
+        if ($db && method_exists($db, 'insert_notification')) {
+            $db->insert_notification([
+                'source'  => 'wp_core',
+                'type'    => 'comment_new',
+                'title'   => $title,
+                'message' => $body,
+                'context' => wp_json_encode([
+                    'comment_id' => $id,
+                    'post_id'    => $comment->comment_post_ID
+                ]),
+                'status'     => 'new',
+                'created_at' => current_time('mysql'),
+            ]);
+        }
+
+        // 2) Dispatch to channels via queue (async-aware)
         $notifier = $this->r->get_svc('notifier');
-        if (!$notifier) return;
+        if (!$notifier) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log("NH_Int_WP_Core::on_comment no notifier service");
+            }
+            return;
+        }
 
-        $notifier->send([
-            'channel' => 'email',
-            'title'   => $e['title'],
-            'body'    => $e['message'],
-            'source'  => $e['source'],
-            'multi'   => ['slack','telegram']
+        // email
+        $notifier->queue_send('email', [
+            'title'  => $title,
+            'body'   => $body,
+            'source' => 'wp_core',
+        ]);
+
+        // telegram
+        $notifier->queue_send('telegram', [
+            'title'  => $title,
+            'body'   => $body,
+            'source' => 'wp_core',
+        ]);
+
+        // slack
+        $notifier->queue_send('slack', [
+            'title'  => $title,
+            'body'   => $body,
+            'source' => 'wp_core',
         ]);
     }
+
 
     public function on_post_status($new, $old, $post) {
         if ($new === $old) return;
@@ -156,58 +182,60 @@ class NH_Int_WP_Core {
         $e = [
             'source'  => 'wp_core',
             'type'    => 'post_status_changed',
-            'title'   => sprintf(__('Post %d status: %s → %s','notification-hub'), $post->ID, $old, $new),
+            'title'   => sprintf(__('Post %d status: %s → %s', 'notification-hub'), $post->ID, $old, $new),
             'message' => esc_html(get_the_title($post->ID)),
-            'context' => ['post_id'=>$post->ID,'old'=>$old,'new'=>$new]
+            'context' => ['post_id' => $post->ID, 'old' => $old, 'new' => $new]
         ];
 
-        $this->r->get_svc('db')->insert_notification($e);
+        $db = $this->r->get_svc('db');
+        if ($db) $db->insert_notification($e);
 
         $notifier = $this->r->get_svc('notifier');
-        if (!$notifier) return;
-
-        $notifier->send([
-            'channel' => 'email',
-            'title'   => $e['title'],
-            'body'    => $e['message'],
-            'source'  => $e['source'],
-            'multi'   => ['slack','telegram']
-        ]);
-    } 
+        if ($notifier) {
+            $notifier->queue_send('email', [
+                'title'   => $e['title'],
+                'body'    => $e['message'],
+                'source'  => $e['source'],
+            ]);
+        }
+    }
 
     public function on_user_register($user_id) {
         $u = get_userdata($user_id);
+        if (!$u) return;
+
         $e = [
             'source'  => 'wp_core',
             'type'    => 'user_registered',
-            'title'   => sprintf(__('New user: %s','notification-hub'), $u->user_login),
+            'title'   => sprintf(__('New user: %s', 'notification-hub'), $u->user_login),
             'message' => esc_html($u->user_email),
-            'context' => ['user_id'=>$user_id]
+            'context' => ['user_id' => $user_id]
         ];
 
-        $this->r->get_svc('db')->insert_notification($e);
+        $db = $this->r->get_svc('db');
+        if ($db) $db->insert_notification($e);
 
         $notifier = $this->r->get_svc('notifier');
-        if (!$notifier) return;
-
-        $notifier->send([
-            'channel' => 'email',
-            'title'   => $e['title'],
-            'body'    => $e['message'],
-            'source'  => $e['source'],
-            'multi'   => ['slack','telegram']
-        ]);
+        if ($notifier) {
+            $notifier->queue_send('email', [
+                'title'   => $e['title'],
+                'body'    => $e['message'],
+                'source'  => $e['source'],
+            ]);
+        }
     }
-    
-}
+} 
 
+/* -----------------------------------------------------------------------
+ * Global admin bar badge
+ * --------------------------------------------------------------------- */
 add_action('admin_bar_menu', 'nh_global_admin_bar_badge', 100);
 
 function nh_global_admin_bar_badge($wp_admin_bar) {
     if (!current_user_can('manage_options')) return;
 
     global $wpdb;
-    $count = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}nh_notifications WHERE status = 0");
+    $count = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}nh_notifications WHERE status = 'pending' OR status = 'new'");
 
     $title = '<span class="ab-icon dashicons dashicons-bell"></span>';
     $title .= '<span class="ab-label"> ' . $count . ' Unread</span>';

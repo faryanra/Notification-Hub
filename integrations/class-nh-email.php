@@ -3,7 +3,7 @@
 
 if (!defined('ABSPATH')) exit;
 
-class NH_Channel_Email implements NH_Notifier_Channel {
+class NH_Email {
     protected $r;
 
     public function __construct($registry){ $this->r = $registry; }

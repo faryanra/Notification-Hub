@@ -40,12 +40,10 @@ class NH_Int_WooCommerce {
 
         $notifier = $this->r->get_svc('notifier');
         if ($notifier) {
-            $notifier->send([
-                'channel' => 'email',
+            $notifier->queue_send('email', [
                 'title'   => $e['title'],
                 'body'    => $e['message'],
                 'source'  => $e['source'],
-                'multi'   => ['slack','telegram']
             ]);
         }
     }

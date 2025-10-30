@@ -1,5 +1,5 @@
 <?php
-// NH v1.2.0 — Settings (Unified, Clean, Tab-Persistent)
+// Settings (Unified, Clean, Tab-Persistent + License Box)
 if (!defined('ABSPATH')) exit;
 
 // ✅ Check license status (Free vs Pro)
@@ -33,6 +33,77 @@ $active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : 'general';
       <?php esc_html_e('Pro Channels','notification-hub');?>
     </a>
   </h2>
+
+  <?php
+  // === License & Pro Features Box 
+  if (class_exists('NH_License')) :
+      $current_key   = NH_License::get_key();
+      $is_pro_active = NH_License::is_pro();
+      $masked = '';
+      if (!empty($current_key)) {
+          $len = strlen($current_key);
+          $masked = $len > 8
+              ? str_repeat('•', max(0, $len-4)) . substr($current_key, -4)
+              : $current_key;
+      }
+  ?>
+  <div class="postbox" style="margin-top:20px;">
+      <h2 class="hndle">
+          <span><?php esc_html_e('License & Pro Features', 'notification-hub'); ?></span>
+          <?php if ($is_pro_active): ?>
+              <span style="color:#46b450; font-weight:bold; margin-left:8px;">PRO ACTIVE ✅</span>
+          <?php else: ?>
+              <span style="color:#a00; font-weight:bold; margin-left:8px;">LOCKED ❌</span>
+          <?php endif; ?>
+      </h2>
+
+      <div class="inside">
+          <?php if (isset($_GET['nh_license_saved'])): ?>
+              <div class="notice notice-success is-dismissible">
+                  <p><?php esc_html_e('License key saved.', 'notification-hub'); ?></p>
+              </div>
+          <?php endif; ?>
+
+          <p class="description">
+              <?php esc_html_e('Enter your license key to unlock Telegram, Slack, multi-channel delivery and advanced automations.', 'notification-hub'); ?>
+          </p>
+
+          <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+              <?php wp_nonce_field('nh_save_license'); ?>
+              <input type="hidden" name="action" value="nh_save_license" />
+
+              <table class="form-table" role="presentation">
+                  <tr>
+                      <th scope="row">
+                          <label for="nh_license_key"><?php esc_html_e('License Key', 'notification-hub'); ?></label>
+                      </th>
+                      <td>
+                          <input
+                              type="text"
+                              id="nh_license_key"
+                              name="nh_license_key"
+                              class="regular-text"
+                              value=""
+                              placeholder="<?php echo esc_attr($masked); ?>"
+                          />
+                          <?php if ($is_pro_active): ?>
+                              <p class="description" style="color:#46b450;">
+                                  <?php esc_html_e('Your license is active. Pro modules are loaded.', 'notification-hub'); ?>
+                              </p>
+                          <?php else: ?>
+                              <p class="description">
+                                  <?php esc_html_e('Paste the license key you received after purchase.', 'notification-hub'); ?>
+                              </p>
+                          <?php endif; ?>
+                      </td>
+                  </tr>
+              </table>
+
+              <?php submit_button(__('Activate / Update License', 'notification-hub')); ?>
+          </form>
+      </div>
+  </div>
+  <?php endif; ?>
 
   <form method="post" action="<?php echo esc_url(admin_url('options.php')); ?>">
     <input type="hidden" name="nh_active_tab" value="<?php echo esc_attr($active_tab); ?>">
@@ -90,14 +161,6 @@ $active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : 'general';
             <?php else: ?>
               <p><a href="<?php echo esc_url(admin_url('admin-post.php?action=nh_test_channel&channel=slack&_wpnonce=' . wp_create_nonce('nh_test_channel') . '&tab=pro')); ?>" data-tab="pro" class="button nh-test-btn">Send Test to Slack</a></p>
             <?php endif; ?>
-          </td>
-        </tr>
-
-        <tr>
-          <th><label for="nh_license_key"><?php esc_html_e('License Key','notification-hub'); ?></label></th>
-          <td>
-            <input name="nh_license_key" id="nh_license_key" type="text" value="<?php echo esc_attr(get_option('nh_license_key','')); ?>" class="regular-text">
-            <p class="description">Enter your Pro license key to unlock Telegram & Slack channels.</p>
           </td>
         </tr>
       </table>

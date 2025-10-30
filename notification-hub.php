@@ -3,7 +3,7 @@
  * Plugin Name: Notification Hub
  * Plugin URI: https://www.hellocode.ir/
  * Description: Central hub for collecting and managing WordPress notifications (Telegram, Email, Slack, WooCommerce, CF7).
- * Version: 1.3.9
+ * Version: 1.4.0
  * Author: Faryan Rajabi (HelloCode)
  * Author URI: https://www.linkedin.com/in/reza-rajabi-jorshari/
  * License: GPLv3 or later
@@ -12,126 +12,104 @@
  * Domain Path: /languages
  */
 
-if (!defined('ABSPATH')) {
-    exit;
-}
+if (!defined('ABSPATH')) exit;
 
-/**
- * === Constants =========================================================
- */
+/* -----------------------------------------------------------------------
+ * Constants
+ * --------------------------------------------------------------------- */
 define('NH_PLUGIN_FILE', __FILE__);
 define('NH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('NH_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('NH_VERSION', '1.3.9');
+define('NH_VERSION', '1.4.0');
 
-/**
- * === i18n / Textdomain ================================================
- * Load translations from /languages
- */
+/* -----------------------------------------------------------------------
+ * i18n
+ * --------------------------------------------------------------------- */
 add_action('plugins_loaded', function () {
-    load_plugin_textdomain(
-        'notification-hub',
-        false,
-        dirname(plugin_basename(__FILE__)) . '/languages'
-    );
+    load_plugin_textdomain('notification-hub', false, dirname(plugin_basename(__FILE__)) . '/languages');
 });
 
-/**
- * === Safe Loader Helper ================================================
- * Tiny wrapper so a missing file doesn't white-screen admin.
- * We'll log it instead of fatal.
- */
+/* -----------------------------------------------------------------------
+ * Safe require helper
+ * --------------------------------------------------------------------- */
 function nh_require($path) {
-    if (file_exists($path)) {
-        require_once $path;
-    } else {
-        error_log('Notification Hub: Missing file ' . $path);
-    }
+    if (file_exists($path)) require_once $path;
+    else error_log('Notification Hub: Missing file ' . $path);
 }
 
-/**
- * === Core Includes =====================================================
- * Order matters: registry → helpers/security/db → loader.
- */
+/* -----------------------------------------------------------------------
+ * Core includes (order matters)
+ * --------------------------------------------------------------------- */
 nh_require(NH_PLUGIN_DIR . 'core/class-nh-core-registry.php');
 nh_require(NH_PLUGIN_DIR . 'core/class-nh-helpers.php');
 nh_require(NH_PLUGIN_DIR . 'core/class-nh-security.php');
 nh_require(NH_PLUGIN_DIR . 'core/class-nh-database.php');
+nh_require(NH_PLUGIN_DIR . 'core/class-nh-queue.php');
 nh_require(NH_PLUGIN_DIR . 'core/class-nh-loader.php');
 
-/**
- * Admin / Modules (UI, Dashboard, Actions, etc)
- * NOTE: nh-admin-actions.php is the moved/renamed version of old core/class-nh-test-controller.php
- */
+/* -----------------------------------------------------------------------
+ * Anti-tamper (light)
+ * --------------------------------------------------------------------- */
+add_action('plugins_loaded', function () {
+    if (class_exists('NH_Security')) NH_Security::anti_tamper_light();
+}, 1);
+
+/* -----------------------------------------------------------------------
+ * Modules / Admin
+ * --------------------------------------------------------------------- */
+nh_require(NH_PLUGIN_DIR . 'modules/class-nh-license.php');
 nh_require(NH_PLUGIN_DIR . 'modules/class-nh-admin-ui.php');
 nh_require(NH_PLUGIN_DIR . 'modules/class-nh-dashboard.php');
 nh_require(NH_PLUGIN_DIR . 'modules/class-nh-custom-hooks.php');
 nh_require(NH_PLUGIN_DIR . 'modules/class-nh-notifier.php');
-nh_require(NH_PLUGIN_DIR . 'modules/class-nh-license.php');
 nh_require(NH_PLUGIN_DIR . 'modules/class-nh-admin-actions.php');
 
-/**
- * Integrations
- */
+/* -----------------------------------------------------------------------
+ * Integrations (only Free for now)
+ * --------------------------------------------------------------------- */
 nh_require(NH_PLUGIN_DIR . 'integrations/class-nh-wp-core.php');
 nh_require(NH_PLUGIN_DIR . 'integrations/class-nh-woocommerce.php');
 nh_require(NH_PLUGIN_DIR . 'integrations/class-nh-cf7.php');
 nh_require(NH_PLUGIN_DIR . 'integrations/class-nh-email.php');
-nh_require(NH_PLUGIN_DIR . 'integrations/class-nh-telegram.php');
-nh_require(NH_PLUGIN_DIR . 'integrations/class-nh-slack.php');
+// Pro channels (Telegram/Slack) loaded only if NH_License::is_pro()
 
-/**
- * API Layer
- */
+/* -----------------------------------------------------------------------
+ * API layer
+ * --------------------------------------------------------------------- */
 nh_require(NH_PLUGIN_DIR . 'api/class-nh-restapi.php');
 nh_require(NH_PLUGIN_DIR . 'api/class-nh-webhook.php');
 
-/**
- * === Activation / Deactivation ========================================
- * - create/update DB schema
- * - schedule cron cleanup
- */
+/* -----------------------------------------------------------------------
+ * Activation / Deactivation
+ * --------------------------------------------------------------------- */
 function nh_activate() {
-    // DB setup
     if (class_exists('NH_Database')) {
         $db = new NH_Database();
         $db->maybe_upgrade_database();
     }
-
-    // Schedule daily cleanup if not already
     if (!wp_next_scheduled('nh_cron_cleanup')) {
         wp_schedule_event(time() + 3600, 'daily', 'nh_cron_cleanup');
     }
 }
-
 function nh_deactivate() {
-    // Unschedule cleanup cron
     $timestamp = wp_next_scheduled('nh_cron_cleanup');
-    if ($timestamp) {
-        wp_unschedule_event($timestamp, 'nh_cron_cleanup');
-    }
+    if ($timestamp) wp_unschedule_event($timestamp, 'nh_cron_cleanup');
 }
-
 register_activation_hook(NH_PLUGIN_FILE, 'nh_activate');
 register_deactivation_hook(NH_PLUGIN_FILE, 'nh_deactivate');
 
-/**
- * === Cron Task =========================================================
- * Cleanup old notifications based on retention setting.
- */
+/* -----------------------------------------------------------------------
+ * Cron cleanup
+ * --------------------------------------------------------------------- */
 add_action('nh_cron_cleanup', function () {
     if (!class_exists('NH_Database')) return;
-    $db = new NH_Database();
-    $db->cleanup_old();
+    (new NH_Database())->cleanup_old();
 });
 
-/**
- * === Boot Sequence =====================================================
- * Build registry, attach core services, hand over to Loader.
- */
+/* -----------------------------------------------------------------------
+ * Boot
+ * --------------------------------------------------------------------- */
 function nh_boot() {
-
-    // Registry is our service container
     if (!class_exists('NH_Core_Registry')) {
         error_log('Notification Hub: Registry not available.');
         return;
@@ -139,23 +117,13 @@ function nh_boot() {
 
     $r = NH_Core_Registry::get();
 
-    // Register shared services
-    if (class_exists('NH_Database')) {
-        $r->set('db', new NH_Database());
-    }
+    if (class_exists('NH_Database')) $r->set('db', new NH_Database());
+    if (class_exists('NH_Security')) $r->set('security', new NH_Security());
+    if (class_exists('NH_Helpers')) $r->set('helpers', new NH_Helpers());
+    if (class_exists('NH_Notifier')) $r->set('notifier', new NH_Notifier($r));
 
-    if (class_exists('NH_Security')) {
-        $r->set('security', new NH_Security());
-    }
-
-    if (class_exists('NH_Helpers')) {
-        $r->set('helpers', new NH_Helpers());
-    }
-
-    // Loader will wire up admin UI, integrations, REST API, etc.
     if (class_exists('NH_Loader')) {
-        $loader = new NH_Loader($r);
-        $loader->boot();
+        (new NH_Loader($r))->boot();
     } else {
         error_log('Notification Hub: Loader missing.');
     }

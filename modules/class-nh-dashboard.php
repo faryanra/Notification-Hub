@@ -1,5 +1,5 @@
 <?php
-// NH v1.3.5 — Dashboard Controller & Table Logic (fixed counts + filters + URLs)
+// Dashboard Controller & Table Logic (fixed counts + filters + URLs)
 
 if (!defined('ABSPATH')) exit;
 

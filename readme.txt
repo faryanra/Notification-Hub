@@ -1,33 +1,55 @@
 === Notification Hub ===
 Contributors: faryanra
-Tags: notifications, admin alerts, Slack, Telegram, Email, WooCommerce, CF7
+Tags: notifications, admin alerts, Slack, Telegram, Email, WooCommerce, CF7, WordPress
 Requires at least: 5.6
-Tested up to: 6.5.3
-Stable tag: 1.3.9
+Tested up to: 6.6
+Stable tag: 1.4.0
 Requires PHP: 7.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-Notification Hub centralizes all WordPress notifications into one dashboard — now fully secure, stable, and Pro-ready.
+Notification Hub centralizes all WordPress notifications into one unified dashboard — now async, Pro-ready, and developer-friendly.
 
 == Description ==
 Collect, manage, and route WordPress notifications through Email, Telegram (Pro), and Slack (Pro).  
-Includes a complete dashboard, REST API, and webhook support.
+Includes a complete admin dashboard, REST API, webhook endpoints, and integration with WooCommerce, Contact Form 7, and WordPress Core events.
 
-**New in v1.3.9 — Final Cleanup & Pro Ready**
-- ✅ Standardized file versions and headers
-- 🔐 Enforced full nonce + capability checks across admin forms
-- 🧱 Cleaned and stabilized folder structure
-- 🪪 License system ready (`validate()`, `deactivate()`)
-- 🧹 Removed leftover debug/test logs
-- 🗂 uninstall.php now keeps user data safely
+**New in v1.4.0 — Async & Pro Edition**
+- ⚙️ Background sending using Action Scheduler or WP-Cron fallback
+- 🔑 License system (local activation, Pro-only channels)
+- 🌐 Multisite support with isolated tables per blog
+- 🔗 4 built-in integrations (WP Core, WooCommerce, CF7, Email)
+- 🧱 Refactored core structure (Notifier, Queue, Registry, Loader)
+- 🧩 Backward compatible with 1.x hooks and APIs
+- 🧹 Fully cleaned logs and unified WP_DEBUG output
+
+== Features ==
+- 📬 Central notification dashboard (Active / Archived / All)
+- ✉️ Email notifications for all events
+- 💬 Telegram & Slack notifications (Pro)
+- 🧩 Custom Hooks Manager (add your own triggers)
+- 🧠 Async queue for large or frequent notifications
+- 🔒 Secure admin actions (nonce + capability checks)
+- 🌐 Ready for Multisite
+- 🔧 REST & Webhook APIs for developers
 
 == Installation ==
 1. Upload `notification-hub` to `/wp-content/plugins/`
-2. Activate via Plugins menu
-3. Visit “Notification Hub” in the WordPress admin
+2. Activate via “Plugins” menu in WordPress
+3. Go to **Notification Hub → Settings** to configure your channels
 
 == Changelog ==
+
+= 1.4.0 — Async & Pro Edition =
+* Added: Action Scheduler / WP-Cron async queue
+* Added: Local License activation (Pro unlock for Telegram, Slack)
+* Added: Multisite table isolation (via `$wpdb->prefix`)
+* Added: Multi-channel send support (email + telegram + slack)
+* Refactored: `NH_Notifier`, `NH_Queue`, and `NH_Loader` architecture
+* Refactored: `NH_Admin_Actions` unified for test/send/CRUD
+* Fixed: Duplicate class load (Notifier now single source)
+* Improved: Log clarity with emoji & structured WP_DEBUG entries
+* Cleanup: Removed legacy files and dev logs
 
 = 1.3.9 =
 * Final Cleanup & Security Review
@@ -117,10 +139,10 @@ Includes a complete dashboard, REST API, and webhook support.
 * Initial release
 
 == Author ==
-Developed by Faryan Rajabi Jorshari (HelloCode)
-Website: https://www.hellocode.ir
-GitHub: https://github.com/faryanra
-LinkedIn: https://linkedin.com/in/reza-rajabi-jorshari
+Developed by **Faryan Rajabi Jorshari (HelloCode)**  
+🌐 https://www.hellocode.ir  
+🐙 https://github.com/faryanra  
+💼 https://www.linkedin.com/in/faryan-rajabi/  
 
 == License ==
 GPLv3 or later
