@@ -1,0 +1,99 @@
+/* Dashboard table styles */
+
+.table .status-unread { font-weight: 600; }
+
+
+/* ============================================================
+   Dashboard Layout – Tabs & Search alignment
+============================================================ */
+
+.nh-dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.nh-dashboard-header .subsubsub {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.nh-dashboard-header .subsubsub li {
+    display: inline;
+}
+
+.nh-dashboard-header .subsubsub a {
+    text-decoration: none;
+    color: #2271b1;
+    font-weight: 500;
+}
+
+.nh-dashboard-header .subsubsub a.current {
+    font-weight: 700;
+    color: #000;
+}
+
+.nh-dashboard-header .search-box {
+    margin: 0;
+}
+
+.nh-modal { 
+    position: fixed; inset: 0; z-index: 9999; display: none; 
+}
+.nh-modal__backdrop {
+  position: absolute; inset: 0; background: rgba(0,0,0,0.5);
+}
+.nh-modal__content {
+  position: relative; z-index: 2; background: #fff; border-radius: 8px;
+  max-width: 600px; margin: 10% auto; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.nh-modal__close {
+  position: absolute; top: 10px; right: 10px;
+  background: none; border: none; font-size: 22px; cursor: pointer;
+}
+
+/* Highlight new rows (fade from light red to transparent) */
+.nh-row-anim {
+  animation: nhFlash 1.8s ease;
+}
+@keyframes nhFlash {
+  0%   { background-color: #ffeaea; }
+  100% { background-color: transparent; }
+}
+
+.nh-icon-view::before {
+  content: "\f177"; /* dashicons-visibility */
+  font-family: dashicons;
+  font-size: 16px;
+  vertical-align: middle;
+  color: #0073aa;
+}
+.nh-icon-view:hover::before {
+  color: #005177;
+}
+
+/* New rows since last visit (first load only) */
+tr.nh-row-new {
+  background: rgba(255, 0, 0, 0.06);
+  transition: background .5s ease;
+}
+
+.nh-dot-unread {
+  display:inline-block;
+  margin-right:.4rem;
+  font-weight:bold;
+}
+
+.wp-list-table tr.nh-row-new {
+  background: rgba(255,0,0,.06) !important;
+}
+
+.wp-list-table.striped tbody tr.nh-row-new:nth-child(odd) {
+  background: rgba(255,0,0,.06) !important;
+}
