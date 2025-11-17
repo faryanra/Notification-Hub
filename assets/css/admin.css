@@ -1,0 +1,84 @@
+/* ===========================================
+   Notification Hub Admin Styles 
+   =========================================== */
+
+/* ---------- Layout ---------- */
+.wrap {
+  margin: 20px;
+}
+
+/* ---------- Tabs ---------- */
+.nav-tab-wrapper {
+  margin-top: 20px;
+}
+.nav-tab {
+  border-radius: 4px 4px 0 0;
+}
+.nav-tab-active {
+  background: #fff;
+  border-bottom: 1px solid #fff;
+}
+
+/* ---------- Table ---------- */
+.widefat th, .widefat td {
+  padding: 10px;
+}
+
+/* ---------- Modal ---------- */
+.nh-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+}
+.nh-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+}
+.nh-modal__content {
+  position: relative;
+  background: #fff;
+  margin: 10% auto;
+  padding: 20px;
+  width: 500px;
+  border-radius: 8px;
+  box-shadow: 0 4px 30px rgba(0,0,0,0.2);
+}
+.nh-modal__close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+.nh-modal__title {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+.nh-modal__message {
+  margin-bottom: 8px;
+}
+
+/* ---------- Buttons ---------- */
+.button.button-primary {
+  background: #007cba;
+  border-color: #007cba;
+}
+.button.button-primary:hover {
+  background: #006ba1;
+}
+
+.wp-list-table.notifications tbody tr {
+    display: table-row;
+    height: 80px;
+}
+
+.wp-list-table.notifications tbody td {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+

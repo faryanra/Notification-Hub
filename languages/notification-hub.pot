@@ -1,0 +1,345 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Notification Hub 1.3.7\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-10-25 00:00+0000\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Domain: notification-hub\n"
+
+# -----------------------------------------
+# 🧩 General UI & Menus
+# -----------------------------------------
+
+#: admin/class-nh-admin-ui.php
+msgid "Notification Hub"
+msgstr ""
+
+#: admin/class-nh-admin-ui.php
+msgid "Dashboard"
+msgstr ""
+
+#: admin/class-nh-admin-ui.php
+msgid "Hooks"
+msgstr ""
+
+#: admin/class-nh-admin-ui.php
+msgid "Settings"
+msgstr ""
+
+#: admin/class-nh-admin-ui.php
+msgid "Access denied"
+msgstr ""
+
+# -----------------------------------------
+# 🖥 Dashboard (WP_List_Table)
+# -----------------------------------------
+
+#: modules/class-nh-dashboard.php
+msgid "All"
+msgstr ""
+
+#: modules/class-nh-dashboard.php
+msgid "Active"
+msgstr ""
+
+#: modules/class-nh-dashboard.php
+msgid "Archived"
+msgstr ""
+
+#: modules/class-nh-dashboard.php
+msgid "Title"
+msgstr ""
+
+#: modules/class-nh-dashboard.php
+msgid "Message"
+msgstr ""
+
+#: modules/class-nh-dashboard.php
+msgid "Source"
+msgstr ""
+
+#: modules/class-nh-dashboard.php
+msgid "Created at"
+msgstr ""
+
+#: modules/class-nh-dashboard.php
+msgid "Actions"
+msgstr ""
+
+#: modules/class-nh-dashboard.php
+msgid "View"
+msgstr ""
+
+#: modules/class-nh-dashboard.php
+msgid "Archive"
+msgstr ""
+
+#: modules/class-nh-dashboard.php
+msgid "Unarchive"
+msgstr ""
+
+#: modules/class-nh-dashboard.php
+msgid "Delete"
+msgstr ""
+
+#: modules/class-nh-dashboard.php
+msgid "Notification Details"
+msgstr ""
+
+#: assets/js/dashboard.js
+msgid "AJAX URL not available."
+msgstr ""
+
+#: assets/js/dashboard.js
+msgid "Failed to load notification."
+msgstr ""
+
+#: assets/js/dashboard.js
+msgid "Request failed"
+msgstr ""
+
+# -----------------------------------------
+# ⚙️ Settings Page
+# -----------------------------------------
+
+#: templates/settings.php
+msgid "Notification Hub - Settings"
+msgstr ""
+
+#: templates/settings.php
+msgid "General"
+msgstr ""
+
+#: templates/settings.php
+msgid "Pro Channels"
+msgstr ""
+
+#: templates/settings.php
+msgid "Retention (days)"
+msgstr ""
+
+#: templates/settings.php
+msgid "Email To"
+msgstr ""
+
+#: templates/settings.php
+msgid "Send Test Email"
+msgstr ""
+
+#: templates/settings.php
+msgid "Telegram Bot Token"
+msgstr ""
+
+#: templates/settings.php
+msgid "Telegram Chat ID"
+msgstr ""
+
+#: templates/settings.php
+msgid "Slack Webhook URL"
+msgstr ""
+
+#: templates/settings.php
+msgid "License Key"
+msgstr ""
+
+#: templates/settings.php
+msgid "Settings saved successfully."
+msgstr ""
+
+#: templates/settings.php
+msgid "Test sent successfully to"
+msgstr ""
+
+#: templates/settings.php
+msgid "Test failed to send to"
+msgstr ""
+
+#: templates/settings.php
+msgid "This field is disabled because it’s only available in the Pro version."
+msgstr ""
+
+# -----------------------------------------
+# 🧱 Hooks Manager
+# -----------------------------------------
+
+#: templates/hooks.php
+msgid "Add New Hook"
+msgstr ""
+
+#: templates/hooks.php
+msgid "Edit Hook"
+msgstr ""
+
+#: templates/hooks.php
+msgid "Trigger Test"
+msgstr ""
+
+#: templates/hooks.php
+msgid "Hook saved successfully."
+msgstr ""
+
+#: templates/hooks.php
+msgid "Hook updated successfully."
+msgstr ""
+
+#: templates/hooks.php
+msgid "Hook deleted successfully."
+msgstr ""
+
+#: modules/class-nh-custom-hooks.php
+msgid "Hook not found."
+msgstr ""
+
+#: modules/class-nh-custom-hooks.php
+msgid "Invalid nonce."
+msgstr ""
+
+#: modules/class-nh-custom-hooks.php
+msgid "Invalid action name."
+msgstr ""
+
+# -----------------------------------------
+# 📡 REST API & Webhook
+# -----------------------------------------
+
+#: api/class-nh-restapi.php
+msgid "Hook triggered"
+msgstr ""
+
+#: api/class-nh-restapi.php
+msgid "Hook not found"
+msgstr ""
+
+#: api/class-nh-restapi.php
+msgid "Notifier not available"
+msgstr ""
+
+#: api/class-nh-restapi.php
+msgid "Database table missing"
+msgstr ""
+
+#: api/class-nh-webhook.php
+msgid "Webhook received"
+msgstr ""
+
+#: api/class-nh-webhook.php
+msgid "Missing payload"
+msgstr ""
+
+#: api/class-nh-webhook.php
+msgid "Notifier missing"
+msgstr ""
+
+# -----------------------------------------
+# 🔐 Security & Validation
+# -----------------------------------------
+
+#: core/class-nh-security.php
+msgid "Access denied."
+msgstr ""
+
+#: core/class-nh-security.php
+msgid "Nonce check failed."
+msgstr ""
+
+#: core/class-nh-security.php
+msgid "Unauthorized request."
+msgstr ""
+
+# -----------------------------------------
+# 📨 Notifications / Channels
+# -----------------------------------------
+
+#: integrations/class-nh-email.php
+msgid "Email notification sent successfully."
+msgstr ""
+
+#: integrations/class-nh-email.php
+msgid "Email delivery failed."
+msgstr ""
+
+#: integrations/class-nh-telegram.php
+msgid "Telegram message sent."
+msgstr ""
+
+#: integrations/class-nh-telegram.php
+msgid "Telegram API error."
+msgstr ""
+
+#: integrations/class-nh-slack.php
+msgid "Slack notification sent."
+msgstr ""
+
+#: integrations/class-nh-slack.php
+msgid "Slack Webhook error."
+msgstr ""
+
+# -----------------------------------------
+# 🧩 Misc / UI Notices
+# -----------------------------------------
+
+#: modules/class-nh-admin-actions.php
+msgid "Notifier not found"
+msgstr ""
+
+#: modules/class-nh-admin-actions.php
+msgid "Error sending test notification."
+msgstr ""
+
+#: modules/class-nh-admin-actions.php
+msgid "Save failed"
+msgstr ""
+
+#: modules/class-nh-admin-actions.php
+msgid "Update failed"
+msgstr ""
+
+#: modules/class-nh-admin-actions.php
+msgid "Delete failed"
+msgstr ""
+
+#: modules/class-nh-admin-actions.php
+msgid "Hook test failed"
+msgstr ""
+
+#: modules/class-nh-admin-actions.php
+msgid "Notifier missing."
+msgstr ""
+
+#: modules/class-nh-admin-actions.php
+msgid "Test failed"
+msgstr ""
+
+# -----------------------------------------
+# 🌐 General Phrases (used in JS or PHP)
+# -----------------------------------------
+
+msgid "Loading…"
+msgstr ""
+
+msgid "Something went wrong."
+msgstr ""
+
+msgid "Confirm delete?"
+msgstr ""
+
+msgid "Are you sure you want to delete this hook?"
+msgstr ""
+
+msgid "No notifications found."
+msgstr ""
+
+msgid "No hooks found."
+msgstr ""
+
+msgid "License activated successfully."
+msgstr ""
+
+msgid "License invalid or expired."
+msgstr ""
+
+msgid "Inbound Webhook"
+msgstr ""
