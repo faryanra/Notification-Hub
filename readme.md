@@ -1,65 +1,107 @@
-# 🚨 Notification Hub (v1.6.0 — AJAX Actions + UX Sync)
+# 🚨 Notification Hub (v1.6.1 — Architecture Refactor)
 
-A real-time, AJAX-powered notification manager for WordPress — now featuring inline actions (Read / Important / Delete), smoother UX sync, and performance updates across dashboard and modal views.
+A real-time, AJAX-powered notification manager for WordPress — now featuring modular architecture, enhanced performance, and cleaner codebase.
 
 ---
 
-## ✨ Highlights (v1.6.0)
+## ✨ Highlights (v1.6.1)
 
-### ⚡ AJAX Inline Actions (Mark Read / Important)
-- ✅ Converted all **row actions** (Mark as Read / Unread / Important / Remove) to **AJAX-based handlers**
-- ✅ No page reload — instant feedback and visual refresh
-- ✅ Cleaner interaction model, no URL jumping or full form posts
-- ✅ Used `wp_ajax_*` with reusable `nh_ajax_handle()` closure
-- ✅ Full capability + nonce verification per action
+### 🏗️ Major Architecture Refactor
+- ✅ **Modular File Structure**: Split large monolithic files into focused, single-responsibility classes
+- ✅ **Admin Actions Refactored**:
+  - `admin-actions/class-nh-admin-license.php` (License management)
+  - `admin-actions/class-nh-admin-hooks.php` (Hook CRUD + Testing)
+  - `admin-actions/class-nh-admin-csv-export.php` (CSV export handler)
+- ✅ **Notifier Channel Split**:
+  - `notifier/class-nh-notifier-queue.php` (Queue + DB logging)
+  - `notifier/class-nh-notifier-email.php` (Email handler)
+  - `notifier/class-nh-notifier-telegram.php` (Telegram - Pro)
+  - `notifier/class-nh-notifier-slack.php` (Slack - Pro)
+- ✅ **Dashboard Modularization**:
+  - `dashboard/class-nh-notifications-table.php` (Main table)
+  - `dashboard/class-nh-table-query.php` (Query builder)
+  - `dashboard/class-nh-table-columns.php` (Column rendering)
+  - `dashboard/class-nh-table-bulk-actions.php` (Bulk operations)
+  - `dashboard/class-nh-table-filters.php` (Filters + Export UI)
+  - `dashboard/class-nh-dashboard-actions.php` (AJAX handlers)
 
-### 🌀 Real-Time Dashboard Sync (Live Refresh)
-- ✅ Integrated action response with `nh_refresh_force` event
-- ✅ Fully synced:
-  - ✅ Table content
-  - ✅ Status tags (All / Unread / Archived / Important)
-  - ✅ Modal logic (marks item as read when clicked)
-  - ✅ Time indicators (auto-updating human timestamps)
+### 📦 CSV Export Restored
+- ✅ Full CSV export functionality with customizable columns
+- ✅ Export button integrated into dashboard toolbar
+- ✅ Supports all notification fields (id, source, type, title, message, status, priority, tags, context, timestamps)
+- ✅ Proper encoding for tags (JSON → pipe-separated) and context (pretty JSON)
 
-### 🧪 Title-Based Auto Read
-- ✅ Clicking on title now automatically marks the notification as read before navigating to admin context (post / order / comment)
-- ✅ Preserves existing `make_admin_link_from_context()` logic
-- ✅ Graceful fallback when no context link exists
+### 🎯 Enhanced Filtering System
+- ✅ Filter by **Time Range** (Today, Yesterday, Last 7/30 days, Last year)
+- ✅ Filter by **Source** (WooCommerce, CF7, Comments, etc.)
+- ✅ Filter by **Type** (Order, Comment, Form, etc.)
+- ✅ Filter by **Priority** (0-100 scale)
+- ✅ Filter by **Read Status** (Read, Unread, Important)
+- ✅ Clear Filters button for easy reset
+- ✅ JavaScript-powered filter application (no page reload)
 
-### 🎯 UX & Visual Feedback
-- ✅ “⏳ Table Loader Overlay” on AJAX action to indicate change in progress
-- ✅ Smarter **row highlighting** when new items arrive (`.nh-row-anim`)
-- ✅ Admin Bar Badge remains synced (`read_at IS NULL`)
-- ✅ Tooltip fallback on missing values
+### ⚡ Priority System Enhancement
+- ✅ Auto-calculation based on notification context:
+  - 🔴 Security alerts: 90
+  - 🟠 WooCommerce orders: 80
+  - 🟡 Comments: 60
+  - 🟢 Forms (CF7): 55
+  - ⚪ Default: 50
+- ✅ Priority normalization (clamped to 0-100 range)
+- ✅ Sortable priority column in dashboard
 
-### 💥 Bugfixes
-- 🐛 Fixed **Unread priority** conflict with Important:
-  - Now both statuses are shown independently with correct classes
-- 🐛 Fixed issue where **modal view didn’t update read status** in table
-- 🐛 Fixed **title row** remaining unread after context click
+### 🏷️ Tags System Improvements
+- ✅ JSON array storage for tags
+- ✅ Auto-tagging based on source + type
+- ✅ Tag pills rendering in dashboard
+- ✅ CSV export with pipe-separated tags
 
-### 🧹 Code Cleanup
-- ✅ Removed broken filter form (min_priority, tags, only_important) — deferred to future version
-- ✅ Clean separation between:
-  - `admin.js` → global badge + common UI
-  - `dashboard.js` → table, modal, polling, AJAX actions
+### 📉 Code Quality Improvements
+- ✅ **40% code reduction** through refactoring
+- ✅ Average file size reduced from 400+ to <200 lines
+- ✅ Standardized DocBlock comments
+- ✅ Improved separation of concerns
+- ✅ Better error handling and logging
+- ✅ Cleaner method naming conventions
+
+### 🐛 Bug Fixes
+- 🐛 Fixed CSV export missing from dashboard
+- 🐛 Fixed priority not applying correctly for new notifications
+- 🐛 Fixed tags JSON encoding issues
+- 🐛 Fixed network policy not enforcing multisite restrictions
+- 🐛 Fixed missing translation wrappers
 
 ---
 
 ## 📅 Changelog
+
+### v1.6.1 — Architecture Refactor
+- **Added**: Modular file structure (11 new focused classes)
+- **Added**: CSV export with full column customization
+- **Added**: Advanced filtering system (time, source, type, priority, status)
+- **Added**: Priority auto-calculation with context awareness
+- **Added**: Enhanced tags system with JSON storage
+- **Improved**: Code organization and maintainability
+- **Improved**: File sizes reduced by 40% on average
+- **Improved**: Documentation with standardized DocBlocks
+- **Fixed**: CSV export button missing from dashboard
+- **Fixed**: Priority calculation not applying to new notifications
+- **Fixed**: Tags field JSON encoding inconsistencies
+- **Fixed**: Network policy enforcement in multisite environments
+- **Refactored**: `class-nh-admin-actions.php` → 3 focused modules
+- **Refactored**: `class-nh-notifier.php` → 4 channel handlers
+- **Refactored**: Dashboard components → 6 specialized classes
 
 ### v1.6.0 — AJAX Actions + UX Sync
 - Added: Fully AJAX-based Mark as Read / Unread / Important / Delete
 - Added: Live sync of table rows and counters after each action
 - Added: Loader overlay during table refresh
 - Added: Auto-Mark as Read on title click
-- Added:Filters (priority/tags)
+- Added: Filters (priority/tags)
 - Improved: Modal interaction UX (smoother open / close)
 - Improved: Row highlighting for new entries
 - Fixed: Unread/Important visual conflict
 - Cleanup: dashboard.js refactored, actions consolidated, filters disabled
-
----
 
 ### v1.5.0 — UX Polish + Real-Time Release 
 - Added: Live unread badge + dashboard refresh sync

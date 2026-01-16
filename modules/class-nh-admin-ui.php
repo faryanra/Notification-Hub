@@ -76,7 +76,7 @@ class NH_Admin_UI {
         $table = $wpdb->prefix . 'nh_notifications';
 
         // ✅ Only count active + unread
-        $count_new = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$table} WHERE status = 0 AND read_at IS NULL");
+        $count_new = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$table} WHERE status IN (0,3) AND read_at IS NULL");
 
         $title  = '<span class="ab-icon dashicons dashicons-bell"></span>';
         $title .= '<span class="ab-label"> ' . $count_new . ' New</span>';

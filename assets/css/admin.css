@@ -82,3 +82,30 @@
     text-overflow: ellipsis;
 }
 
+/* Admin Bar Badge - Live Update */
+#wp-admin-bar-nh_unread .ab-label {
+    transition: all 0.3s ease;
+}
+
+/* Red alert when new notifications arrive */
+#wpadminbar #wp-admin-bar-nh_unread.nh-has-new > .ab-item .ab-icon.dashicons-bell {
+    color: #d63638 !important;
+    animation: nh-pulse 1s ease-in-out 3;
+}
+
+/* Pulse animation */
+@keyframes nh-pulse {
+    0%, 100% { 
+        transform: scale(1); 
+        opacity: 1;
+    }
+    50% { 
+        transform: scale(1.15); 
+        opacity: 0.8;
+    }
+}
+
+/* Optional: Change badge background when new */
+#wpadminbar #wp-admin-bar-nh_unread.nh-has-new > .ab-item {
+    background-color: rgba(214, 54, 56, 0.1) !important;
+}

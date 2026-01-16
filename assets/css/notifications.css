@@ -12,7 +12,7 @@
 .wp-list-table .column-type        { width: 10%; }
 .wp-list-table .column-tags        { width: 14%; }
 .wp-list-table .column-status      { width: 8%;  text-align:center; }
-.wp-list-table .column-priority    { width: 4%;  text-align:center; }
+.wp-list-table .column-priority    { min-width: 85px !important; width: 85px !important; text-align:center; }
 .wp-list-table .column-id          { width: 4%;  text-align:center; }
 
 /* Prevent wrapping in key columns */
@@ -25,17 +25,145 @@
     white-space: nowrap;
 }
 
-/* Title link */
+
+/* ============================================================
+   Row Colors - Priority: Red > Yellow (فیکس برای سطرهای سفید)
+============================================================ */
+
+/* ✅ Yellow background for unread (همه سطرها - حتی سفید) */
+tr.nh-unread-row > td,
+.wp-list-table.striped tbody tr.nh-unread-row:nth-child(odd),
+.wp-list-table.striped tbody tr.nh-unread-row:nth-child(even) {
+    background: #fff8d6 !important;
+    font-weight: 600;
+}
+
+/* ✅ Red flash for NEW notifications (اولویت بالاتر - همه سطرها) */
+tr.nh-row-new > td,
+.wp-list-table.striped tbody tr.nh-row-new:nth-child(odd),
+.wp-list-table.striped tbody tr.nh-row-new:nth-child(even) {
+    background: rgba(255, 0, 0, 0.08) !important;
+    animation: nhFlash 2s ease;
+}
+
+@keyframes nhFlash {
+    0%, 50% { background-color: rgba(255, 0, 0, 0.12); }
+    100% { background-color: rgba(255, 0, 0, 0.08); }
+}
+
+/* ✅ Checkbox visible in all row colors */
+tr.nh-row-new input[type="checkbox"],
+tr.nh-unread-row input[type="checkbox"] {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+
+/* ============================================================
+   Title - Dot + Text در یک خط (بدون line break)
+============================================================ */
+/*
+.column-title {
+    white-space: normal !important;
+}
+
+.nh-dot-unread {
+    color: #c47200;
+    font-size: 10px;
+    margin-right: 4px;
+    display: inline;
+    vertical-align: baseline;
+}
+
+.column-title strong,
+.column-title a {
+    display: inline;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+
 .nh-title-link {
     font-size: 14px;
     white-space: nowrap;
 }
 
-/* Row actions under title */
+
 .column-title .row-actions {
     margin-top: 2px;
     font-size: 12px;
     opacity: 0.85;
+}
+/*
+
+/* ============================================================
+   Status Badges - زیر هم (vertical stacking)
+============================================================ */
+
+.nh-status-badges {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+}
+
+/* Badge base style */
+.nh-status-badges span {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* ✅ Important - قرمز رنگ */
+.nh-status-important {
+    background: #ffc9c9;
+    color: #d63638;
+}
+
+/* Archived */
+.nh-status-archived {
+    background: #e6e6e6;
+    color: #555;
+}
+
+/* Unread */
+.nh-status-unread {
+  background: #ffd53e;
+  color: #6f6f6f;
+}
+
+/* Read */
+.nh-status-read {
+    background: #e8e8e8;
+    color: #555;
+}
+
+
+/* ============================================================
+   Eye Icon
+============================================================ */
+
+.nh-eye {
+    cursor: pointer;
+    color: #2271b1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.nh-eye:hover {
+    background-color: #f0f0f1;
+    color: #135e96;
+}
+
+.nh-eye .dashicons {
+    font-size: 18px;
 }
 
 
@@ -60,7 +188,9 @@
     list-style: none;
 }
 
-.nh-dashboard-header .subsubsub li { display: inline; }
+.nh-dashboard-header .subsubsub li { 
+    display: inline; 
+}
 
 .nh-dashboard-header .subsubsub a {
     text-decoration: none;
@@ -73,14 +203,16 @@
     color: #000;
 }
 
-.nh-dashboard-header .search-box { margin: 0; }
+.nh-dashboard-header .search-box { 
+    margin: 0; 
+}
 
 
 /* ============================================================
    Modal (Notification Preview)
 ============================================================ */
 
-.nh-modal { 
+.nh-modal {
     position: fixed;
     inset: 0;
     display: none;
@@ -116,108 +248,35 @@
 
 
 /* ============================================================
-   Animations – New & Highlighted Rows
+   Table Loader
 ============================================================ */
-
-.nh-row-anim { animation: nhFlash 1.8s ease; }
-
-@keyframes nhFlash {
-    0%   { background-color: #ffeaea; }
-    100% { background-color: transparent; }
-}
-
-/* Highlight rows since last visit */
-tr.nh-row-new {
-    background: rgba(255,0,0,0.06) !important;
-    transition: background .5s ease;
-}
-
-.wp-list-table.striped tbody tr.nh-row-new:nth-child(odd) {
-    background: rgba(255,0,0,0.06) !important;
-}
-
-
-/* ============================================================
-   Icons – View / Eye
-============================================================ */
-
-.nh-eye {
-    cursor: pointer;
-    margin-right: 10px;
-    color: #2271b1;
-    display: inline-flex;
-    align-items: center;
-}
-
-.nh-eye .dashicons { font-size: 18px; }
-
-.nh-icon-view::before {
-    content: "\f177"; /* dashicons-visibility */
-    font-family: dashicons;
-    font-size: 16px;
-    vertical-align: middle;
-    color: #0073aa;
-}
-
-.nh-icon-view:hover::before {
-    color: #005177;
-}
-
-
-/* ============================================================
-   Status Badges
-============================================================ */
-
-/* Base badge */
-.nh-status-badge {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-/* Active */
-.nh-status-active {
-    background: #d6f5d6;
-    color: #0a7c0a;
-}
-
-/* Archived */
-.nh-status-archived {
-    background: #e6e6e6;
-    color: #555;
-}
-
-/* Important */
-.nh-status-important {
-    background: #fff4cc;
-    color: #946200;
-}
-
-/* Dot indicator */
-.nh-dot-unread {
-    display: inline-block;
-    margin-right: .4rem;
-    font-weight: bold;
-}
-
-/* UNREAD ROW */
-tr.nh-unread-row > td {
-    background: #fff8d6 !important;
-    font-weight: 600;
-}
-
-.nh-dot-unread {
-    color: #c47200;
-    font-size: 10px;
-    vertical-align: middle;
-    margin-right: 6px;
-}
 
 #nh-table-loader {
     display: none;
 }
+
 #nh-table-loader.active {
     display: flex !important;
+}
+
+
+/* ============================================================
+   Bulk Loading
+============================================================ */
+
+.nh-bulk-loading {
+    display: inline-block;
+    margin-left: 8px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.nh-bulk-loading.active {
+    opacity: 1;
+}
+
+.nh-bulk-loading .spinner {
+    float: none;
+    margin: 0;
+    visibility: visible;
 }

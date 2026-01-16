@@ -1,9 +1,10 @@
 <?php
 /**
+ * // notification-hub.php
  * Plugin Name: Notification Hub
  * Plugin URI: https://www.hellocode.ir/
  * Description: Central hub for collecting and managing WordPress notifications (Telegram, Email, Slack, WooCommerce, CF7).
- * Version: 1.6.0
+ * Version: 1.6.1
  * Author: Faryan Rajabi (HelloCode)
  * Author URI: https://www.linkedin.com/in/reza-rajabi-jorshari/
  * License: GPLv3 or later
@@ -20,7 +21,7 @@ if (!defined('ABSPATH')) exit;
 define('NH_PLUGIN_FILE', __FILE__);
 define('NH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('NH_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('NH_VERSION', '1.6.0');
+define('NH_VERSION', '1.6.1');
 
 /* -----------------------------------------------------------------------
  * i18n
@@ -60,6 +61,8 @@ add_action('plugins_loaded', function () {
 nh_require(NH_PLUGIN_DIR . 'modules/class-nh-license.php');
 nh_require(NH_PLUGIN_DIR . 'modules/class-nh-admin-ui.php');
 nh_require(NH_PLUGIN_DIR . 'modules/class-nh-dashboard.php');
+nh_require(NH_PLUGIN_DIR . 'modules/dashboard/class-nh-notifications-table.php');
+nh_require(NH_PLUGIN_DIR . 'modules/dashboard/class-nh-dashboard-actions.php');
 nh_require(NH_PLUGIN_DIR . 'modules/class-nh-custom-hooks.php');
 nh_require(NH_PLUGIN_DIR . 'modules/class-nh-notifier.php');
 nh_require(NH_PLUGIN_DIR . 'modules/class-nh-admin-actions.php');
