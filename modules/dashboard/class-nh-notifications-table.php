@@ -69,8 +69,8 @@ class NH_Notifications_Table extends WP_List_Table {
         ]);
 
         $this->status_filter = sanitize_key((string) $status_filter);
-        $this->prev_seen = (string) $prev_seen;
-        $this->counts = NH_Table_Query::get_counts();
+        $this->prev_seen     = (string) $prev_seen;
+        $this->counts        = NH_Table_Query::get_counts();
     }
 
     /**
@@ -86,6 +86,11 @@ class NH_Notifications_Table extends WP_List_Table {
             ? sanitize_key(wp_unslash($_GET['filter_status']))
             : 'all';
 
+        $allowed_status = ['all', 'unread', 'archived', 'important'];
+        if (!in_array($current, $allowed_status, true)) {
+            $current = 'all';
+        }
+
         $views = [];
 
         $view_map = [
@@ -96,7 +101,7 @@ class NH_Notifications_Table extends WP_List_Table {
         ];
 
         foreach ($view_map as $key => $label) {
-            $url = ($key === 'all') ? $base : add_query_arg(['filter_status' => $key], $base);
+            $url   = ($key === 'all') ? $base : add_query_arg(['filter_status' => $key], $base);
             $count = (int) ($this->counts[$key] ?? 0);
             $class = ($current === $key) ? ' class="current"' : '';
 
@@ -130,10 +135,10 @@ class NH_Notifications_Table extends WP_List_Table {
 
         $actions['delete'] = __('Delete', 'notification-hub');
 
-        $actions['nh_bulk_mark_read'] = __('Mark as read', 'notification-hub');
+        $actions['nh_bulk_mark_read']   = __('Mark as read', 'notification-hub');
         $actions['nh_bulk_mark_unread'] = __('Mark as unread', 'notification-hub');
-        $actions['mark_important'] = __('Mark important', 'notification-hub');
-        $actions['unmark_important'] = __('Remove important', 'notification-hub');
+        $actions['mark_important']      = __('Mark important', 'notification-hub');
+        $actions['unmark_important']    = __('Remove important', 'notification-hub');
 
         return $actions;
     }
@@ -243,12 +248,12 @@ class NH_Notifications_Table extends WP_List_Table {
 
         $params = [
             'status_filter'      => $this->status_filter,
-            'search'             => isset($_REQUEST['s']) ? trim((string) wp_unslash($_REQUEST['s'])) : '',
-            'filter_source'      => isset($_GET['filter_source']) ? sanitize_text_field(wp_unslash($_GET['filter_source'])) : '',
-            'filter_type'        => isset($_GET['filter_type']) ? sanitize_text_field(wp_unslash($_GET['filter_type'])) : '',
-            'filter_priority'    => isset($_GET['filter_priority']) ? sanitize_text_field(wp_unslash($_GET['filter_priority'])) : '',
+            'search'             => isset($_REQUEST['s']) ? sanitize_text_field(wp_unslash($_REQUEST['s'])) : '',
+            'filter_source'      => isset($_GET['filter_source']) ? sanitize_key(wp_unslash($_GET['filter_source'])) : '',
+            'filter_type'        => isset($_GET['filter_type']) ? sanitize_key(wp_unslash($_GET['filter_type'])) : '',
+            'filter_priority'    => isset($_GET['filter_priority']) ? sanitize_key(wp_unslash($_GET['filter_priority'])) : '',
             'filter_created'     => isset($_GET['filter_created']) ? sanitize_text_field(wp_unslash($_GET['filter_created'])) : '',
-            'filter_read_status' => isset($_GET['filter_read_status']) ? sanitize_text_field(wp_unslash($_GET['filter_read_status'])) : '',
+            'filter_read_status' => isset($_GET['filter_read_status']) ? sanitize_key(wp_unslash($_GET['filter_read_status'])) : '',
             'orderby'            => isset($_GET['orderby']) ? sanitize_key(wp_unslash($_GET['orderby'])) : 'created_at',
             'order'              => (isset($_GET['order']) && strtolower((string) wp_unslash($_GET['order'])) === 'asc') ? 'ASC' : 'DESC',
             'per_page'           => $this->per_page,

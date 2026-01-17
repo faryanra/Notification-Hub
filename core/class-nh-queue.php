@@ -27,15 +27,17 @@ class NH_Queue {
      */
     public static function enqueue_send(string $channel, array $payload): void {
 
-        // Dev convenience: run immediately on localhost (no delay, no cron).
+        /**
+         * Dev convenience: run immediately on localhost (no delay, no cron).
+         */
         if (self::is_localhost()) {
             if (defined('WP_DEBUG') && WP_DEBUG) {
                 // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
                 error_log(sprintf('NH_Queue: localhost detected — processing "%s" immediately', $channel));
             }
 
-            $registry = (class_exists('NHCoreRegistry') && method_exists('NHCoreRegistry', 'get'))
-                ? NHCoreRegistry::get()
+            $registry = (class_exists('NH_Core_Registry') && method_exists('NH_Core_Registry', 'get'))
+                ? NH_Core_Registry::get()
                 : null;
 
             $notifier = ($registry && method_exists($registry, 'get_svc'))
@@ -49,7 +51,9 @@ class NH_Queue {
             return;
         }
 
-        // Production: schedule async delivery.
+        /**
+         * Production: schedule async delivery.
+         */
         if (function_exists('as_enqueue_async_action')) {
             as_enqueue_async_action(
                 'nh_process_send',
@@ -61,7 +65,9 @@ class NH_Queue {
             return;
         }
 
-        // Fallback: WP-Cron single event
+        /**
+         * Fallback: WP-Cron single event.
+         */
         wp_schedule_single_event(
             time() + 3,
             'nh_process_send',
@@ -111,13 +117,21 @@ class NH_Queue {
         $host   = isset($_SERVER['HTTP_HOST']) ? strtolower(sanitize_text_field(wp_unslash($_SERVER['HTTP_HOST']))) : '';
         $server = isset($_SERVER['SERVER_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['SERVER_ADDR'])) : '';
 
-        if (in_array($host, ['localhost', '127.0.0.1'], true)) return true;
-        if (in_array($server, ['127.0.0.1', '::1'], true)) return true;
+        if (in_array($host, ['localhost', '127.0.0.1'], true)) {
+            return true;
+        }
+        if (in_array($server, ['127.0.0.1', '::1'], true)) {
+            return true;
+        }
 
-        // PHP-compat: avoid str_contains/str_ends_with
+        // PHP-compat: avoid str_contains/str_ends_with.
         if ($host !== '') {
-            if (substr($host, -5) === '.test') return true;
-            if (strpos($host, '.local') !== false) return true;
+            if (substr($host, -5) === '.test') {
+                return true;
+            }
+            if (strpos($host, '.local') !== false) {
+                return true;
+            }
         }
 
         return false;

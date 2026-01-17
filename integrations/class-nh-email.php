@@ -64,7 +64,7 @@ class NH_Email {
 
         $subject = isset($payload['subject']) && is_string($payload['subject']) && $payload['subject'] !== ''
             ? $payload['subject']
-            : __('[NH] Notification', 'notification-hub');
+            : esc_html__('[NH] Notification', 'notification-hub');
 
         $body = isset($payload['body']) && is_string($payload['body'])
             ? $payload['body']

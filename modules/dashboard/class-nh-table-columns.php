@@ -57,11 +57,12 @@ class NH_Table_Columns {
             $title_html = '<strong>' . $title . '</strong>';
         }
 
-        $actions = self::get_row_actions($item);
+        $actions      = self::get_row_actions($item);
         $actions_html = !empty($actions)
             ? '<div class="row-actions">' . implode(' | ', $actions) . '</div>'
             : '';
 
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         return $title_html . $actions_html;
     }
 
@@ -73,11 +74,12 @@ class NH_Table_Columns {
      * @return string
      */
     public static function column_view($item): string {
-        $nonce = wp_create_nonce('nh_view_' . (int) $item->id);
+        $id    = (int) $item->id;
+        $nonce = wp_create_nonce('nh_view_' . $id);
 
         return sprintf(
             '<span class="nh-eye nh-open-modal" data-id="%d" data-nonce="%s" title="%s"><span class="dashicons dashicons-visibility"></span></span>',
-            (int) $item->id,
+            $id,
             esc_attr($nonce),
             esc_attr__('View details', 'notification-hub')
         );
@@ -157,6 +159,7 @@ class NH_Table_Columns {
             $badges[] = '<span class="nh-status-read">' . esc_html__('Read', 'notification-hub') . '</span>';
         }
 
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         return '<div class="nh-status-badges">' . implode('', $badges) . '</div>';
     }
 
@@ -169,7 +172,7 @@ class NH_Table_Columns {
      */
     private static function get_admin_link($item): ?string {
         $source_raw = !empty($item->source) ? (string) $item->source : '';
-        $source = sanitize_key($source_raw);
+        $source     = sanitize_key($source_raw);
 
         $object_id = !empty($item->object_id) ? (int) $item->object_id : 0;
         if (!$object_id) {
@@ -199,22 +202,22 @@ class NH_Table_Columns {
      * @return array
      */
     private static function get_row_actions($item): array {
-        $id = (int) $item->id;
+        $id      = (int) $item->id;
         $actions = [];
 
         if (empty($item->read_at)) {
-            $actions[] = '<a href="#" class="nh-mark-read" data-id="' . $id . '">' . esc_html__('Mark as read', 'notification-hub') . '</a>';
+            $actions[] = '<a href="#" class="nh-mark-read" data-id="' . esc_attr($id) . '">' . esc_html__('Mark as read', 'notification-hub') . '</a>';
         } else {
-            $actions[] = '<a href="#" class="nh-mark-unread" data-id="' . $id . '">' . esc_html__('Mark as unread', 'notification-hub') . '</a>';
+            $actions[] = '<a href="#" class="nh-mark-unread" data-id="' . esc_attr($id) . '">' . esc_html__('Mark as unread', 'notification-hub') . '</a>';
         }
 
         if ((int) $item->status === 3) {
-            $actions[] = '<a href="#" class="nh-unmark-important" data-id="' . $id . '">' . esc_html__('Remove important', 'notification-hub') . '</a>';
+            $actions[] = '<a href="#" class="nh-unmark-important" data-id="' . esc_attr($id) . '">' . esc_html__('Remove important', 'notification-hub') . '</a>';
         } else {
-            $actions[] = '<a href="#" class="nh-mark-important" data-id="' . $id . '">' . esc_html__('Mark important', 'notification-hub') . '</a>';
+            $actions[] = '<a href="#" class="nh-mark-important" data-id="' . esc_attr($id) . '">' . esc_html__('Mark important', 'notification-hub') . '</a>';
         }
 
-        $actions[] = '<a href="#" class="nh-delete-notification nh-link-danger" data-id="' . $id . '">' . esc_html__('Delete', 'notification-hub') . '</a>';
+        $actions[] = '<a href="#" class="nh-delete-notification nh-link-danger" data-id="' . esc_attr($id) . '">' . esc_html__('Delete', 'notification-hub') . '</a>';
 
         return $actions;
     }

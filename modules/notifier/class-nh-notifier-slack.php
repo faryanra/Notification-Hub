@@ -1,6 +1,6 @@
 <?php
 /**
- * NHNotifierSlack
+ * NH_Notifier_Slack
  *
  * Slack notification handler (Pro).
  *
@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class NHNotifierSlack {
+class NH_Notifier_Slack {
 
     /**
      * Send Slack notification.
@@ -28,7 +28,7 @@ class NHNotifierSlack {
         $webhook = self::get_webhook();
 
         if ($webhook === '') {
-            self::debug_log(__('Slack webhook is not configured.', 'notification-hub'));
+            self::debug_log(esc_html__('Slack webhook is not configured.', 'notification-hub'));
             return false;
         }
 
@@ -89,10 +89,11 @@ class NHNotifierSlack {
     private static function get_webhook(): string {
         $webhook = (string) get_option('nh_slack_webhook', '');
         if ($webhook !== '') {
-            return $webhook;
+            return esc_url_raw($webhook);
         }
 
-        return (string) get_option('nh_slack_url', '');
+        // Back-compat.
+        return esc_url_raw((string) get_option('nh_slack_url', ''));
     }
 
     /**
@@ -111,7 +112,7 @@ class NHNotifierSlack {
             return $payload['message'];
         }
 
-        return __('Empty message.', 'notification-hub');
+        return esc_html__('Empty message.', 'notification-hub');
     }
 
     /**

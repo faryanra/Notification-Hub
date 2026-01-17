@@ -36,61 +36,68 @@ class NH_Table_Bulk_Actions {
             return false;
         }
 
+        // Allow-list actions (defense-in-depth; caller should also validate).
+        $allowed_actions = [
+            'delete',
+            'archive',
+            'unarchive',
+            'nh_bulk_mark_read',
+            'nh_bulk_mark_unread',
+            'mark_important',
+            'unmark_important',
+        ];
+        if (!in_array($action, $allowed_actions, true)) {
+            return false;
+        }
+
         global $wpdb;
         $table = $wpdb->prefix . 'nh_notifications';
 
-        // Build "IN (%d,%d,...)" safely.
+        // Build "IN (%d,%d,...)" placeholders.
         $placeholders = implode(',', array_fill(0, count($ids), '%d'));
 
+        // Build base args for prepare().
+        $prepare_args = $ids;
+
         switch ($action) {
-            case 'delete': {
-                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-                $sql = $wpdb->prepare("DELETE FROM {$table} WHERE id IN ($placeholders)", $ids);
-                return (int) $wpdb->query($sql);
-            }
+            case 'delete':
+                $query = "DELETE FROM {$table} WHERE id IN ({$placeholders})";
+                break;
 
-            case 'archive': {
-                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-                $sql = $wpdb->prepare("UPDATE {$table} SET status = 1 WHERE id IN ($placeholders)", $ids);
-                return (int) $wpdb->query($sql);
-            }
+            case 'archive':
+                $query = "UPDATE {$table} SET status = 1 WHERE id IN ({$placeholders})";
+                break;
 
-            case 'unarchive': {
-                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-                $sql = $wpdb->prepare("UPDATE {$table} SET status = 0 WHERE id IN ($placeholders)", $ids);
-                return (int) $wpdb->query($sql);
-            }
+            case 'unarchive':
+                $query = "UPDATE {$table} SET status = 0 WHERE id IN ({$placeholders})";
+                break;
 
-            case 'nh_bulk_mark_read': {
-                $now = current_time('mysql');
-                $args = array_merge([$now], $ids);
-                $placeholders2 = '%s,' . $placeholders;
+            case 'nh_bulk_mark_read':
+                $now          = current_time('mysql');
+                $prepare_args = array_merge([$now], $ids);
+                $query        = "UPDATE {$table} SET read_at = %s WHERE id IN ({$placeholders})";
+                break;
 
-                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-                $sql = $wpdb->prepare("UPDATE {$table} SET read_at = %s WHERE id IN ($placeholders)", $args);
-                return (int) $wpdb->query($sql);
-            }
+            case 'nh_bulk_mark_unread':
+                $query = "UPDATE {$table} SET read_at = NULL WHERE id IN ({$placeholders})";
+                break;
 
-            case 'nh_bulk_mark_unread': {
-                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-                $sql = $wpdb->prepare("UPDATE {$table} SET read_at = NULL WHERE id IN ($placeholders)", $ids);
-                return (int) $wpdb->query($sql);
-            }
+            case 'mark_important':
+                $query = "UPDATE {$table} SET status = 3 WHERE id IN ({$placeholders})";
+                break;
 
-            case 'mark_important': {
-                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-                $sql = $wpdb->prepare("UPDATE {$table} SET status = 3 WHERE id IN ($placeholders)", $ids);
-                return (int) $wpdb->query($sql);
-            }
-
-            case 'unmark_important': {
-                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-                $sql = $wpdb->prepare("UPDATE {$table} SET status = 0 WHERE status = 3 AND id IN ($placeholders)", $ids);
-                return (int) $wpdb->query($sql);
-            }
+            case 'unmark_important':
+                $query = "UPDATE {$table} SET status = 0 WHERE status = 3 AND id IN ({$placeholders})";
+                break;
 
             default:
                 return false;
         }
+
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+        $sql = $wpdb->prepare($query, $prepare_args);
+
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+        return (int) $wpdb->query($sql);
     }
 }

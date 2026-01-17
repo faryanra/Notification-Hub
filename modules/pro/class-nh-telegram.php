@@ -1,56 +1,89 @@
 <?php
-// Telegram Channel (Pro)
-// Loaded only when NH_License::is_pro() returns true and the Loader includes this class.
-
-if ( ! defined( 'ABSPATH' ) ) exit;
-
 /**
- * Handles Telegram message delivery through Bot API.
+ * NH_Telegram
+ *
+ * Telegram channel adapter (Pro).
+ *
+ * Loaded only when Pro is active and Loader includes this class.
  * Requires valid nh_telegram_bot_token and nh_telegram_chat_id options.
+ *
+ * @package Notification_Hub
+ * @since 1.6.2
  */
+
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 class NH_Telegram {
 
+    /**
+     * Registry container.
+     *
+     * @since 1.6.2
+     * @var NH_Core_Registry|mixed
+     */
     protected $r;
 
-    public function __construct( $registry ) {
+    /**
+     * Constructor.
+     *
+     * @since 1.6.2
+     * @param mixed $registry Registry instance.
+     */
+    public function __construct($registry) {
         $this->r = $registry;
     }
 
     /**
-     * Determine if this channel supports the given type.
+     * Check if this adapter supports a channel.
+     *
+     * @since 1.6.2
+     * @param string $channel Channel slug.
+     * @return bool
      */
-    public function supports( string $channel ): bool {
+    public function supports(string $channel): bool {
         return $channel === 'telegram';
     }
 
     /**
      * Send a notification via Telegram Bot API.
      *
-     * @param array $payload Message data: title, body, source, etc.
+     * Payload keys:
+     * - title (string) Optional.
+     * - body (string) Optional.
+     * - source (string) Optional.
+     *
+     * @since 1.6.2
+     * @param array $payload Message data.
      * @return bool True if sent successfully, false otherwise.
      */
-    public function send( array $payload ): bool {
-        $token  = get_option( 'nh_telegram_bot_token' );
-        $chatId = get_option( 'nh_telegram_chat_id' );
+    public function send(array $payload): bool {
+        $token  = (string) get_option('nh_telegram_bot_token', '');
+        $chatId = (string) get_option('nh_telegram_chat_id', '');
 
-        if ( empty( $token ) || empty( $chatId ) ) {
+        if ($token === '' || $chatId === '') {
             return false;
         }
 
-        $title  = $payload['title']  ?? __( 'Notification', 'notification-hub' );
-        $body   = $payload['body']   ?? '';
-        $source = ucfirst( $payload['source'] ?? 'system' );
+        $title  = isset($payload['title']) ? (string) $payload['title'] : esc_html__('Notification', 'notification-hub');
+        $body   = isset($payload['body']) ? (string) $payload['body'] : '';
+        $source = isset($payload['source']) ? (string) $payload['source'] : 'system';
 
-        // Safe text formatting
+        // Safe HTML formatting for Telegram.
         $text = sprintf(
-            "<b>%s</b>\n%s\n\n<i>Source: %s | %s</i>",
-            htmlspecialchars( $title ),
-            htmlspecialchars( $body ),
-            htmlspecialchars( $source ),
-            current_time( 'mysql' )
+            "<b>%s</b>\n%s\n\n<i>%s</i>",
+            esc_html($title),
+            esc_html($body),
+            sprintf(
+                /* translators: 1: Source, 2: Datetime. */
+                esc_html__('Source: %1$s | %2$s', 'notification-hub'),
+                esc_html(ucfirst($source)),
+                esc_html((string) current_time('mysql'))
+            )
         );
 
-        $url = "https://api.telegram.org/bot{$token}/sendMessage";
+        $url  = "https://api.telegram.org/bot{$token}/sendMessage";
         $args = [
             'body' => [
                 'chat_id'    => (int) $chatId,
@@ -60,15 +93,18 @@ class NH_Telegram {
             'timeout' => 15,
         ];
 
-        // Debug log
-        if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-            error_log( '📬 NH_Channel_Telegram triggered: token=' . substr( $token, 0, 8 ) . ' chat_id=' . $chatId );
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+            error_log('NH_Telegram: send triggered for chat_id=' . $chatId);
         }
 
-        $response = wp_remote_post( $url, $args );
+        $response = wp_remote_post($url, $args);
 
-        if ( is_wp_error( $response ) ) {
-            error_log( '❌ Telegram Error: ' . $response->get_error_message() );
+        if (is_wp_error($response)) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+                error_log('NH_Telegram error: ' . $response->get_error_message());
+            }
             return false;
         }
 

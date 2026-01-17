@@ -1,97 +1,168 @@
 <?php
-// WooCommerce integration (Free, fixed)
+/**
+ * NH_Int_WooCommerce
+ *
+ * WooCommerce integration for Notification Hub.
+ *
+ * Listens to key WooCommerce events and creates notifications:
+ * - New order
+ * - Low stock
+ *
+ * @package Notification_Hub
+ * @since 1.6.2
+ */
 
-if (!defined('ABSPATH')) exit;
+if (!defined('ABSPATH')) {
+    exit;
+}
 
 class NH_Int_WooCommerce {
+
+    /**
+     * Registry container.
+     *
+     * @since 1.6.2
+     * @var NH_Core_Registry|mixed
+     */
     protected $r;
 
-    public function __construct($registry){
+    /**
+     * Constructor.
+     *
+     * @since 1.6.2
+     * @param mixed $registry Registry instance.
+     */
+    public function __construct($registry) {
         $this->r = $registry;
 
         if (class_exists('WooCommerce')) {
             add_action('woocommerce_new_order', [$this, 'on_new_order'], 10, 1);
             add_action('woocommerce_low_stock', [$this, 'on_low_stock'], 10, 1);
+
             if (defined('WP_DEBUG') && WP_DEBUG) {
-                error_log('✅ NH_Int_WooCommerce: hooks registered');
+                // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+                error_log('NH_Int_WooCommerce: hooks registered');
             }
-        } else {
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                error_log('⚠️ NH_Int_WooCommerce: WooCommerce not active');
-            }
+        } elseif (defined('WP_DEBUG') && WP_DEBUG) {
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+            error_log('NH_Int_WooCommerce: WooCommerce not active');
         }
     }
 
+    /**
+     * Handle new order.
+     *
+     * @since 1.6.2
+     * @param int $order_id Order ID.
+     * @return void
+     */
     public function on_new_order($order_id) {
+        if (!function_exists('wc_get_order')) {
+            return;
+        }
+
         $order = wc_get_order($order_id);
-        if (!$order) return;
-        $total = (float)$order->get_total();
+        if (!$order) {
+            return;
+        }
+
+        $total = (float) $order->get_total();
+
+        /* translators: %d: Order ID. */
+        $title = sprintf(esc_html__('New Order #%d', 'notification-hub'), (int) $order_id);
+
+        /* translators: %s: Order total with currency. */
+        $message = sprintf(esc_html__('Total: %s', 'notification-hub'), wc_price($total));
 
         $e = [
             'source'  => 'woocommerce',
             'type'    => 'order_created',
-            'title'   => sprintf(__('New Order #%d','notification-hub'), $order_id),
-            'message' => sprintf(__('Total: %s','notification-hub'), wc_price($total)),
-            'context' => ['order_id'=>$order_id,'total'=>$total,'currency'=>get_woocommerce_currency()]
+            'title'   => $title,
+            'message' => $message,
+            'context' => [
+                'order_id'  => (int) $order_id,
+                'total'     => $total,
+                'currency'  => function_exists('get_woocommerce_currency') ? get_woocommerce_currency() : '',
+            ],
         ];
 
         $db = $this->r->get_svc('db');
-        if ($db) $db->insert_notification($e);
-
-        $notifier = $this->r->get_svc('notifier');
-        if ($notifier) {
-            $payload = [
-                'title'  => $e['title'],
-                'body'   => $e['message'],
-                'source' => $e['source'],
-                'no_log' => true
-            ];
-
-            if (method_exists($notifier, 'queue_send')) {
-                $notifier->queue_send('email', $payload);
-                $notifier->queue_send('telegram', $payload);
-                $notifier->queue_send('slack', $payload);
-            } else {
-                $notifier->send_now('email', $payload);
-                $notifier->send_now('telegram', $payload);
-                $notifier->send_now('slack', $payload);
-            }
+        if ($db && method_exists($db, 'insert_notification')) {
+            $db->insert_notification($e);
         }
+
+        $this->fanout_send($e);
     }
 
+    /**
+     * Handle low stock.
+     *
+     * @since 1.6.2
+     * @param mixed $product WC_Product.
+     * @return void
+     */
     public function on_low_stock($product) {
-        if (!is_object($product) || !method_exists($product,'get_name')) return;
-        $qty = method_exists($product,'get_stock_quantity') ? $product->get_stock_quantity() : 0;
+        if (!is_object($product) || !method_exists($product, 'get_name')) {
+            return;
+        }
+
+        $qty = method_exists($product, 'get_stock_quantity') ? $product->get_stock_quantity() : 0;
+
+        /* translators: %s: Product name. */
+        $title = sprintf(esc_html__('Low stock: %s', 'notification-hub'), (string) $product->get_name());
+
+        /* translators: %d: Stock quantity. */
+        $message = sprintf(esc_html__('Stock: %d', 'notification-hub'), (int) $qty);
 
         $e = [
             'source'  => 'woocommerce',
             'type'    => 'low_stock',
-            'title'   => sprintf(__('Low stock: %s','notification-hub'), $product->get_name()),
-            'message' => sprintf(__('Stock: %d','notification-hub'), $qty),
-            'context' => ['product_id'=>method_exists($product,'get_id') ? $product->get_id() : 0]
+            'title'   => $title,
+            'message' => $message,
+            'context' => [
+                'product_id' => method_exists($product, 'get_id') ? (int) $product->get_id() : 0,
+            ],
         ];
 
         $db = $this->r->get_svc('db');
-        if ($db) $db->insert_notification($e);
+        if ($db && method_exists($db, 'insert_notification')) {
+            $db->insert_notification($e);
+        }
 
+        $this->fanout_send($e);
+    }
+
+    /**
+     * Fan-out event to all channels.
+     *
+     * @since 1.6.2
+     * @param array $e Notification event.
+     * @return void
+     */
+    protected function fanout_send(array $e): void {
         $notifier = $this->r->get_svc('notifier');
-        if ($notifier) {
-            $payload = [
-                'title'  => $e['title'],
-                'body'   => $e['message'],
-                'source' => $e['source'],
-                'no_log' => true
-            ];
+        if (!$notifier) {
+            return;
+        }
 
-            if (method_exists($notifier, 'queue_send')) {
-                $notifier->queue_send('email', $payload);
-                $notifier->queue_send('telegram', $payload);
-                $notifier->queue_send('slack', $payload);
-            } else {
-                $notifier->send_now('email', $payload);
-                $notifier->send_now('telegram', $payload);
-                $notifier->send_now('slack', $payload);
-            }
+        $payload = [
+            'title'  => $e['title'] ?? '',
+            'body'   => $e['message'] ?? '',
+            'source' => $e['source'] ?? 'woocommerce',
+            'no_log' => true,
+        ];
+
+        if (method_exists($notifier, 'queue_send')) {
+            $notifier->queue_send('email', $payload);
+            $notifier->queue_send('telegram', $payload);
+            $notifier->queue_send('slack', $payload);
+            return;
+        }
+
+        if (method_exists($notifier, 'send_now')) {
+            $notifier->send_now('email', $payload);
+            $notifier->send_now('telegram', $payload);
+            $notifier->send_now('slack', $payload);
         }
     }
 }

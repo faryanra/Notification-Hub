@@ -39,7 +39,7 @@ class NH_Admin_License {
         NH_Security::ensure_cap();
         check_admin_referer('nh_save_license');
 
-        $key = sanitize_text_field(wp_unslash($_POST['nh_license_key'] ?? ''));
+        $key = isset($_POST['nh_license_key']) ? sanitize_text_field(wp_unslash($_POST['nh_license_key'])) : '';
 
         if (class_exists('NH_License')) {
             NH_License::save_key($key);
@@ -49,7 +49,8 @@ class NH_Admin_License {
             }
         }
 
-        wp_safe_redirect(admin_url('admin.php?page=nh_settings&license_saved=1'));
+        // Align with templates/settings.php query params.
+        wp_safe_redirect(admin_url('admin.php?page=nh_settings&nh_license_saved=1'));
         exit;
     }
 
@@ -71,7 +72,8 @@ class NH_Admin_License {
             NH_License::revoke();
         }
 
-        wp_safe_redirect(admin_url('admin.php?page=nh_settings&license_revoked=1'));
+        // Align with templates/settings.php query params.
+        wp_safe_redirect(admin_url('admin.php?page=nh_settings&nh_license_revoked=1'));
         exit;
     }
 }

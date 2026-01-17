@@ -17,7 +17,7 @@ class NH_Database {
     /**
      * Database schema version.
      *
-     * Bump this when schema changes, so maybe_upgrade_database() runs.
+     * Bump this when schema changes so maybe_upgrade_database() runs.
      *
      * @since 1.6.2
      */
@@ -56,21 +56,29 @@ class NH_Database {
 
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 
-        // Main table
+        /**
+         * Main table.
+         */
         dbDelta($this->schema_notifications());
 
-        // Hooks table
+        /**
+         * Hooks table.
+         */
         $this->create_hooks_table();
 
         global $wpdb;
         $table = $wpdb->prefix . 'nh_notifications';
 
-        // Ensure legacy columns exist (safe back-compat)
+        /**
+         * Ensure legacy columns exist (safe back-compat).
+         */
         $this->ensure_column_exists($table, 'read_at', "ALTER TABLE {$table} ADD COLUMN read_at DATETIME NULL AFTER updated_at");
         $this->ensure_column_exists($table, 'priority', "ALTER TABLE {$table} ADD COLUMN priority TINYINT UNSIGNED NOT NULL DEFAULT 50 AFTER status");
         $this->ensure_column_exists($table, 'tags', "ALTER TABLE {$table} ADD COLUMN tags LONGTEXT NULL AFTER context");
 
-        // Ensure compound index exists
+        /**
+         * Ensure compound index exists.
+         */
         $idx = $wpdb->get_var(
             $wpdb->prepare(
                 "SELECT INDEX_NAME
@@ -93,7 +101,7 @@ class NH_Database {
      * Build notifications table schema.
      *
      * @since 1.6.2
-     * @return string SQL
+     * @return string SQL.
      */
     private function schema_notifications(): string {
         global $wpdb;
@@ -122,7 +130,7 @@ class NH_Database {
     }
 
     /**
-     * Create hooks table used by custom hooks + REST test trigger.
+     * Create hooks table used by custom hooks and REST test trigger.
      *
      * @since 1.6.2
      * @return void
@@ -150,11 +158,11 @@ class NH_Database {
     }
 
     /**
-     * Ensure a column exists, otherwise run an ALTER statement.
+     * Ensure a column exists; otherwise run an ALTER statement.
      *
      * @since 1.6.2
-     * @param string $table Table name.
-     * @param string $column Column name.
+     * @param string $table     Table name.
+     * @param string $column    Column name.
      * @param string $alter_sql ALTER TABLE statement.
      * @return void
      */
@@ -197,7 +205,9 @@ class NH_Database {
         }
         $priority = max(0, min(100, (int) $priority));
 
-        // Tags (store JSON array if possible)
+        /**
+         * Tags (store JSON array if possible).
+         */
         $tags = null;
         if (isset($e['tags'])) {
             $tags = is_array($e['tags']) ? wp_json_encode($e['tags']) : (string) $e['tags'];
@@ -240,7 +250,7 @@ class NH_Database {
      *
      * @since 1.6.2
      * @param string $source Source slug.
-     * @param string $type Type slug.
+     * @param string $type   Type slug.
      * @return int Priority (0-100).
      */
     private function infer_priority(string $source, string $type): int {
@@ -252,10 +262,16 @@ class NH_Database {
             return $needle !== '' && strpos($haystack, $needle) !== false;
         };
 
-        if ($has($src, 'woocommerce') || $has($typ, 'order')) return 80;
-        if ($has($typ, 'comment')) return 60;
+        if ($has($src, 'woocommerce') || $has($typ, 'order')) {
+            return 80;
+        }
+        if ($has($typ, 'comment')) {
+            return 60;
+        }
 
-        if ($has($src, 'cf7') || $has($typ, 'form') || $has($typ, 'cf7')) return 55;
+        if ($has($src, 'cf7') || $has($typ, 'form') || $has($typ, 'cf7')) {
+            return 55;
+        }
 
         if (
             $has($src, 'security') ||
@@ -273,7 +289,7 @@ class NH_Database {
      * Update notification status.
      *
      * @since 1.6.2
-     * @param int $id Notification ID.
+     * @param int $id     Notification ID.
      * @param int $status Status code.
      * @return int|false Rows affected or false on error.
      */
@@ -296,8 +312,8 @@ class NH_Database {
      * Get notifications list (paged).
      *
      * @since 1.6.2
-     * @param array $filters Filters.
-     * @param int   $page Page number.
+     * @param array $filters  Filters.
+     * @param int   $page     Page number.
      * @param int   $per_page Items per page.
      * @return array<int, array<string, mixed>>
      */
@@ -349,7 +365,9 @@ class NH_Database {
     public function cleanup_old(int $days = 90) {
         global $wpdb;
 
-        // Multisite: enforce network retention (Pro policy)
+        /**
+         * Multisite: enforce network retention (Pro policy).
+         */
         if (function_exists('get_site_option') && is_multisite()) {
             $policy = get_site_option('nh_network_policy', []);
             if (!empty($policy['retention_days'])) {

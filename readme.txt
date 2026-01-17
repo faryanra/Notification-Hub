@@ -4,7 +4,7 @@ Tags: notifications, dashboard, woocommerce, alerts, admin
 Requires at least: 5.8
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.6.1
+Stable tag: 1.6.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -12,42 +12,57 @@ A unified admin dashboard for all important events happening across your WordPre
 
 == Description ==
 
-Notification Hub provides a unified admin dashboard for all important events happening across your site. Whether it's a new WooCommerce order, a comment, or a custom event — you'll see it all in a single, sortable, filterable table.
+Notification Hub provides a unified admin dashboard for all important events happening across your WordPress site.
 
-== What's New in v1.6.1 ==
+Whether it's a new WooCommerce order, a comment, a form submission, or a custom event — you'll see it all in a single, sortable, filterable table.
 
-🏗️ **Major Architecture Refactor**  
-The plugin has been completely restructured for better maintainability:
-- 📦 Modular file structure with single-responsibility classes
-- 🧩 Split large files into focused components (40% code reduction)
-- 📊 Enhanced filtering system with 5 filter types
-- 💾 CSV export restored and improved
-- 🎯 Smart priority system with auto-calculation
-- 🏷️ Enhanced tags system with JSON storage
-- 🐛 Multiple bug fixes and performance improvements
+== What's New in v1.6.2 ==
+
+This release focuses on security hardening, safer sanitization, and UI/JS stability improvements across the dashboard and admin screens.
+
+- 🔐 Security hardening across dashboard queries, filters, AJAX actions, and bulk actions.
+- 🧼 Improved sanitization/escaping for dynamic values (IDs, sort params, webhook URLs, chat IDs).
+- 🧩 Notifier and integrations cleanup (Telegram/Slack handler naming consistency).
+- 🎨 Admin UI polish (CSS scoping, modal styles centralized, table column selector fixes).
+- ⚙️ JS stability fixes (consistent globals, safer URL parsing, reduced risk of DOM injection).
 
 == Features ==
 
-- 📬 Unified Notification Table (with WP_List_Table)
-- 📨 Email Alerts
-- 🔔 Admin Bar Badge (Unread Count)
-- 💬 Modal Viewer (View Notification Details)
-- 🔄 AJAX Interactions: Mark Read/Unread, Important, Delete
-- 🔗 WooCommerce / CF7 / Core Event Hooks
-- ✅ Export to CSV with customizable columns
-- 📦 Custom Hooks with Channel Targets
-- 🔍 Advanced Filtering (Time, Source, Type, Priority, Status)
-- 🎯 Smart Priority System (0-100 scale with auto-calculation)
-- 🏷️ Tags Support with JSON storage
+- 📬 Unified Notification Table (WP_List_Table)
+- 📨 Email alerts
+- 🔔 Admin bar unread badge (live refresh)
+- 💬 Modal viewer (notification preview)
+- 🔄 AJAX interactions: Mark Read/Unread, Important, Delete
+- 📦 Bulk actions support
+- 🔍 Advanced filtering (time, source, type, priority, status)
+- ✅ Export to CSV (supports current filters)
+- 📦 Custom hooks with channel targets
+- 🧩 Integrations: WooCommerce / CF7 / Core event hooks
+- 🎯 Smart priority system (0–100 scale)
 
 == Installation ==
 
 1. Upload the plugin to `/wp-content/plugins/notification-hub`
 2. Activate via "Plugins" menu
 3. Open "Notification Hub" from admin menu
-4. Configure your sources, channels, and enjoy!
+4. Configure channels and settings
 
 == Changelog ==
+
+= 1.6.2 =
+* Security: Whitelist + sanitize dashboard orderby/order and paging parameters.
+* Security: Harden dashboard filters (validate keys, numeric priority, sanitize view/status).
+* Security: Harden bulk actions (allowlist actions, normalize IN placeholders).
+* Security: Harden AJAX actions (absint ids, safer update formats, escaped error strings).
+* Security: Sanitize notifier options and handler inputs (email, source/type slugs, Slack webhook, Telegram chat id).
+* Fix: Rename Telegram/Slack handler classes to consistent `NH_Notifier_Telegram` / `NH_Notifier_Slack`.
+* Fix: Dashboard JS uses `window.nhAdmin` consistently and avoids `innerHTML` for modal meta.
+* Fix: Admin JS uses `window.nhAdmin` consistently; NEW-row persistence uses `tr[data-id]`.
+* Fix: Settings JS now safely builds URLs for relative links and guards when tabs are missing.
+* Style: Scope admin `.wrap` margins to plugin pages only.
+* Style: Centralize modal base styles into `assets/css/admin.css`.
+* Style: Fix dashboard table column selectors and remove obsolete CSS rules.
+* Improved: CSV export hardened (capability checks) and adds UTF-8 BOM for Excel compatibility.
 
 = 1.6.1 =
 * Added: Modular file structure (11 new focused classes)
@@ -96,7 +111,7 @@ The plugin has been completely restructured for better maintainability:
 * Added: Multi-channel send support (email + telegram + slack)
 * Refactored: `NH_Notifier`, `NH_Queue`, and `NH_Loader` architecture
 * Fixed: Duplicate class load (Notifier now single source)
-* Improved: Log clarity with emoji & structured WP_DEBUG entries
+* Improved: Log clarity & structured WP_DEBUG entries
 * Cleanup: Removed legacy files and dev logs
 
 = 1.3.9 =
@@ -127,10 +142,10 @@ The plugin has been completely restructured for better maintainability:
 * Initial release
 
 == Author ==
-Developed by **Faryan Rajabi Jorshari (HelloCode)**  
-🌐 [https://www.hellocode.ir](https://www.hellocode.ir)  
-🐙 [https://github.com/faryanra](https://github.com/faryanra)  
-💼 [https://www.linkedin.com/in/faryan-rajabi/](https://www.linkedin.com/in/faryan-rajabi/)  
+Developed by **Faryan Rajabi Jorshari (HelloCode)**
+🌐 https://www.hellocode.ir
+🐙 https://github.com/faryanra
+💼 https://www.linkedin.com/in/faryan-rajabi/
 
 == License ==
 GPLv3 or later

@@ -33,8 +33,9 @@ define('NH_VERSION', '1.6.2');
  * Load plugin textdomain.
  *
  * @since 1.6.2
+ * @return void
  */
-function nh_load_textdomain() {
+function nh_load_textdomain(): void {
     load_plugin_textdomain('notification-hub', false, dirname(plugin_basename(__FILE__)) . '/languages');
 }
 add_action('plugins_loaded', 'nh_load_textdomain', 1);
@@ -47,13 +48,14 @@ add_action('plugins_loaded', 'nh_load_textdomain', 1);
  * @param string $path Absolute file path.
  * @return bool True when loaded, false otherwise.
  */
-function nh_require($path) {
+function nh_require(string $path): bool {
     if (file_exists($path)) {
         require_once $path;
         return true;
     }
 
     if (defined('WP_DEBUG') && WP_DEBUG) {
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
         error_log(sprintf('Notification Hub: Missing file %s', $path));
     }
 
@@ -108,8 +110,9 @@ nh_require(NH_PLUGIN_DIR . 'api/class-nh-webhook.php');
  * Anti-tamper (light).
  *
  * @since 1.6.2
+ * @return void
  */
-function nh_security_boot() {
+function nh_security_boot(): void {
     if (class_exists('NH_Security')) {
         NH_Security::anti_tamper_light();
     }
@@ -122,7 +125,7 @@ add_action('plugins_loaded', 'nh_security_boot', 2);
  * @since 1.6.2
  * @return void
  */
-function nh_activate() {
+function nh_activate(): void {
     if (class_exists('NH_Database')) {
         (new NH_Database())->maybe_upgrade_database();
     }
@@ -138,7 +141,7 @@ function nh_activate() {
  * @since 1.6.2
  * @return void
  */
-function nh_deactivate() {
+function nh_deactivate(): void {
     $timestamp = wp_next_scheduled('nh_cron_cleanup');
     if ($timestamp) {
         wp_unschedule_event($timestamp, 'nh_cron_cleanup');
@@ -154,7 +157,7 @@ register_deactivation_hook(NH_PLUGIN_FILE, 'nh_deactivate');
  * @since 1.6.2
  * @return void
  */
-function nh_cron_cleanup_handler() {
+function nh_cron_cleanup_handler(): void {
     if (!class_exists('NH_Database')) {
         return;
     }
@@ -169,9 +172,10 @@ add_action('nh_cron_cleanup', 'nh_cron_cleanup_handler');
  * @since 1.6.2
  * @return void
  */
-function nh_boot() {
+function nh_boot(): void {
     if (!class_exists('NH_Core_Registry') || !class_exists('NH_Loader')) {
         if (defined('WP_DEBUG') && WP_DEBUG) {
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
             error_log('Notification Hub: Boot failed (Registry/Loader missing).');
         }
         return;

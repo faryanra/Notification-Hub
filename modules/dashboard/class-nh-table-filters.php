@@ -30,13 +30,29 @@ class NH_Table_Filters {
         $filter_created     = isset($_GET['filter_created']) ? sanitize_key(wp_unslash($_GET['filter_created'])) : '';
         $filter_read_status = isset($_GET['filter_read_status']) ? sanitize_key(wp_unslash($_GET['filter_read_status'])) : '';
 
+        // Validate keys used in query layer (defense-in-depth).
+        $allowed_created = ['', 'today', 'yesterday', 'last_7_days', 'last_30_days', 'last_year'];
+        if (!in_array($filter_created, $allowed_created, true)) {
+            $filter_created = '';
+        }
+
+        $allowed_read_status = ['', 'read', 'unread', 'important'];
+        if (!in_array($filter_read_status, $allowed_read_status, true)) {
+            $filter_read_status = '';
+        }
+
+        // Treat priority as numeric selection.
+        if ($filter_priority !== '') {
+            $filter_priority = (string) absint($filter_priority);
+        }
+
         $has_filters = ($filter_source || $filter_type || $filter_priority || $filter_created || $filter_read_status);
 
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
         $sources = $wpdb->get_col("SELECT DISTINCT source FROM {$table} WHERE source IS NOT NULL AND source != '' ORDER BY source ASC");
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
         $types = $wpdb->get_col("SELECT DISTINCT type FROM {$table} WHERE type IS NOT NULL AND type != '' ORDER BY type ASC");
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
         $priorities = $wpdb->get_col("SELECT DISTINCT priority FROM {$table} WHERE priority IS NOT NULL ORDER BY priority ASC");
 
         ?>
@@ -88,7 +104,7 @@ class NH_Table_Filters {
         <select name="filter_source" id="nh-filter-source">
             <option value=""><?php esc_html_e('All sources', 'notification-hub'); ?></option>
             <?php foreach ($sources as $source): ?>
-                <option value="<?php echo esc_attr($source); ?>" <?php selected($selected, $source); ?>>
+                <option value="<?php echo esc_attr($source); ?>" <?php selected($selected, (string) $source); ?>>
                     <?php echo esc_html($source); ?>
                 </option>
             <?php endforeach; ?>
@@ -109,7 +125,7 @@ class NH_Table_Filters {
         <select name="filter_type" id="nh-filter-type">
             <option value=""><?php esc_html_e('All types', 'notification-hub'); ?></option>
             <?php foreach ($types as $type): ?>
-                <option value="<?php echo esc_attr($type); ?>" <?php selected($selected, $type); ?>>
+                <option value="<?php echo esc_attr($type); ?>" <?php selected($selected, (string) $type); ?>>
                     <?php echo esc_html($type); ?>
                 </option>
             <?php endforeach; ?>

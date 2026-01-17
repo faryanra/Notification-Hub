@@ -5,7 +5,10 @@
    =========================================== */
 
 /* ---------- Layout ---------- */
-.wrap {
+/* Avoid affecting other wp-admin screens by scoping to our plugin pages. */
+.toplevel_page_nh-dashboard .wrap,
+.notification-hub_page_nh-dashboard .wrap,
+.notification-hub_page_notification-hub .wrap {
   margin: 20px;
 }
 
@@ -27,7 +30,7 @@
   padding: 10px;
 }
 
-/* ---------- Modal ---------- */
+/* ---------- Modal (shared) ---------- */
 .nh-modal {
   position: fixed;
   inset: 0;
@@ -43,11 +46,12 @@
 
 .nh-modal__content {
   position: relative;
+  z-index: 2;
   background: #fff;
+  border-radius: 8px;
+  max-width: 600px;
   margin: 10% auto;
   padding: 20px;
-  width: 500px;
-  border-radius: 8px;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
 }
 
@@ -161,6 +165,7 @@
 a.nh-link-danger {
   color: #d63638;
 }
+
 a.nh-link-danger:hover {
   color: #b32d2e;
 }

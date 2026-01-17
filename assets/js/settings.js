@@ -15,21 +15,26 @@
     const tabs = document.querySelectorAll('.nh-settings-tabs .nav-tab');
     const panes = document.querySelectorAll('.nh-tab');
 
+    if (tabs.length === 0 || panes.length === 0) return;
+
     // Tab click: switch visible pane and update URL.
-    tabs.forEach((t) =>
-      t.addEventListener('click', (e) => {
+    tabs.forEach((tabEl) =>
+      tabEl.addEventListener('click', (e) => {
         e.preventDefault();
 
-        const tab = t.dataset.tab || 'general';
+        const tab = tabEl.dataset.tab || 'general';
 
         tabs.forEach((x) => x.classList.remove('nav-tab-active'));
-        t.classList.add('nav-tab-active');
+        tabEl.classList.add('nav-tab-active');
 
         panes.forEach((p) => p.classList.remove('is-active'));
         const pane = document.querySelector(`#nh-tab-${tab}`);
         if (pane) pane.classList.add('is-active');
 
-        history.replaceState(null, '', t.getAttribute('href'));
+        const href = tabEl.getAttribute('href');
+        if (href) {
+          history.replaceState(null, '', href);
+        }
       })
     );
 
@@ -39,7 +44,13 @@
         e.preventDefault();
 
         const tab = btn.dataset.tab || 'general';
-        const href = new URL(btn.href);
+
+        let href;
+        try {
+          href = new URL(btn.getAttribute('href') || '', window.location.origin);
+        } catch (_) {
+          return;
+        }
 
         href.searchParams.set('tab', tab);
         window.location.href = href.toString();

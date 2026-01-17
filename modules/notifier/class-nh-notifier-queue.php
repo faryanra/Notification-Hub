@@ -46,7 +46,6 @@ class NH_Notifier_Queue {
      */
     public function queue_send(string $channel, array $payload): bool {
         $channel = sanitize_key($channel);
-        $payload = is_array($payload) ? $payload : [];
 
         $title_for_log = '';
         if (!empty($payload['title']) && is_string($payload['title'])) {
@@ -55,7 +54,7 @@ class NH_Notifier_Queue {
             $title_for_log = $payload['subject'];
         }
 
-        $this->debug_log(
+        self::debug_log(
             sprintf(
                 /* translators: 1: channel, 2: title */
                 __('Queueing notification (channel: %1$s, title: %2$s)', 'notification-hub'),
@@ -126,8 +125,8 @@ class NH_Notifier_Queue {
             $context = $payload['context'];
         }
 
-        $source = isset($payload['source']) ? strtolower(trim((string) $payload['source'])) : '';
-        $type   = isset($payload['type']) ? strtolower(trim((string) $payload['type'])) : '';
+        $source = isset($payload['source']) ? sanitize_key((string) $payload['source']) : '';
+        $type   = isset($payload['type']) ? sanitize_key((string) $payload['type']) : '';
 
         $title = '';
         if (!empty($payload['title']) && is_string($payload['title'])) {
@@ -144,14 +143,14 @@ class NH_Notifier_Queue {
         // Auto-detect type/source from context.
         if ($type === '') {
             if (!empty($payload['event_type'])) {
-                $type = strtolower(trim((string) $payload['event_type']));
+                $type = sanitize_key((string) $payload['event_type']);
             } elseif (!empty($context['type'])) {
-                $type = strtolower(trim((string) $context['type']));
+                $type = sanitize_key((string) $context['type']);
             }
         }
 
         if ($source === '' && !empty($context['source'])) {
-            $source = strtolower(trim((string) $context['source']));
+            $source = sanitize_key((string) $context['source']);
         }
 
         $priority = $this->calculate_priority($source, $type, $payload['priority'] ?? null);
@@ -231,7 +230,7 @@ class NH_Notifier_Queue {
 
         if (!empty($tags)) {
             if (is_string($tags)) {
-                $decoded = json_decode($tags, true);
+                $decoded  = json_decode($tags, true);
                 $tags_arr = is_array($decoded) ? $decoded : [$tags];
             } elseif (is_array($tags)) {
                 $tags_arr = $tags;
@@ -276,7 +275,7 @@ class NH_Notifier_Queue {
         $db->log_delivery_status($notif_id, [
             'status'     => $success ? 'sent' : 'error',
             'error_msg'  => $error,
-            'channel'    => $channel,
+            'channel'    => sanitize_key($channel),
             'updated_at' => current_time('mysql'),
         ]);
     }
@@ -295,27 +294,27 @@ class NH_Notifier_Queue {
         switch ($channel) {
             case 'email':
                 if (!class_exists('NH_Notifier_Email')) {
-                    $this->debug_log('Notification Hub: Email handler missing.');
+                    self::debug_log('Notification Hub: Email handler missing.');
                     return false;
                 }
                 return (bool) NH_Notifier_Email::send($payload);
 
             case 'telegram':
                 if (!class_exists('NH_Notifier_Telegram')) {
-                    $this->debug_log('Notification Hub: Telegram handler missing.');
+                    self::debug_log('Notification Hub: Telegram handler missing.');
                     return false;
                 }
                 return (bool) NH_Notifier_Telegram::send($payload);
 
             case 'slack':
                 if (!class_exists('NH_Notifier_Slack')) {
-                    $this->debug_log('Notification Hub: Slack handler missing.');
+                    self::debug_log('Notification Hub: Slack handler missing.');
                     return false;
                 }
                 return (bool) NH_Notifier_Slack::send($payload);
 
             default:
-                $this->debug_log(sprintf('Notification Hub: Unknown channel %s', $channel));
+                self::debug_log(sprintf('Notification Hub: Unknown channel %s', $channel));
                 return false;
         }
     }
@@ -327,8 +326,9 @@ class NH_Notifier_Queue {
      * @param string $message Log message.
      * @return void
      */
-    private function debug_log(string $message): void {
+    private static function debug_log(string $message): void {
         if (defined('WP_DEBUG') && WP_DEBUG) {
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
             error_log($message);
         }
     }

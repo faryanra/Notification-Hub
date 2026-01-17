@@ -9,7 +9,8 @@
   'use strict';
 
   const t = (key, fallback) =>
-    (window.nhAdmin && nhAdmin.i18n && nhAdmin.i18n[key]) || fallback;
+    (window.nhAdmin && window.nhAdmin.i18n && window.nhAdmin.i18n[key]) ||
+    fallback;
 
   // =====================================================
   // Global confirm handler (no inline onclick)
@@ -43,7 +44,7 @@
     body.set('id', id);
     body.set('_wpnonce', nonce);
 
-    fetch(nhAdmin.ajax_url, {
+    fetch(window.nhAdmin.ajax_url, {
       method: 'POST',
       credentials: 'same-origin',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -80,9 +81,9 @@
     const badge = badgeItem?.querySelector('.ab-label');
     if (!badgeItem || !badge) return;
 
-    const url = new URL(nhAdmin.ajax_url, window.location.origin);
+    const url = new URL(window.nhAdmin.ajax_url, window.location.origin);
     url.searchParams.set('action', 'nh_get_unread_count');
-    url.searchParams.set('_wpnonce', nhAdmin.nonce);
+    url.searchParams.set('_wpnonce', window.nhAdmin.nonce);
 
     fetch(url.toString(), { credentials: 'same-origin' })
       .then((r) => r.json())
@@ -110,9 +111,12 @@
     if (document.visibilityState === 'visible') refreshNHBadge();
   });
 
-  setInterval(refreshNHBadge, 15000);
-  document.addEventListener('nh:table-updated', refreshNHBadge);
-  document.addEventListener('DOMContentLoaded', refreshNHBadge);
+  // Avoid running intervals in admin screens that don't enqueue nhAdmin.
+  if (window.nhAdmin) {
+    setInterval(refreshNHBadge, 15000);
+    document.addEventListener('nh:table-updated', refreshNHBadge);
+    document.addEventListener('DOMContentLoaded', refreshNHBadge);
+  }
 
   // =====================================================
   // Persist "NEW" row highlights between updates
@@ -120,8 +124,8 @@
   window.nhNewRows = window.nhNewRows || new Set();
 
   function rememberNewRows() {
-    document.querySelectorAll('tr[data-created]').forEach((tr) => {
-      const id = tr.querySelector('input[type="checkbox"]')?.value;
+    document.querySelectorAll('tr[data-id]').forEach((tr) => {
+      const id = tr.getAttribute('data-id');
       if (!id) return;
 
       if (tr.classList.contains('nh-row-new')) window.nhNewRows.add(String(id));

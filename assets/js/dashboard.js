@@ -13,7 +13,8 @@
 
   if (!isNhDashboard) return;
 
-  const t = (key, fallback) => (window.nh_i18n && nh_i18n[key]) || fallback;
+  const t = (key, fallback) =>
+    (window.nh_i18n && window.nh_i18n[key]) || fallback;
 
   // =====================================================
   // Filters (moved from inline PHP)
@@ -77,11 +78,16 @@
 
     e.preventDefault();
 
+    if (!window.nhAdmin) {
+      alert(t('request_fail', 'Request failed.'));
+      return;
+    }
+
     const id = btn.dataset.id;
     const nonce = btn.dataset.nonce;
 
     fetch(
-      `${nhAdmin.ajax_url}?action=nh_view_notification&id=${encodeURIComponent(
+      `${window.nhAdmin.ajax_url}?action=nh_view_notification&id=${encodeURIComponent(
         id
       )}&_wpnonce=${encodeURIComponent(nonce)}`,
       { credentials: 'same-origin' }
@@ -93,9 +99,9 @@
             data.data.source || t('modal_default_title', 'Notification');
           document.getElementById('nh-modal-message').textContent =
             data.data.message || '';
-          document.getElementById('nh-modal-meta').innerHTML = `<small>${
-            data.data.created_at || ''
-          }</small>`;
+          // Avoid innerHTML.
+          document.getElementById('nh-modal-meta').textContent =
+            data.data.created_at || '';
           openModal();
         } else {
           alert(data?.data?.message || t('load_error', 'Load failed.'));
@@ -120,8 +126,8 @@
   // =====================================================
   const tableBody = document.querySelector('#the-list');
 
-  const getRoot = () => (window.nhREST && nhREST.root) || '/wp-json/nh/v1/';
-  const getNonce = () => (window.nhREST && nhREST.nonce) || '';
+  const getRoot = () => (window.nhREST && window.nhREST.root) || '/wp-json/nh/v1/';
+  const getNonce = () => (window.nhREST && window.nhREST.nonce) || '';
   const buildUrl = (p) =>
     (getRoot().endsWith('/') ? getRoot() : getRoot() + '/') + p;
 
@@ -155,7 +161,7 @@
         const doc = new DOMParser().parseFromString(html, 'text/html');
         const newBody = doc.querySelector('#the-list');
 
-        // Refresh WP list table view tabs (All / Active / Archived...)
+        // Refresh WP list table view tabs (All / Unread / Archived...)
         const newViews = doc.querySelector('.subsubsub');
         const oldViews = document.querySelector('.subsubsub');
         if (newViews && oldViews) oldViews.innerHTML = newViews.innerHTML;
@@ -195,12 +201,14 @@
       .querySelector('#the-list tr:first-child td:nth-child(7)')
       ?.textContent.trim();
 
-    lastTs = firstRowTime || (window.nhREST && nhREST.server_now) || null;
+    lastTs = firstRowTime || (window.nhREST && window.nhREST.server_now) || null;
   };
 
   const poll = () => {
     let url = buildUrl('notifications');
-    if (lastTs) url += (url.includes('?') ? '&' : '?') + 'since=' + encodeURIComponent(lastTs);
+    if (lastTs)
+      url +=
+        (url.includes('?') ? '&' : '?') + 'since=' + encodeURIComponent(lastTs);
 
     fetch(url, {
       headers: { 'X-WP-Nonce': getNonce() },
@@ -245,15 +253,26 @@
     const isYesterday = date.toDateString() === y.toDateString();
 
     if (sec < 60) return t('time_now', 'Now');
-    if (sameDay && min < 60) return `${Math.floor(min)} ${t('time_min_ago', 'min ago')}`;
-    if (sameDay && hour < 24) return `${Math.floor(hour)} ${t('time_hour_ago', 'hour(s) ago')}`;
+    if (sameDay && min < 60)
+      return `${Math.floor(min)} ${t('time_min_ago', 'min ago')}`;
+    if (sameDay && hour < 24)
+      return `${Math.floor(hour)} ${t('time_hour_ago', 'hour(s) ago')}`;
     if (isYesterday) {
-      return `${t('time_yesterday', 'Yesterday')} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      return `${t('time_yesterday', 'Yesterday')} ${date.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      })}`;
     }
     if (day < 7) {
-      return `${date.toLocaleDateString([], { weekday: 'long' })} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      return `${date.toLocaleDateString([], {
+        weekday: 'long',
+      })} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     }
-    return date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+    return date.toLocaleDateString([], {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
   }
 
   function updateCreatedTimes() {
@@ -273,14 +292,14 @@
   // Actions + Bulk (jQuery)
   // =====================================================
   function initJQueryActions() {
-    if (!window.jQuery) return;
+    if (!window.jQuery || !window.nhAdmin) return;
     const $ = window.jQuery;
 
     function nhAjax(action, id) {
-      return $.post(nhAdmin.ajax_url, {
+      return $.post(window.nhAdmin.ajax_url, {
         action,
         id,
-        _wpnonce: nhAdmin.nonce,
+        _wpnonce: window.nhAdmin.nonce,
       });
     }
 
@@ -390,7 +409,12 @@
 
       if (
         action === 'delete' &&
-        !confirm(t('confirm_delete_bulk', 'Are you sure you want to delete selected notifications?'))
+        !confirm(
+          t(
+            'confirm_delete_bulk',
+            'Are you sure you want to delete selected notifications?'
+          )
+        )
       ) {
         return false;
       }
@@ -398,16 +422,18 @@
       const $loader = $('#nh-bulk-loader');
       $loader.addClass('active');
 
-      $.post(nhAdmin.ajax_url, {
+      $.post(window.nhAdmin.ajax_url, {
         action: 'nh_bulk_action',
         bulk_action: action,
         ids,
-        _wpnonce: nhAdmin.nonce,
+        _wpnonce: window.nhAdmin.nonce,
       })
         .done(function (res) {
           if (res.success) {
             if (typeof window.nhRefreshTable === 'function') {
-              window.nhRefreshTable().finally(() => $loader.removeClass('active'));
+              window
+                .nhRefreshTable()
+                .finally(() => $loader.removeClass('active'));
             } else {
               location.reload();
             }

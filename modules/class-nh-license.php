@@ -19,14 +19,14 @@ class NH_License {
      *
      * @since 1.6.2
      */
-    const OPT_KEY = 'nh_license_key';
+    public const OPT_KEY = 'nh_license_key';
 
     /**
      * Option key: license validity flag.
      *
      * @since 1.6.2
      */
-    const OPT_VALID = 'nh_license_valid';
+    public const OPT_VALID = 'nh_license_valid';
 
     /**
      * Return true if Pro features are allowed.

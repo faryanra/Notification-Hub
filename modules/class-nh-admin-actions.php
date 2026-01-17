@@ -13,32 +13,40 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-/**
- * Safe require helper for admin-actions submodules.
- *
- * @since 1.6.2
- * @param string $path Absolute file path.
- * @return bool True when loaded, false otherwise.
- */
-function nh_admin_actions_require_once($path) {
-    if (file_exists($path)) {
-        require_once $path;
-        return true;
-    }
-
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        error_log(sprintf('Notification Hub: Missing admin-actions file %s', $path));
-    }
-
-    return false;
-}
-
-// Load sub-modules.
-nh_admin_actions_require_once(__DIR__ . '/admin-actions/class-nh-admin-license.php');
-nh_admin_actions_require_once(__DIR__ . '/admin-actions/class-nh-admin-hooks.php');
-nh_admin_actions_require_once(__DIR__ . '/admin-actions/class-nh-admin-csv-export.php');
-
 class NH_Admin_Actions {
+
+    /**
+     * Load admin-actions submodules.
+     *
+     * @since 1.6.2
+     * @return void
+     */
+    public static function load_modules(): void {
+        self::safe_require_once(__DIR__ . '/admin-actions/class-nh-admin-license.php');
+        self::safe_require_once(__DIR__ . '/admin-actions/class-nh-admin-hooks.php');
+        self::safe_require_once(__DIR__ . '/admin-actions/class-nh-admin-csv-export.php');
+    }
+
+    /**
+     * Safe require helper for admin-actions submodules.
+     *
+     * @since 1.6.2
+     * @param string $path Absolute file path.
+     * @return bool True when loaded, false otherwise.
+     */
+    private static function safe_require_once(string $path): bool {
+        if (file_exists($path)) {
+            require_once $path;
+            return true;
+        }
+
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+            error_log(sprintf('Notification Hub: Missing admin-actions file %s', $path));
+        }
+
+        return false;
+    }
 
     /**
      * Initialize all admin action handlers.
@@ -46,7 +54,9 @@ class NH_Admin_Actions {
      * @since 1.6.2
      * @return void
      */
-    public static function init() {
+    public static function init(): void {
+        self::load_modules();
+
         if (class_exists('NH_Admin_License') && method_exists('NH_Admin_License', 'init')) {
             NH_Admin_License::init();
         }

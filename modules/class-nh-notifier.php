@@ -13,30 +13,6 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-/**
- * Safe require helper for internal notifier handlers.
- *
- * @since 1.6.2
- * @param string $path Absolute file path.
- * @return void
- */
-function nh_notifier_require_once($path) {
-    if (file_exists($path)) {
-        require_once $path;
-        return;
-    }
-
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        error_log(sprintf('Notification Hub: Missing notifier handler file %s', $path));
-    }
-}
-
-// Load handlers.
-nh_notifier_require_once(__DIR__ . '/notifier/class-nh-notifier-queue.php');
-nh_notifier_require_once(__DIR__ . '/notifier/class-nh-notifier-email.php');
-nh_notifier_require_once(__DIR__ . '/notifier/class-nh-notifier-telegram.php');
-nh_notifier_require_once(__DIR__ . '/notifier/class-nh-notifier-slack.php');
-
 class NH_Notifier {
 
     /**
@@ -70,6 +46,38 @@ class NH_Notifier {
     }
 
     /**
+     * Load internal notifier handlers (if present).
+     *
+     * @since 1.6.2
+     * @return void
+     */
+    public static function load_handlers(): void {
+        self::safe_require_once(__DIR__ . '/notifier/class-nh-notifier-queue.php');
+        self::safe_require_once(__DIR__ . '/notifier/class-nh-notifier-email.php');
+        self::safe_require_once(__DIR__ . '/notifier/class-nh-notifier-telegram.php');
+        self::safe_require_once(__DIR__ . '/notifier/class-nh-notifier-slack.php');
+    }
+
+    /**
+     * Safe require helper for internal notifier handlers.
+     *
+     * @since 1.6.2
+     * @param string $path Absolute file path.
+     * @return void
+     */
+    private static function safe_require_once(string $path): void {
+        if (file_exists($path)) {
+            require_once $path;
+            return;
+        }
+
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+            error_log(sprintf('Notification Hub: Missing notifier handler file %s', $path));
+        }
+    }
+
+    /**
      * Queue notification (preferred method).
      *
      * @since 1.6.2
@@ -77,16 +85,15 @@ class NH_Notifier {
      * @param array  $payload Notification payload.
      * @return bool
      */
-    public function queue_send($channel, $payload = []) {
-        $channel = sanitize_key((string) $channel);
-        $payload = is_array($payload) ? $payload : [];
+    public function queue_send(string $channel, array $payload = []): bool {
+        $channel = sanitize_key($channel);
 
         if (!$this->queue) {
             // Queue not available, fallback to immediate send.
             return $this->send_now($channel, $payload);
         }
 
-        return $this->queue->queue_send($channel, $payload);
+        return (bool) $this->queue->queue_send($channel, $payload);
     }
 
     /**
@@ -97,8 +104,8 @@ class NH_Notifier {
      * @param array  $payload Notification payload.
      * @return bool
      */
-    public function send($channel, $payload = []) {
-        return $this->send_now((string) $channel, is_array($payload) ? $payload : []);
+    public function send(string $channel, array $payload = []): bool {
+        return $this->send_now($channel, $payload);
     }
 
     /**
@@ -109,9 +116,8 @@ class NH_Notifier {
      * @param array  $payload Notification payload.
      * @return bool
      */
-    public function send_now($channel, $payload = []) {
-        $channel = sanitize_key((string) $channel);
-        $payload = is_array($payload) ? $payload : [];
+    public function send_now(string $channel, array $payload = []): bool {
+        $channel = sanitize_key($channel);
 
         // Apply network policy.
         if (!$this->check_network_policy($channel, $payload)) {
@@ -126,7 +132,7 @@ class NH_Notifier {
                 (int) $payload['notification_id'],
                 $channel,
                 (bool) $success,
-                $success ? '' : __('Delivery failed', 'notification-hub')
+                $success ? '' : esc_html__('Delivery failed', 'notification-hub')
             );
         }
 
@@ -141,7 +147,7 @@ class NH_Notifier {
      * @param array  $payload Notification payload.
      * @return bool
      */
-    private function dispatch($channel, $payload) {
+    private function dispatch(string $channel, array $payload): bool {
         switch ($channel) {
             case 'email':
                 // Respect network override recipient if provided.
@@ -159,7 +165,7 @@ class NH_Notifier {
             case 'telegram':
                 return $this->send_pro_channel(
                     'Telegram',
-                    function () use ($payload) {
+                    static function () use ($payload) {
                         return class_exists('NH_Notifier_Telegram') ? (bool) NH_Notifier_Telegram::send($payload) : false;
                     }
                 );
@@ -167,15 +173,13 @@ class NH_Notifier {
             case 'slack':
                 return $this->send_pro_channel(
                     'Slack',
-                    function () use ($payload) {
+                    static function () use ($payload) {
                         return class_exists('NH_Notifier_Slack') ? (bool) NH_Notifier_Slack::send($payload) : false;
                     }
                 );
 
             default:
-                $this->debug_log(
-                    sprintf('Notification Hub: Unknown channel %s', $channel)
-                );
+                $this->debug_log(sprintf('Notification Hub: Unknown channel %s', $channel));
                 return false;
         }
     }
@@ -188,13 +192,13 @@ class NH_Notifier {
      * @param callable $sender Callback that performs send.
      * @return bool
      */
-    private function send_pro_channel($name, $sender) {
+    private function send_pro_channel(string $name, callable $sender): bool {
         if (!class_exists('NH_License') || !method_exists('NH_License', 'is_pro') || !NH_License::is_pro()) {
             $this->debug_log(
                 sprintf(
                     /* translators: %s: channel name */
                     __('%s requires Pro license', 'notification-hub'),
-                    (string) $name
+                    $name
                 )
             );
             return false;
@@ -211,7 +215,7 @@ class NH_Notifier {
      * @param array  $payload Notification payload (may be modified).
      * @return bool
      */
-    private function check_network_policy($channel, &$payload) {
+    private function check_network_policy(string $channel, array &$payload): bool {
         if (!is_multisite()) {
             return true;
         }
@@ -240,9 +244,13 @@ class NH_Notifier {
      * @param string $message Log message.
      * @return void
      */
-    private function debug_log($message) {
+    private function debug_log(string $message): void {
         if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log((string) $message);
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+            error_log($message);
         }
     }
 }
+
+// Load handlers on file load (back-compat).
+NH_Notifier::load_handlers();

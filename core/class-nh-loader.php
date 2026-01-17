@@ -40,7 +40,9 @@ class NH_Loader {
      */
     public function boot() {
 
-        // Shared services.
+        /**
+         * Shared services.
+         */
         if (!$this->r->get_svc('notifier') && class_exists('NH_Notifier')) {
             $this->r->set('notifier', new NH_Notifier($this->r));
         }
@@ -53,14 +55,13 @@ class NH_Loader {
             $this->r->set('license', new NH_License());
         }
 
-        // Admin UI / Dashboard / Hooks.
+        /**
+         * Admin UI / Dashboard / Hooks.
+         */
         if (is_admin()) {
             if (class_exists('NH_Admin_UI')) {
-                if (method_exists('NH_Admin_UI', 'init')) {
-                    NH_Admin_UI::init($this->r);
-                } else {
-                    new NH_Admin_UI($this->r);
-                }
+                // Standard v1.6.2 boot style: constructor registers hooks.
+                new NH_Admin_UI($this->r);
             }
 
             if (class_exists('NH_Dashboard') && method_exists('NH_Dashboard', 'init')) {
@@ -72,7 +73,9 @@ class NH_Loader {
             }
         }
 
-        // Integrations.
+        /**
+         * Integrations.
+         */
         $integrations = [
             'NH_Int_WP_Core',
             'NH_Int_WooCommerce',
@@ -98,7 +101,10 @@ class NH_Loader {
             }
         }
 
-        // REST / Webhook: only boot when nh_hooks exists.
+        /**
+         * REST / Webhook.
+         * Only boot when nh_hooks table exists.
+         */
         if (!$this->nh_hooks_table_exists()) {
             if (defined('WP_DEBUG') && WP_DEBUG) {
                 error_log('Notification Hub: Skipped REST/Webhook — nh_hooks table not found.');

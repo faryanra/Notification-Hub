@@ -77,7 +77,7 @@ class NH_Notifier_Email {
             return sanitize_email($payload['to']);
         }
 
-        return (string) get_option('nh_email_to', get_option('admin_email'));
+        return sanitize_email((string) get_option('nh_email_to', get_option('admin_email')));
     }
 
     /**
@@ -144,6 +144,7 @@ class NH_Notifier_Email {
      */
     private static function debug_log(string $message): void {
         if (defined('WP_DEBUG') && WP_DEBUG) {
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
             error_log($message);
         }
     }

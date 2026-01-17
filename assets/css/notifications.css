@@ -8,17 +8,12 @@
    General Table Styles
 ============================================================ */
 
-.table .status-unread {
-  font-weight: 600;
-}
-
 /* Column widths */
 .wp-list-table .column-view       { width: 40px; text-align: center; padding-right: 5px; }
 .wp-list-table .column-title      { width: 35%; }
-.wp-list-table .column-created_at { width: 12%; white-space: nowrap; padding-left: 5px; }
+.wp-list-table .column-created    { width: 12%; white-space: nowrap; padding-left: 5px; }
 .wp-list-table .column-source     { width: 10%; }
 .wp-list-table .column-type       { width: 10%; }
-.wp-list-table .column-tags       { width: 14%; }
 .wp-list-table .column-status     { width: 8%; text-align: center; }
 .wp-list-table .column-priority   { min-width: 85px !important; width: 85px !important; text-align: center; }
 .wp-list-table .column-id         { width: 4%; text-align: center; }
@@ -26,7 +21,6 @@
 /* Prevent wrapping in key columns */
 .wp-list-table td.column-source,
 .wp-list-table td.column-type,
-.wp-list-table td.column-tags,
 .wp-list-table td.column-status,
 .wp-list-table td.column-priority,
 .wp-list-table td.column-id {
@@ -157,41 +151,8 @@ tr.nh-unread-row input[type="checkbox"] {
 
 /* ============================================================
    Modal (Notification Preview)
+   NOTE: modal base styles are centralized in admin.css
 ============================================================ */
-
-.nh-modal {
-  position: fixed;
-  inset: 0;
-  display: none;
-  z-index: 9999;
-}
-
-.nh-modal__backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-}
-
-.nh-modal__content {
-  position: relative;
-  z-index: 2;
-  background: #fff;
-  border-radius: 8px;
-  max-width: 600px;
-  margin: 10% auto;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.nh-modal__close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
-  border: none;
-  font-size: 22px;
-  cursor: pointer;
-}
 
 /* ============================================================
    Table Loader (overlay)

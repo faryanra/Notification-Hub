@@ -2,7 +2,7 @@
 /**
  * NH_Security
  *
- * Security helper utilities for admin actions (capability checks, nonces, sanitization).
+ * Security helpers for admin actions (capability checks, nonces, sanitization).
  *
  * @package Notification_Hub
  * @since 1.6.2
@@ -73,7 +73,7 @@ class NH_Security {
     }
 
     /**
-     * Sanitize & normalize list of selected channels.
+     * Sanitize and normalize list of selected channels.
      *
      * @since 1.6.2
      * @param mixed $maybe_channels Channels array from request.

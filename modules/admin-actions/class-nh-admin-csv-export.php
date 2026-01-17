@@ -31,10 +31,11 @@ class NH_Admin_CSV_Export {
      * @return void
      */
     public static function export(): void {
-        if (!current_user_can('manage_options')) {
-            wp_die(esc_html__('Access denied.', 'notification-hub'));
+        if (!class_exists('NH_Security')) {
+            wp_die(esc_html__('Security module not available.', 'notification-hub'));
         }
 
+        NH_Security::ensure_cap();
         check_admin_referer('nh_export_csv');
 
         global $wpdb;
@@ -93,11 +94,15 @@ class NH_Admin_CSV_Export {
             wp_die(esc_html__('Cannot export CSV because headers were already sent.', 'notification-hub'));
         }
 
-        $filename = 'notification-hub-export.csv';
+        $filename = 'notification-hub-export-' . gmdate('Y-m-d') . '.csv';
 
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         header('Content-Type: text/csv; charset=utf-8');
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         header('Content-Disposition: attachment; filename=' . $filename);
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         header('Pragma: no-cache');
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         header('Expires: 0');
 
         $out = fopen('php://output', 'w');
@@ -105,15 +110,21 @@ class NH_Admin_CSV_Export {
             wp_die(esc_html__('Unable to open output stream.', 'notification-hub'));
         }
 
+        // Add UTF-8 BOM for Excel compatibility (especially with Persian/Unicode).
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        echo "\xEF\xBB\xBF";
+
         fputcsv($out, $columns);
 
         foreach ($rows as $row) {
             $row = self::format_row(is_array($row) ? $row : []);
+
             // Keep column order stable.
             $ordered = [];
             foreach ($columns as $col) {
                 $ordered[] = $row[$col] ?? '';
             }
+
             fputcsv($out, $ordered);
         }
 
@@ -139,7 +150,7 @@ class NH_Admin_CSV_Export {
             $row['tags'] = '';
         }
 
-        // context: normalize JSON to pretty unicode-safe single-line json
+        // context: normalize JSON to unicode-safe single-line json.
         if (isset($row['context']) && is_string($row['context']) && $row['context'] !== '') {
             $decoded = json_decode($row['context'], true);
             if (is_array($decoded)) {

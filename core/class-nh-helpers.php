@@ -2,7 +2,7 @@
 /**
  * NH_Helpers
  *
- * Helper utilities (logging, formatting, small safe helpers).
+ * Small helper utilities used across Notification Hub (logging, formatting, safe helpers).
  *
  * @package Notification_Hub
  * @since 1.6.2
@@ -63,7 +63,7 @@ class NH_Helpers {
      * @since 1.6.2
      * @param mixed $text  Input text.
      * @param int   $limit Max length.
-     * @return string
+     * @return string Truncated string.
      */
     public static function truncate($text, int $limit = 200): string {
         $text = (string) $text;

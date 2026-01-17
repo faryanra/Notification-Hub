@@ -1,6 +1,6 @@
 <?php
 /**
- * NHNotifierTelegram
+ * NH_Notifier_Telegram
  *
  * Telegram notification handler (Pro).
  *
@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class NHNotifierTelegram {
+class NH_Notifier_Telegram {
 
     /**
      * Send Telegram notification.
@@ -26,19 +26,19 @@ class NHNotifierTelegram {
      */
     public static function send(array $payload): bool {
         if (!self::is_configured()) {
-            self::debug_log(__('Telegram is not configured (missing token or chat ID).', 'notification-hub'));
+            self::debug_log(esc_html__('Telegram is not configured (missing token or chat ID).', 'notification-hub'));
             return false;
         }
 
         $token  = self::get_token();
-        $chatid = (string) get_option('nh_telegram_chat_id', '');
+        $chatid = sanitize_text_field((string) get_option('nh_telegram_chat_id', ''));
         $text   = self::get_message_text($payload);
 
         try {
             $response = wp_remote_post(
                 self::build_api_url($token),
                 [
-                    'body' => [
+                    'body'    => [
                         'chat_id' => $chatid,
                         'text'    => $text,
                     ],
@@ -104,6 +104,7 @@ class NHNotifierTelegram {
             return $token;
         }
 
+        // Back-compat.
         return (string) get_option('nh_telegram_token', '');
     }
 
@@ -134,7 +135,7 @@ class NHNotifierTelegram {
             return $payload['message'];
         }
 
-        return __('Empty message.', 'notification-hub');
+        return esc_html__('Empty message.', 'notification-hub');
     }
 
     /**

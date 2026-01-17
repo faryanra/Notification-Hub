@@ -32,31 +32,71 @@ class NH_Admin_Hooks {
      * @return void
      */
     public static function test_channel(): void {
+        if (!class_exists('NH_Security')) {
+            wp_die(esc_html__('Security module not available.', 'notification-hub'));
+        }
+
         NH_Security::ensure_cap();
         NH_Security::verify_nonce('nh_test_channel');
 
         $channel = isset($_GET['channel']) ? sanitize_key(wp_unslash($_GET['channel'])) : '';
 
-        $registry = class_exists('NHCoreRegistry') && method_exists('NHCoreRegistry', 'get')
-            ? NHCoreRegistry::get()
+        $tab = isset($_GET['tab']) ? sanitize_key(wp_unslash($_GET['tab'])) : '';
+        if ($tab !== 'general' && $tab !== 'pro') {
+            $tab = '';
+        }
+
+        if ($channel === '') {
+            wp_safe_redirect(add_query_arg(['page' => 'nh_settings', 'tab' => $tab ?: 'general', 'success' => 0, 'nh_test' => ''], admin_url('admin.php')));
+            exit;
+        }
+
+        $registry = class_exists('NH_Core_Registry') && method_exists('NH_Core_Registry', 'get')
+            ? NH_Core_Registry::get()
             : null;
 
-        $notifier = $registry && method_exists($registry, 'get_svc')
-            ? $registry->get_svc('notifier')
+        $notifier = $registry && method_exists($registry, 'get')
+            ? $registry->get('notifier')
             : null;
 
         if (!$notifier || !method_exists($notifier, 'send')) {
             wp_die(esc_html__('Notifier is not available.', 'notification-hub'));
         }
 
-        $notifier->send($channel, [
-            'title'  => __('Notification Hub Test', 'notification-hub'),
-            'body'   => __('This is a test notification.', 'notification-hub'),
-            'source' => 'admin_test',
-            'type'   => 'test',
-        ]);
+        $ok = true;
 
-        wp_safe_redirect(wp_get_referer() ? wp_get_referer() : admin_url('admin.php?page=nh-settings'));
+        try {
+            $result = $notifier->send($channel, [
+                'title'  => esc_html__('Notification Hub Test', 'notification-hub'),
+                'body'   => esc_html__('This is a test notification.', 'notification-hub'),
+                'source' => 'admin_test',
+                'type'   => 'test',
+            ]);
+
+            if ($result === false) {
+                $ok = false;
+            }
+        } catch (Throwable $e) {
+            $ok = false;
+
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+                error_log('Notification Hub: channel test failed: ' . $e->getMessage());
+            }
+        }
+
+        // Redirect back to Settings with a visible notice (templates/settings.php reads success + nh_test).
+        wp_safe_redirect(
+            add_query_arg(
+                [
+                    'page'    => 'nh_settings',
+                    'tab'     => $tab ?: 'general',
+                    'success' => $ok ? 1 : 0,
+                    'nh_test' => $channel,
+                ],
+                admin_url('admin.php')
+            )
+        );
         exit;
     }
 }
