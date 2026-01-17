@@ -1,113 +1,220 @@
 <?php
-if (!defined('ABSPATH')) exit;
+/**
+ * NH_Table_Columns
+ *
+ * Column renderers for NH_Notifications_Table.
+ *
+ * @package Notification_Hub
+ * @since 1.6.2
+ */
+
+if (!defined('ABSPATH')) {
+    exit;
+}
 
 class NH_Table_Columns {
 
-    public static function column_cb($item) {
+    /**
+     * Checkbox column.
+     *
+     * @since 1.6.2
+     * @param object $item Row item.
+     * @return string
+     */
+    public static function column_cb($item): string {
         return sprintf('<input type="checkbox" name="ids[]" value="%d" />', (int) $item->id);
     }
 
-    public static function column_id($item) {
+    /**
+     * ID column.
+     *
+     * @since 1.6.2
+     * @param object $item Row item.
+     * @return int
+     */
+    public static function column_id($item): int {
         return (int) $item->id;
     }
 
-    // ✅ Title بدون dot
-    public static function column_title($item) {
-        $id = (int) $item->id;
-        
-        // Title
-        $title = esc_html($item->title ?: __('(no title)', 'notification-hub'));
-        if ($admin_link = self::get_admin_link($item)) {
-            $title_html = '<a href="' . esc_url($admin_link) . '" target="_blank">' . $title . '</a>';
+    /**
+     * Title column with row actions.
+     *
+     * @since 1.6.2
+     * @param object $item Row item.
+     * @return string
+     */
+    public static function column_title($item): string {
+        $title_text = !empty($item->title)
+            ? (string) $item->title
+            : __('(no title)', 'notification-hub');
+
+        $title = esc_html($title_text);
+
+        $admin_link = self::get_admin_link($item);
+        if ($admin_link) {
+            $title_html = '<a href="' . esc_url($admin_link) . '" target="_blank" rel="noopener noreferrer">' . $title . '</a>';
         } else {
             $title_html = '<strong>' . $title . '</strong>';
         }
 
-        // Row actions
         $actions = self::get_row_actions($item);
-        $actions_html = '<div class="row-actions">' . implode(' | ', $actions) . '</div>';
+        $actions_html = !empty($actions)
+            ? '<div class="row-actions">' . implode(' | ', $actions) . '</div>'
+            : '';
 
         return $title_html . $actions_html;
     }
 
-    public static function column_view($item) {
-        $nonce = wp_create_nonce('nh_view_' . $item->id);
+    /**
+     * View icon column.
+     *
+     * @since 1.6.2
+     * @param object $item Row item.
+     * @return string
+     */
+    public static function column_view($item): string {
+        $nonce = wp_create_nonce('nh_view_' . (int) $item->id);
+
         return sprintf(
-            '<span class="nh-eye nh-open-modal" data-id="%d" data-nonce="%s" title="%s">'
-            . '<span class="dashicons dashicons-visibility"></span>'
-            . '</span>',
+            '<span class="nh-eye nh-open-modal" data-id="%d" data-nonce="%s" title="%s"><span class="dashicons dashicons-visibility"></span></span>',
             (int) $item->id,
             esc_attr($nonce),
-            esc_attr__('View Details', 'notification-hub')
+            esc_attr__('View details', 'notification-hub')
         );
     }
 
-    // ✅ Created با data attribute برای JavaScript
-    public static function column_created($item) {
-        return '<span class="nh-created-time" data-raw="' . esc_attr($item->created_at) . '">' 
-               . esc_html($item->created_at) 
-               . '</span>';
+    /**
+     * Created column (with data-raw for JS formatting).
+     *
+     * @since 1.6.2
+     * @param object $item Row item.
+     * @return string
+     */
+    public static function column_created($item): string {
+        $raw = !empty($item->created_at) ? (string) $item->created_at : '';
+        $txt = $raw !== '' ? $raw : '—';
+
+        return '<span class="nh-created-time" data-raw="' . esc_attr($raw) . '">' . esc_html($txt) . '</span>';
     }
 
-    public static function column_source($item) {
-        return esc_html($item->source ?: '—');
+    /**
+     * Source column.
+     *
+     * @since 1.6.2
+     * @param object $item Row item.
+     * @return string
+     */
+    public static function column_source($item): string {
+        $txt = !empty($item->source) ? (string) $item->source : '—';
+        return esc_html($txt);
     }
 
-    public static function column_type($item) {
-        return esc_html($item->type ?: '—');
+    /**
+     * Type column.
+     *
+     * @since 1.6.2
+     * @param object $item Row item.
+     * @return string
+     */
+    public static function column_type($item): string {
+        $txt = !empty($item->type) ? (string) $item->type : '—';
+        return esc_html($txt);
     }
 
-    public static function column_priority($item) {
-        return esc_html($item->priority ?: '—');
+    /**
+     * Priority column.
+     *
+     * @since 1.6.2
+     * @param object $item Row item.
+     * @return string
+     */
+    public static function column_priority($item): string {
+        $txt = isset($item->priority) && $item->priority !== '' ? (string) $item->priority : '—';
+        return esc_html($txt);
     }
 
-    public static function column_status($item) {
+    /**
+     * Status badges column.
+     *
+     * @since 1.6.2
+     * @param object $item Row item.
+     * @return string
+     */
+    public static function column_status($item): string {
         $badges = [];
 
         if ((int) $item->status === 3) {
-            $badges[] = '<span class="nh-status-important">Important</span>';
+            $badges[] = '<span class="nh-status-important">' . esc_html__('Important', 'notification-hub') . '</span>';
         }
 
         if ((int) $item->status === 1) {
-            $badges[] = '<span class="nh-status-archived">Archived</span>';
+            $badges[] = '<span class="nh-status-archived">' . esc_html__('Archived', 'notification-hub') . '</span>';
         }
 
         if (empty($item->read_at)) {
-            $badges[] = '<span class="nh-status-unread">Unread</span>';
+            $badges[] = '<span class="nh-status-unread">' . esc_html__('Unread', 'notification-hub') . '</span>';
         } else {
-            $badges[] = '<span class="nh-status-read">Read</span>';
+            $badges[] = '<span class="nh-status-read">' . esc_html__('Read', 'notification-hub') . '</span>';
         }
 
         return '<div class="nh-status-badges">' . implode('', $badges) . '</div>';
     }
 
-    private static function get_admin_link($item) {
-        if ($item->source === 'Comments' && !empty($item->object_id)) {
-            return admin_url('comment.php?action=editcomment&c=' . (int) $item->object_id);
+    /**
+     * Try to generate an admin edit link based on item context.
+     *
+     * @since 1.6.2
+     * @param object $item Row item.
+     * @return string|null
+     */
+    private static function get_admin_link($item): ?string {
+        $source_raw = !empty($item->source) ? (string) $item->source : '';
+        $source = sanitize_key($source_raw);
+
+        $object_id = !empty($item->object_id) ? (int) $item->object_id : 0;
+        if (!$object_id) {
+            return null;
         }
-        if ($item->source === 'Posts' && !empty($item->object_id)) {
-            return get_edit_post_link((int) $item->object_id);
+
+        // Support multiple naming styles (comments/comment, posts/post).
+        if (in_array($source, ['comments', 'comment'], true)) {
+            return admin_url('comment.php?action=editcomment&c=' . $object_id);
         }
+
+        if (in_array($source, ['posts', 'post'], true)) {
+            $link = get_edit_post_link($object_id);
+            return $link ? $link : null;
+        }
+
         return null;
     }
 
-    private static function get_row_actions($item) {
+    /**
+     * Row actions renderer.
+     *
+     * Note: actions are AJAX-driven, so we keep href="#" and data-id.
+     *
+     * @since 1.6.2
+     * @param object $item Row item.
+     * @return array
+     */
+    private static function get_row_actions($item): array {
         $id = (int) $item->id;
         $actions = [];
 
         if (empty($item->read_at)) {
-            $actions[] = '<a href="#" class="nh-mark-read" data-id="' . $id . '">' . __('Mark as Read', 'notification-hub') . '</a>';
+            $actions[] = '<a href="#" class="nh-mark-read" data-id="' . $id . '">' . esc_html__('Mark as read', 'notification-hub') . '</a>';
         } else {
-            $actions[] = '<a href="#" class="nh-mark-unread" data-id="' . $id . '">' . __('Mark as Unread', 'notification-hub') . '</a>';
+            $actions[] = '<a href="#" class="nh-mark-unread" data-id="' . $id . '">' . esc_html__('Mark as unread', 'notification-hub') . '</a>';
         }
 
         if ((int) $item->status === 3) {
-            $actions[] = '<a href="#" class="nh-unmark-important" data-id="' . $id . '">' . __('Remove Important', 'notification-hub') . '</a>';
+            $actions[] = '<a href="#" class="nh-unmark-important" data-id="' . $id . '">' . esc_html__('Remove important', 'notification-hub') . '</a>';
         } else {
-            $actions[] = '<a href="#" class="nh-mark-important" data-id="' . $id . '">' . __('Mark Important', 'notification-hub') . '</a>';
+            $actions[] = '<a href="#" class="nh-mark-important" data-id="' . $id . '">' . esc_html__('Mark important', 'notification-hub') . '</a>';
         }
 
-        $actions[] = '<a href="#" class="nh-delete-notification" data-id="' . $id . '" style="color:#b32d2e;">' . __('Delete', 'notification-hub') . '</a>';
+        $actions[] = '<a href="#" class="nh-delete-notification nh-link-danger" data-id="' . $id . '">' . esc_html__('Delete', 'notification-hub') . '</a>';
 
         return $actions;
     }

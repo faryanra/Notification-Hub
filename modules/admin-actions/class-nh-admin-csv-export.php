@@ -1,28 +1,38 @@
 <?php
 /**
- * CSV Export Handler
- * 
+ * NH_Admin_CSV_Export
+ *
+ * Export notifications to CSV.
+ *
  * @package Notification_Hub
- * @since 1.6.1
+ * @since 1.6.2
  */
 
-if (!defined('ABSPATH')) exit;
+if (!defined('ABSPATH')) {
+    exit;
+}
 
 class NH_Admin_CSV_Export {
 
     /**
-     * Register export action handler
+     * Register export action handler.
+     *
+     * @since 1.6.2
+     * @return void
      */
-    public static function init() {
+    public static function init(): void {
         add_action('admin_post_nh_export_csv', [__CLASS__, 'export']);
     }
 
     /**
-     * Export notifications to CSV
+     * Export notifications to CSV.
+     *
+     * @since 1.6.2
+     * @return void
      */
-    public static function export() {
+    public static function export(): void {
         if (!current_user_can('manage_options')) {
-            wp_die(__('Access denied.', 'notification-hub'));
+            wp_die(esc_html__('Access denied.', 'notification-hub'));
         }
 
         check_admin_referer('nh_export_csv');
@@ -30,39 +40,81 @@ class NH_Admin_CSV_Export {
         global $wpdb;
         $table = $wpdb->prefix . 'nh_notifications';
 
-        $columns = $wpdb->get_col("DESC {$table}", 0);
-        $wanted = ['id', 'source', 'type', 'title', 'message', 'status', 'priority', 'tags', 'context', 'created_at', 'updated_at', 'read_at'];
-        $cols = array_values(array_intersect($wanted, $columns));
+        // Read real columns from table to prevent selecting missing cols.
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+        $columns = $wpdb->get_col("DESCRIBE {$table}", 0);
+
+        $wanted = [
+            'id',
+            'source',
+            'type',
+            'title',
+            'message',
+            'status',
+            'priority',
+            'tags',
+            'context',
+            'created_at',
+            'updated_at',
+            'read_at',
+        ];
+
+        $cols = array_values(array_intersect($wanted, is_array($columns) ? $columns : []));
 
         if (empty($cols)) {
-            wp_die(__('No exportable columns found.', 'notification-hub'));
+            wp_die(esc_html__('No exportable columns found.', 'notification-hub'));
         }
 
-        $cols_sql = implode(', ', $cols);
+        // Build select statement with sanitized column names (from DESCRIBE output).
+        $cols_sql = implode(', ', array_map(static function ($c) {
+            return preg_replace('/[^a-zA-Z0-9_]/', '', (string) $c);
+        }, $cols));
+
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
         $rows = $wpdb->get_results("SELECT {$cols_sql} FROM {$table} ORDER BY created_at DESC", ARRAY_A);
 
-        if (empty($rows)) {
-            wp_die(__('No notifications found to export.', 'notification-hub'));
+        if (empty($rows) || !is_array($rows)) {
+            wp_die(esc_html__('No notifications found to export.', 'notification-hub'));
         }
 
         self::output_csv($cols, $rows);
     }
 
     /**
-     * Output CSV headers and data
+     * Output CSV headers and data.
+     *
+     * @since 1.6.2
+     * @param array $columns Columns.
+     * @param array $rows Rows.
+     * @return void
      */
-    private static function output_csv($columns, $rows) {
+    private static function output_csv(array $columns, array $rows): void {
+        if (headers_sent()) {
+            wp_die(esc_html__('Cannot export CSV because headers were already sent.', 'notification-hub'));
+        }
+
+        $filename = 'notification-hub-export.csv';
+
         header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename=notification-hub-export.csv');
+        header('Content-Disposition: attachment; filename=' . $filename);
         header('Pragma: no-cache');
         header('Expires: 0');
 
         $out = fopen('php://output', 'w');
+        if (!$out) {
+            wp_die(esc_html__('Unable to open output stream.', 'notification-hub'));
+        }
+
         fputcsv($out, $columns);
 
         foreach ($rows as $row) {
-            $row = self::format_row($row);
-            fputcsv($out, $row);
+            $row = self::format_row(is_array($row) ? $row : []);
+            // Keep column order stable.
+            $ordered = [];
+            foreach ($columns as $col) {
+                $ordered[] = $row[$col] ?? '';
+            }
+            fputcsv($out, $ordered);
         }
 
         fclose($out);
@@ -70,15 +122,31 @@ class NH_Admin_CSV_Export {
     }
 
     /**
-     * Format row data for CSV output
+     * Format row data for CSV output.
+     *
+     * @since 1.6.2
+     * @param array $row Row.
+     * @return array
      */
-    private static function format_row($row) {
-        if (isset($row['tags'])) {
-            $row['tags'] = $row['tags'] ? implode('|', (array) json_decode($row['tags'], true)) : '';
+    private static function format_row(array $row): array {
+        // tags: JSON array => a|b|c
+        if (isset($row['tags']) && is_string($row['tags']) && $row['tags'] !== '') {
+            $decoded = json_decode($row['tags'], true);
+            if (is_array($decoded)) {
+                $row['tags'] = implode('|', array_map('strval', $decoded));
+            }
+        } elseif (isset($row['tags']) && $row['tags'] === null) {
+            $row['tags'] = '';
         }
 
-        if (isset($row['context']) && is_string($row['context']) && str_starts_with(trim($row['context']), '{')) {
-            $row['context'] = json_encode(json_decode($row['context'], true), JSON_UNESCAPED_UNICODE);
+        // context: normalize JSON to pretty unicode-safe single-line json
+        if (isset($row['context']) && is_string($row['context']) && $row['context'] !== '') {
+            $decoded = json_decode($row['context'], true);
+            if (is_array($decoded)) {
+                $row['context'] = wp_json_encode($decoded, JSON_UNESCAPED_UNICODE);
+            }
+        } elseif (isset($row['context']) && $row['context'] === null) {
+            $row['context'] = '';
         }
 
         return $row;

@@ -1,21 +1,42 @@
 // =====================================================
-// Notification Hub — Admin JS (Final Clean Version)
+// Notification Hub — Admin JS
+//
+// @package Notification_Hub
+// @since 1.6.2
 // =====================================================
 
 (function () {
   'use strict';
 
+  const t = (key, fallback) =>
+    (window.nhAdmin && nhAdmin.i18n && nhAdmin.i18n[key]) || fallback;
+
+  // =====================================================
+  // Global confirm handler (no inline onclick)
+  // Usage: <a class="nh-confirm" data-confirm="...">
+  // =====================================================
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a.nh-confirm[data-confirm]');
+    if (!a) return;
+
+    const msg = a.getAttribute('data-confirm') || '';
+    if (msg && !confirm(msg)) {
+      e.preventDefault();
+    }
+  });
+
   // =====================================================
   // Single "Mark as Read" AJAX Handler
   // =====================================================
-  document.addEventListener('click', e => {
+  document.addEventListener('click', (e) => {
     const a = e.target.closest('.nh-mark-read-ajax');
     if (!a) return;
+
     e.preventDefault();
 
     const id = a.dataset.id;
     const nonce = a.dataset.nonce;
-    if (!id || !nonce) return;
+    if (!id || !nonce || !window.nhAdmin) return;
 
     const body = new URLSearchParams();
     body.set('action', 'nh_mark_read');
@@ -26,97 +47,88 @@
       method: 'POST',
       credentials: 'same-origin',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: body
+      body,
     })
-      .then(r => r.json())
-      .then(json => {
+      .then((r) => r.json())
+      .then((json) => {
         if (!json || !json.success) return;
+
         const row = a.closest('tr');
-        if (row) {
-          row.classList.remove('nh-row-new');
-        }
+        if (row) row.classList.remove('nh-row-new');
+
         if (window.nhNewRows) window.nhNewRows.delete(String(id));
         document.dispatchEvent(new Event('nh:table-updated'));
       })
       .catch(() => {});
   });
 
-// =====================================================
-// Live Admin Bar Badge Refresh with Red Alert
-// =====================================================
+  // =====================================================
+  // Live Admin Bar Badge Refresh (no inline styles)
+  // Requires CSS: #wp-admin-bar-nh_unread.nh-has-new ...
+  // =====================================================
   let nhLastBadgeCount = -1;
 
+  function setBadgeText(badgeEl, count) {
+    const label = t('badge_new', 'New');
+    badgeEl.textContent = ` ${count} ${label}`;
+  }
+
   function refreshNHBadge() {
+    if (!window.nhAdmin) return;
+
     const badgeItem = document.querySelector('#wp-admin-bar-nh_unread');
     const badge = badgeItem?.querySelector('.ab-label');
-    const icon = badgeItem?.querySelector('.ab-icon.dashicons-bell');
-    
-    if (!badge || !icon || typeof nhAdmin === 'undefined') return;
+    if (!badgeItem || !badge) return;
 
-    fetch(nhAdmin.ajax_url + '?action=nh_get_unread_count', { credentials: 'same-origin' })
-      .then(r => r.json())
-      .then(json => {
-        if (!json || !json.success || !json.data || typeof json.data.count !== 'number') return;
-        const count = json.data.count;
-        
-        // Detect new notifications and animate
+    const url = new URL(nhAdmin.ajax_url, window.location.origin);
+    url.searchParams.set('action', 'nh_get_unread_count');
+    url.searchParams.set('_wpnonce', nhAdmin.nonce);
+
+    fetch(url.toString(), { credentials: 'same-origin' })
+      .then((r) => r.json())
+      .then((json) => {
+        const count =
+          json?.success && json?.data && typeof json.data.count === 'number'
+            ? json.data.count
+            : null;
+
+        if (count === null) return;
+
+        // Add a class when new items arrive (CSS handles the animation).
         if (nhLastBadgeCount >= 0 && count > nhLastBadgeCount) {
-          icon.style.color = '#d63638';
-          icon.style.transform = 'scale(1.2)';
-          icon.style.transition = 'all 0.3s ease';
-          
-          setTimeout(() => {
-            icon.style.transform = 'scale(1)';
-            setTimeout(() => {
-              icon.style.color = '';
-            }, 2000);
-          }, 300);
+          badgeItem.classList.add('nh-has-new');
+          setTimeout(() => badgeItem.classList.remove('nh-has-new'), 2500);
         }
-        
-        badge.textContent = count > 0 ? ` ${count} New` : ' 0 New';
+
+        setBadgeText(badge, count);
         nhLastBadgeCount = count;
       })
       .catch(() => {});
   }
 
-  // Refresh when user comes back to tab
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') refreshNHBadge();
   });
 
-  // Refresh every 15 seconds
   setInterval(refreshNHBadge, 15000);
-
-  // Refresh after table updates
   document.addEventListener('nh:table-updated', refreshNHBadge);
-
-  // Initial load
   document.addEventListener('DOMContentLoaded', refreshNHBadge);
 
   // =====================================================
-  // Persist "NEW" Row Highlights Between Updates
+  // Persist "NEW" row highlights between updates
   // =====================================================
   window.nhNewRows = window.nhNewRows || new Set();
 
   function rememberNewRows() {
-    document.querySelectorAll('tr[data-created]').forEach(tr => {
+    document.querySelectorAll('tr[data-created]').forEach((tr) => {
       const id = tr.querySelector('input[type="checkbox"]')?.value;
       if (!id) return;
 
-      // Only keep rows that PHP already marked as new
-      if (tr.classList.contains('nh-row-new')) {
-        window.nhNewRows.add(String(id));
-      } else {
-        window.nhNewRows.delete(String(id));
-      }
+      if (tr.classList.contains('nh-row-new')) window.nhNewRows.add(String(id));
+      else window.nhNewRows.delete(String(id));
     });
   }
 
   document.addEventListener('DOMContentLoaded', rememberNewRows);
   document.addEventListener('nh:table-updated', rememberNewRows);
-
-  // =====================================================
-  // Disabled any "Mark All as Seen/Read" auto-handlers
-  // =====================================================
-
 })();

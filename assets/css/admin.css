@@ -1,5 +1,7 @@
 /* ===========================================
-   Notification Hub Admin Styles 
+   Notification Hub — Admin Styles
+   @package Notification_Hub
+   @since 1.6.2
    =========================================== */
 
 /* ---------- Layout ---------- */
@@ -20,7 +22,8 @@
 }
 
 /* ---------- Table ---------- */
-.widefat th, .widefat td {
+.widefat th,
+.widefat td {
   padding: 10px;
 }
 
@@ -31,11 +34,13 @@
   z-index: 9999;
   display: none;
 }
+
 .nh-modal__backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
 }
+
 .nh-modal__content {
   position: relative;
   background: #fff;
@@ -43,8 +48,9 @@
   padding: 20px;
   width: 500px;
   border-radius: 8px;
-  box-shadow: 0 4px 30px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
 }
+
 .nh-modal__close {
   position: absolute;
   top: 10px;
@@ -54,10 +60,12 @@
   font-size: 20px;
   cursor: pointer;
 }
+
 .nh-modal__title {
   font-size: 18px;
   margin-bottom: 10px;
 }
+
 .nh-modal__message {
   margin-bottom: 8px;
 }
@@ -71,41 +79,88 @@
   background: #006ba1;
 }
 
+/* ---------- List table row sizing ---------- */
 .wp-list-table.notifications tbody tr {
-    display: table-row;
-    height: 80px;
+  display: table-row;
+  height: 80px;
 }
 
 .wp-list-table.notifications tbody td {
-    max-width: 200px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Admin Bar Badge - Live Update */
+/* =====================================================
+   Admin Bar Badge (no inline styles)
+   Triggered by: #wp-admin-bar-nh_unread.nh-has-new
+   ===================================================== */
+
 #wp-admin-bar-nh_unread .ab-label {
-    transition: all 0.3s ease;
+  transition: all 0.3s ease;
 }
 
-/* Red alert when new notifications arrive */
 #wpadminbar #wp-admin-bar-nh_unread.nh-has-new > .ab-item .ab-icon.dashicons-bell {
-    color: #d63638 !important;
-    animation: nh-pulse 1s ease-in-out 3;
+  color: #d63638 !important;
+  animation: nh-pulse 1s ease-in-out 3;
 }
 
-/* Pulse animation */
-@keyframes nh-pulse {
-    0%, 100% { 
-        transform: scale(1); 
-        opacity: 1;
-    }
-    50% { 
-        transform: scale(1.15); 
-        opacity: 0.8;
-    }
-}
-
-/* Optional: Change badge background when new */
 #wpadminbar #wp-admin-bar-nh_unread.nh-has-new > .ab-item {
-    background-color: rgba(214, 54, 56, 0.1) !important;
+  background-color: rgba(214, 54, 56, 0.1) !important;
+}
+
+@keyframes nh-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.8;
+  }
+}
+
+/* =====================================================
+   Settings: License box helpers (no inline styles)
+   ===================================================== */
+
+.nh-license-box {
+  margin-top: 20px;
+}
+
+.nh-license-status {
+  font-weight: 700;
+  margin-left: 8px;
+}
+
+.nh-license-status--active {
+  color: #46b450;
+}
+
+.nh-license-status--locked {
+  color: #a00;
+}
+
+.nh-license-key--masked {
+  opacity: 0.6;
+}
+
+.nh-license-hint {
+  margin-top: 6px;
+}
+
+.nh-license-hint--active {
+  color: #46b450;
+}
+
+/* =====================================================
+   Optional helpers
+   ===================================================== */
+
+a.nh-link-danger {
+  color: #d63638;
+}
+a.nh-link-danger:hover {
+  color: #b32d2e;
 }

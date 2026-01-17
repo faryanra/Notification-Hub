@@ -1,29 +1,65 @@
 <?php
 /**
- * Admin Actions Coordinator
- * 
+ * NH_Admin_Actions
+ *
+ * Admin actions coordinator. Loads admin action sub-modules (license, hooks, CSV export)
+ * and boots them on admin_init.
+ *
  * @package Notification_Hub
- * @since 1.6.1
+ * @since 1.6.2
  */
 
-if (!defined('ABSPATH')) exit;
+if (!defined('ABSPATH')) {
+    exit;
+}
 
-// Load sub-modules
-require_once __DIR__ . '/admin-actions/class-nh-admin-license.php';
-require_once __DIR__ . '/admin-actions/class-nh-admin-hooks.php';
-require_once __DIR__ . '/admin-actions/class-nh-admin-csv-export.php';
+/**
+ * Safe require helper for admin-actions submodules.
+ *
+ * @since 1.6.2
+ * @param string $path Absolute file path.
+ * @return bool True when loaded, false otherwise.
+ */
+function nh_admin_actions_require_once($path) {
+    if (file_exists($path)) {
+        require_once $path;
+        return true;
+    }
+
+    if (defined('WP_DEBUG') && WP_DEBUG) {
+        error_log(sprintf('Notification Hub: Missing admin-actions file %s', $path));
+    }
+
+    return false;
+}
+
+// Load sub-modules.
+nh_admin_actions_require_once(__DIR__ . '/admin-actions/class-nh-admin-license.php');
+nh_admin_actions_require_once(__DIR__ . '/admin-actions/class-nh-admin-hooks.php');
+nh_admin_actions_require_once(__DIR__ . '/admin-actions/class-nh-admin-csv-export.php');
 
 class NH_Admin_Actions {
 
     /**
-     * Initialize all admin action handlers
+     * Initialize all admin action handlers.
+     *
+     * @since 1.6.2
+     * @return void
      */
     public static function init() {
-        NH_Admin_License::init();
-        NH_Admin_Hooks::init();
-        NH_Admin_CSV_Export::init();
+        if (class_exists('NH_Admin_License') && method_exists('NH_Admin_License', 'init')) {
+            NH_Admin_License::init();
+        }
+
+        if (class_exists('NH_Admin_Hooks') && method_exists('NH_Admin_Hooks', 'init')) {
+            NH_Admin_Hooks::init();
+        }
+
+        if (class_exists('NH_Admin_CSV_Export') && method_exists('NH_Admin_CSV_Export', 'init')) {
+            NH_Admin_CSV_Export::init();
+        }
     }
 }
 
-// Boot
+// Boot.
 add_action('admin_init', ['NH_Admin_Actions', 'init']);

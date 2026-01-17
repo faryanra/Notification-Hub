@@ -1,19 +1,27 @@
 /* ============================================================
-   Dashboard – General Table Styles
+   Notification Hub — Dashboard Notifications Styles
+   @package Notification_Hub
+   @since 1.6.2
 ============================================================ */
 
-.table .status-unread { font-weight: 600; }
+/* ============================================================
+   General Table Styles
+============================================================ */
+
+.table .status-unread {
+  font-weight: 600;
+}
 
 /* Column widths */
-.wp-list-table .column-view        { width: 40px;  text-align:center; padding-right:5px; }
-.wp-list-table .column-title       { width: 35%; }
-.wp-list-table .column-created_at  { width: 12%; white-space:nowrap; padding-left:5px; }
-.wp-list-table .column-source      { width: 10%; }
-.wp-list-table .column-type        { width: 10%; }
-.wp-list-table .column-tags        { width: 14%; }
-.wp-list-table .column-status      { width: 8%;  text-align:center; }
-.wp-list-table .column-priority    { min-width: 85px !important; width: 85px !important; text-align:center; }
-.wp-list-table .column-id          { width: 4%;  text-align:center; }
+.wp-list-table .column-view       { width: 40px; text-align: center; padding-right: 5px; }
+.wp-list-table .column-title      { width: 35%; }
+.wp-list-table .column-created_at { width: 12%; white-space: nowrap; padding-left: 5px; }
+.wp-list-table .column-source     { width: 10%; }
+.wp-list-table .column-type       { width: 10%; }
+.wp-list-table .column-tags       { width: 14%; }
+.wp-list-table .column-status     { width: 8%; text-align: center; }
+.wp-list-table .column-priority   { min-width: 85px !important; width: 85px !important; text-align: center; }
+.wp-list-table .column-id         { width: 4%; text-align: center; }
 
 /* Prevent wrapping in key columns */
 .wp-list-table td.column-source,
@@ -22,261 +30,241 @@
 .wp-list-table td.column-status,
 .wp-list-table td.column-priority,
 .wp-list-table td.column-id {
-    white-space: nowrap;
+  white-space: nowrap;
 }
 
-
 /* ============================================================
-   Row Colors - Priority: Red > Yellow (فیکس برای سطرهای سفید)
+   Row Colors (Priority: Red > Yellow)
 ============================================================ */
 
-/* ✅ Yellow background for unread (همه سطرها - حتی سفید) */
+/* Unread background (works on striped odd/even) */
 tr.nh-unread-row > td,
 .wp-list-table.striped tbody tr.nh-unread-row:nth-child(odd),
 .wp-list-table.striped tbody tr.nh-unread-row:nth-child(even) {
-    background: #fff8d6 !important;
-    font-weight: 600;
+  background: #fff8d6 !important;
+  font-weight: 600;
 }
 
-/* ✅ Red flash for NEW notifications (اولویت بالاتر - همه سطرها) */
+/* NEW notification highlight (higher priority than unread) */
 tr.nh-row-new > td,
 .wp-list-table.striped tbody tr.nh-row-new:nth-child(odd),
 .wp-list-table.striped tbody tr.nh-row-new:nth-child(even) {
-    background: rgba(255, 0, 0, 0.08) !important;
-    animation: nhFlash 2s ease;
+  background: rgba(255, 0, 0, 0.08) !important;
+  animation: nhFlash 2s ease;
 }
 
 @keyframes nhFlash {
-    0%, 50% { background-color: rgba(255, 0, 0, 0.12); }
-    100% { background-color: rgba(255, 0, 0, 0.08); }
+  0%,
+  50% { background-color: rgba(255, 0, 0, 0.12); }
+  100% { background-color: rgba(255, 0, 0, 0.08); }
 }
 
-/* ✅ Checkbox visible in all row colors */
+/* Keep checkbox visible in colored rows */
 tr.nh-row-new input[type="checkbox"],
 tr.nh-unread-row input[type="checkbox"] {
-    opacity: 1 !important;
-    visibility: visible !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
-
 
 /* ============================================================
-   Title - Dot + Text در یک خط (بدون line break)
-============================================================ */
-/*
-.column-title {
-    white-space: normal !important;
-}
-
-.nh-dot-unread {
-    color: #c47200;
-    font-size: 10px;
-    margin-right: 4px;
-    display: inline;
-    vertical-align: baseline;
-}
-
-.column-title strong,
-.column-title a {
-    display: inline;
-    white-space: normal;
-    word-wrap: break-word;
-}
-
-
-.nh-title-link {
-    font-size: 14px;
-    white-space: nowrap;
-}
-
-
-.column-title .row-actions {
-    margin-top: 2px;
-    font-size: 12px;
-    opacity: 0.85;
-}
-/*
-
-/* ============================================================
-   Status Badges - زیر هم (vertical stacking)
+   Status Badges (vertical stacking)
 ============================================================ */
 
 .nh-status-badges {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
 }
 
-/* Badge base style */
 .nh-status-badges span {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    white-space: nowrap;
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
-/* ✅ Important - قرمز رنگ */
-.nh-status-important {
-    background: #ffc9c9;
-    color: #d63638;
-}
-
-/* Archived */
-.nh-status-archived {
-    background: #e6e6e6;
-    color: #555;
-}
-
-/* Unread */
-.nh-status-unread {
-  background: #ffd53e;
-  color: #6f6f6f;
-}
-
-/* Read */
-.nh-status-read {
-    background: #e8e8e8;
-    color: #555;
-}
-
+.nh-status-important { background: #ffc9c9; color: #d63638; }
+.nh-status-archived  { background: #e6e6e6; color: #555; }
+.nh-status-unread    { background: #ffd53e; color: #6f6f6f; }
+.nh-status-read      { background: #e8e8e8; color: #555; }
 
 /* ============================================================
-   Eye Icon
+   Eye Icon (view)
 ============================================================ */
 
 .nh-eye {
-    cursor: pointer;
-    color: #2271b1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4px;
-    border-radius: 4px;
-    transition: all 0.2s ease;
+  cursor: pointer;
+  color: #2271b1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
 }
 
 .nh-eye:hover {
-    background-color: #f0f0f1;
-    color: #135e96;
+  background-color: #f0f0f1;
+  color: #135e96;
 }
 
 .nh-eye .dashicons {
-    font-size: 18px;
+  font-size: 18px;
 }
-
 
 /* ============================================================
    Dashboard Header – Tabs and Search
 ============================================================ */
 
 .nh-dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
 }
 
 .nh-dashboard-header .subsubsub {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.nh-dashboard-header .subsubsub li { 
-    display: inline; 
+.nh-dashboard-header .subsubsub li {
+  display: inline;
 }
 
 .nh-dashboard-header .subsubsub a {
-    text-decoration: none;
-    color: #2271b1;
-    font-weight: 500;
+  text-decoration: none;
+  color: #2271b1;
+  font-weight: 500;
 }
 
 .nh-dashboard-header .subsubsub a.current {
-    font-weight: 700;
-    color: #000;
+  font-weight: 700;
+  color: #000;
 }
 
-.nh-dashboard-header .search-box { 
-    margin: 0; 
+.nh-dashboard-header .search-box {
+  margin: 0;
 }
-
 
 /* ============================================================
    Modal (Notification Preview)
 ============================================================ */
 
 .nh-modal {
-    position: fixed;
-    inset: 0;
-    display: none;
-    z-index: 9999;
+  position: fixed;
+  inset: 0;
+  display: none;
+  z-index: 9999;
 }
 
 .nh-modal__backdrop {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .nh-modal__content {
-    position: relative;
-    z-index: 2;
-    background: #fff;
-    border-radius: 8px;
-    max-width: 600px;
-    margin: 10% auto;
-    padding: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  position: relative;
+  z-index: 2;
+  background: #fff;
+  border-radius: 8px;
+  max-width: 600px;
+  margin: 10% auto;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .nh-modal__close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: none;
-    border: none;
-    font-size: 22px;
-    cursor: pointer;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
 }
 
-
 /* ============================================================
-   Table Loader
+   Table Loader (overlay)
+   Used by dashboard.js via: #nh-table-loader.active
 ============================================================ */
 
 #nh-table-loader {
-    display: none;
+  display: none;
 }
 
 #nh-table-loader.active {
-    display: flex !important;
+  display: flex !important;
 }
 
+/* Optional helper if your HTML uses a wrapper overlay element */
+.nh-table-loader {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.7);
+  z-index: 999;
+  align-items: center;
+  justify-content: center;
+}
+
+.nh-table-loader.active {
+  display: flex;
+}
+
+.nh-table-loader__spinner {
+  float: none;
+}
 
 /* ============================================================
-   Bulk Loading
+   Bulk Loading (no inline styles)
+   Used by dashboard.js: #nh-bulk-loader.nh-bulk-loading.active
 ============================================================ */
 
 .nh-bulk-loading {
-    display: inline-block;
-    margin-left: 8px;
-    opacity: 0;
-    transition: opacity 0.2s;
+  display: none;
+  margin-left: 10px;
+  align-items: center;
 }
 
 .nh-bulk-loading.active {
-    opacity: 1;
+  display: inline-flex;
 }
 
 .nh-bulk-loading .spinner {
-    float: none;
-    margin: 0;
-    visibility: visible;
+  float: none;
+  margin: 0;
+  visibility: visible;
 }
+
+.nh-bulk-loading__text {
+  margin-left: 5px;
+}
+
+/* ============================================================
+   Links helpers
+============================================================ */
+
+.nh-link-danger {
+  color: var(--nh-error, #b32d2e);
+}
+.nh-link-danger:hover {
+  color: var(--nh-error, #b32d2e);
+  text-decoration: underline;
+}
+
+/* Export button helpers (if used) */
+.nh-export { margin-left: 10px; }
+.nh-export-csv__icon { vertical-align: middle; }

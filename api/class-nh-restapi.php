@@ -1,6 +1,9 @@
 <?php
 // REST API (Notification Hub)
 // Safe activation + filters for notifications
+//
+// @package Notification_Hub
+// @since 1.6.2
 
 if (!defined('ABSPATH')) exit;
 
@@ -18,7 +21,7 @@ class NH_REST_API {
         // --- Test Trigger Route ---
         register_rest_route('nh/v1', '/test-trigger/(?P<id>\d+)', [
             'methods'  => 'POST',
-            'permission_callback' => function() {
+            'permission_callback' => function () {
                 return current_user_can('manage_options');
             },
             'callback' => [$this, 'handle_test_trigger'],
@@ -27,9 +30,12 @@ class NH_REST_API {
         // --- Notifications Route ---
         register_rest_route('nh/v1', '/notifications', [
             'methods'  => 'GET',
-            'permission_callback' => function() {
-                return current_user_can('read');
+
+            // اگر endpoint فقط برای داشبورد ادمین هست، این امن‌تره:
+            'permission_callback' => function () {
+                return current_user_can('manage_options');
             },
+
             'args' => [
                 'since' => [
                     'type' => 'string',
@@ -57,7 +63,7 @@ class NH_REST_API {
                 ],
                 'only_important' => [
                     'type' => 'boolean',
-                    'sanitize_callback' => function($v){ return (bool)$v; },
+                    'sanitize_callback' => function ($v) { return (bool) $v; },
                 ],
                 'limit' => [
                     'type' => 'integer',
@@ -70,6 +76,7 @@ class NH_REST_API {
                     'sanitize_callback' => 'absint',
                 ],
             ],
+
             'callback' => [$this, 'get_notifications'],
         ]);
     }
@@ -77,18 +84,19 @@ class NH_REST_API {
     // --- GET /notifications ---
     public function get_notifications(WP_REST_Request $req) {
         global $wpdb;
+
         $table = $wpdb->prefix . 'nh_notifications';
 
         $params = $req->get_params();
-        $where = ['1=1'];
-        $args  = [];
+        $where  = ['1=1'];
+        $args   = [];
 
         $since  = !empty($params['since'])  ? sanitize_text_field($params['since'])  : null;
         $status = !empty($params['status']) ? sanitize_text_field($params['status']) : null;
         $source = !empty($params['source']) ? sanitize_text_field($params['source']) : null;
         $type   = !empty($params['type'])   ? sanitize_text_field($params['type'])   : null;
 
-        $min_priority   = isset($params['min_priority']) ? (int)$params['min_priority'] : null;
+        $min_priority   = isset($params['min_priority']) ? (int) $params['min_priority'] : null;
         $only_important = !empty($params['only_important']);
         $tags_filter    = [];
 
@@ -96,7 +104,6 @@ class NH_REST_API {
             $tags_filter = array_filter(array_map('trim', explode(',', $params['tags'])));
         }
 
-        // --- Conditions ---
         if ($since) {
             $where[] = 'created_at > %s';
             $args[]  = $since;
@@ -104,7 +111,7 @@ class NH_REST_API {
 
         if ($status !== '' && $status !== null && $status !== 'all') {
             $where[] = 'status = %d';
-            $args[]  = (int)$status;
+            $args[]  = (int) $status;
         }
 
         if ($source) {
@@ -126,9 +133,9 @@ class NH_REST_API {
             $where[] = 'status = 3';
         }
 
-        foreach ($tags_filter as $t) {
+        foreach ($tags_filter as $tag) {
             $where[] = 'tags LIKE %s';
-            $args[]  = '%"' . like_escape($t) . '"%';
+            $args[]  = '%"' . $wpdb->esc_like($tag) . '"%';
         }
 
         $where_sql = 'WHERE ' . implode(' AND ', $where);
@@ -136,7 +143,7 @@ class NH_REST_API {
         $limit  = isset($params['limit'])  ? absint($params['limit'])  : 50;
         $offset = isset($params['offset']) ? absint($params['offset']) : 0;
 
-        // ✅ FIX: Add limit and offset to args before unpacking
+        // Add LIMIT/OFFSET placeholders
         $args[] = $limit;
         $args[] = $offset;
 
@@ -153,21 +160,24 @@ class NH_REST_API {
         return new WP_REST_Response([
             'ok'    => true,
             'count' => count($rows),
-            'data'  => $rows
+            'data'  => $rows,
         ], 200);
     }
 
     // --- POST /test-trigger/{id} ---
     public function handle_test_trigger(WP_REST_Request $req) {
         global $wpdb;
+
         $table = $wpdb->prefix . 'nh_hooks';
 
-        $exists = $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $wpdb->esc_like($table)));
+        $exists = $wpdb->get_var(
+            $wpdb->prepare("SHOW TABLES LIKE %s", $wpdb->esc_like($table))
+        );
         if (!$exists) {
             return new WP_REST_Response(['ok' => false, 'msg' => 'Database table missing'], 500);
         }
 
-        $id = intval($req['id']);
+        $id  = (int) $req['id'];
         $row = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$table} WHERE id=%d", $id));
         if (!$row) {
             return new WP_REST_Response(['ok' => false, 'msg' => 'Hook not found'], 404);
@@ -185,6 +195,7 @@ class NH_REST_API {
                 'source'  => 'rest_test',
                 'message' => 'Triggered via REST API',
             ]);
+
             return new WP_REST_Response(['ok' => true, 'msg' => 'Hook triggered'], 200);
         } catch (Throwable $e) {
             return new WP_REST_Response(['ok' => false, 'msg' => $e->getMessage()], 500);
