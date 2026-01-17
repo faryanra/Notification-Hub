@@ -1,4 +1,4 @@
-# 🚨 Notification Hub (v1.6.1 — Architecture Refactor)
+# 🚨 Notification Hub (v1.6.2 — Architecture Refactor)
 
 A real-time, AJAX-powered notification manager for WordPress — now featuring modular architecture, enhanced performance, and cleaner codebase.
 
