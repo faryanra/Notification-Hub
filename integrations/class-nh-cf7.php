@@ -68,15 +68,18 @@ class NH_Int_CF7 {
         /* translators: %s: Contact Form 7 form title. */
         $title = sprintf(esc_html__('CF7: %s', 'notification-hub'), $form_title);
 
+        $form_id = is_object($contact_form) && method_exists($contact_form, 'id')
+            ? (int) $contact_form->id()
+            : 0;
+
         $e = [
             'source'  => 'cf7',
             'type'    => 'form_sent',
             'title'   => $title,
             'message' => esc_html__('Mail sent successfully.', 'notification-hub'),
             'context' => [
-                'cf7_form_id' => is_object($contact_form) && method_exists($contact_form, 'id')
-                    ? (int) $contact_form->id()
-                    : 0,
+                'cf7_form_id' => $form_id,
+                'form_title'  => $form_title,
             ],
         ];
 
@@ -85,19 +88,7 @@ class NH_Int_CF7 {
             $db->insert_notification($e);
         }
 
-        $notifier = $this->r->get_svc('notifier');
-        if ($notifier && method_exists($notifier, 'queue_send')) {
-            $payload = [
-                'title'  => $e['title'],
-                'body'   => $e['message'],
-                'source' => $e['source'],
-                'no_log' => true,
-            ];
-
-            $notifier->queue_send('email', $payload);
-            $notifier->queue_send('telegram', $payload);
-            $notifier->queue_send('slack', $payload);
-        }
+        $this->fanout_send($e);
     }
 
     /**
@@ -120,15 +111,18 @@ class NH_Int_CF7 {
         /* translators: %s: Contact Form 7 form title. */
         $title = sprintf(esc_html__('CF7: %s', 'notification-hub'), $form_title);
 
+        $form_id = is_object($contact_form) && method_exists($contact_form, 'id')
+            ? (int) $contact_form->id()
+            : 0;
+
         $e = [
             'source'  => 'cf7',
             'type'    => 'form_failed',
             'title'   => $title,
             'message' => esc_html__('Mail failed to send.', 'notification-hub'),
             'context' => [
-                'cf7_form_id' => is_object($contact_form) && method_exists($contact_form, 'id')
-                    ? (int) $contact_form->id()
-                    : 0,
+                'cf7_form_id' => $form_id,
+                'form_title'  => $form_title,
             ],
         ];
 
@@ -137,15 +131,42 @@ class NH_Int_CF7 {
             $db->insert_notification($e);
         }
 
-        $notifier = $this->r->get_svc('notifier');
-        if ($notifier && method_exists($notifier, 'queue_send')) {
-            $payload = [
-                'title'  => $e['title'],
-                'body'   => $e['message'],
-                'source' => $e['source'],
-                'no_log' => true,
-            ];
+        $this->fanout_send($e);
+    }
 
+    /**
+     * Fan-out event to all channels.
+     *
+     * @since 1.6.3
+     * @param array $e Notification event.
+     * @return void
+     */
+    protected function fanout_send(array $e): void {
+        $notifier = $this->r->get_svc('notifier');
+        if (!$notifier) {
+            return;
+        }
+
+        $context = (isset($e['context']) && is_array($e['context'])) ? $e['context'] : [];
+        $type    = isset($e['type']) ? (string) $e['type'] : '';
+
+        // CF7 admin deep-link.
+        $link = '';
+        if (!empty($context['cf7_form_id']) && function_exists('admin_url')) {
+            $link = (string) admin_url('admin.php?page=wpcf7&post=' . ((int) $context['cf7_form_id']) . '&action=edit');
+        }
+
+        $payload = [
+            'title'   => $e['title'] ?? '',
+            'summary' => $e['message'] ?? '',
+            'source'  => $e['source'] ?? 'cf7',
+            'type'    => $type,
+            'context' => $context,
+            'link'    => $link,
+            'no_log'  => true,
+        ];
+
+        if (method_exists($notifier, 'queue_send')) {
             $notifier->queue_send('email', $payload);
             $notifier->queue_send('telegram', $payload);
             $notifier->queue_send('slack', $payload);

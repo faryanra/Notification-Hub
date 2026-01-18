@@ -95,13 +95,67 @@
       .then((r) => r.json())
       .then((data) => {
         if (data.success) {
-          document.getElementById('nh-modal-title').textContent =
-            data.data.source || t('modal_default_title', 'Notification');
-          document.getElementById('nh-modal-message').textContent =
-            data.data.message || '';
-          // Avoid innerHTML.
+          // Prefer channel render (Preview === real output).
+          const payload = data?.data?.payload || {};
+          const preview = data?.data?.preview || {};
+
+          const title =
+            payload?.title ||
+            data?.data?.source ||
+            t('modal_default_title', 'Notification');
+
+          const channel =
+            localStorage.getItem('nh_preview_channel') || 'email';
+
+          const body =
+            preview?.[channel] ||
+            preview?.email ||
+            preview?.telegram ||
+            preview?.slack ||
+            data?.data?.message ||
+            '';
+
+          document.getElementById('nh-modal-title').textContent = title;
+
+          // Email preview contains HTML; Telegram/Slack are plain-ish.
+          const msgEl = document.getElementById('nh-modal-message');
+          msgEl.innerHTML = body;
+
+          // Meta: show created_at (as before).
           document.getElementById('nh-modal-meta').textContent =
             data.data.created_at || '';
+
+          // Inject a simple channel switcher (no PHP changes required).
+          const metaEl = document.getElementById('nh-modal-meta');
+          if (metaEl && !metaEl.querySelector('.nh-preview-switch')) {
+            const wrap = document.createElement('div');
+            wrap.className = 'nh-preview-switch';
+            wrap.style.marginTop = '10px';
+
+            const label = document.createElement('span');
+            label.textContent = 'Preview:';
+            label.style.marginRight = '8px';
+
+            const select = document.createElement('select');
+            select.innerHTML =
+              '<option value="email">Email</option>' +
+              '<option value="telegram">Telegram</option>' +
+              '<option value="slack">Slack</option>';
+            select.value = channel;
+
+            select.addEventListener('change', () => {
+              const c = select.value;
+              localStorage.setItem('nh_preview_channel', c);
+              const next =
+                preview?.[c] || preview?.email || preview?.telegram || preview?.slack || '';
+              msgEl.innerHTML = next;
+            });
+
+            wrap.appendChild(label);
+            wrap.appendChild(select);
+            metaEl.appendChild(wrap);
+          }
+
           openModal();
         } else {
           alert(data?.data?.message || t('load_error', 'Load failed.'));

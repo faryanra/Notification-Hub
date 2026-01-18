@@ -114,13 +114,16 @@ class NH_Int_WooCommerce {
         /* translators: %d: Stock quantity. */
         $message = sprintf(esc_html__('Stock: %d', 'notification-hub'), (int) $qty);
 
+        $product_id = method_exists($product, 'get_id') ? (int) $product->get_id() : 0;
+
         $e = [
             'source'  => 'woocommerce',
             'type'    => 'low_stock',
             'title'   => $title,
             'message' => $message,
             'context' => [
-                'product_id' => method_exists($product, 'get_id') ? (int) $product->get_id() : 0,
+                'product_id' => $product_id,
+                'stock'      => (int) $qty,
             ],
         ];
 
@@ -135,7 +138,7 @@ class NH_Int_WooCommerce {
     /**
      * Fan-out event to all channels.
      *
-     * @since 1.6.2
+     * @since 1.6.3
      * @param array $e Notification event.
      * @return void
      */
@@ -145,11 +148,26 @@ class NH_Int_WooCommerce {
             return;
         }
 
+        $context = (isset($e['context']) && is_array($e['context'])) ? $e['context'] : [];
+        $type    = isset($e['type']) ? (string) $e['type'] : '';
+
+        // Admin deep-link.
+        $link = '';
+        if ($type === 'order_created' && !empty($context['order_id'])) {
+            $link = function_exists('get_edit_post_link') ? (string) get_edit_post_link((int) $context['order_id'], '') : '';
+        }
+        if ($type === 'low_stock' && !empty($context['product_id'])) {
+            $link = function_exists('get_edit_post_link') ? (string) get_edit_post_link((int) $context['product_id'], '') : '';
+        }
+
         $payload = [
-            'title'  => $e['title'] ?? '',
-            'body'   => $e['message'] ?? '',
-            'source' => $e['source'] ?? 'woocommerce',
-            'no_log' => true,
+            'title'   => $e['title'] ?? '',
+            'summary' => $e['message'] ?? '',
+            'source'  => $e['source'] ?? 'woocommerce',
+            'type'    => $type,
+            'context' => $context,
+            'link'    => $link,
+            'no_log'  => true,
         ];
 
         if (method_exists($notifier, 'queue_send')) {

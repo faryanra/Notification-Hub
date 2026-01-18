@@ -120,12 +120,38 @@ class NH_Dashboard_Actions {
             self::json_error(esc_html__('Notification not found.', 'notification-hub'), 404);
         }
 
+        // Normalize into a channel-ready payload so Preview === real channel output.
+        $payload = [
+            'title'   => (string) $row->title,
+            'summary' => (string) $row->message,
+            'source'  => (string) $row->source,
+            'type'    => isset($row->type) ? (string) $row->type : '',
+            'context' => !empty($row->context) ? json_decode((string) $row->context, true) : [],
+            'link'    => isset($row->link) ? (string) $row->link : '',
+            'no_log'  => true,
+        ];
+
+        if (!is_array($payload['context'])) {
+            $payload['context'] = [];
+        }
+
+        $preview = [
+            'email'    => class_exists('NH_Template') ? NH_Template::render_notification('email', $payload) : $payload['summary'],
+            'telegram' => class_exists('NH_Template') ? NH_Template::render_notification('telegram', $payload) : $payload['summary'],
+            'slack'    => class_exists('NH_Template') ? NH_Template::render_notification('slack', $payload) : $payload['summary'],
+        ];
+
         wp_send_json_success([
+            // Keep legacy keys for backwards compatibility with older JS.
             'title'      => (string) $row->title,
             'message'    => (string) $row->message,
             'source'     => (string) $row->source,
             'status'     => (int) $row->status,
             'created_at' => mysql2date('Y-m-d H:i', (string) $row->created_at),
+
+            // New keys used by updated modal.
+            'payload'    => $payload,
+            'preview'    => $preview,
         ]);
     }
 

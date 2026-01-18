@@ -3,7 +3,7 @@
  * Plugin Name: Notification Hub
  * Plugin URI: https://www.hellocode.ir/
  * Description: Central hub for collecting and managing WordPress notifications (Telegram, Email, Slack, WooCommerce, CF7).
- * Version: 1.6.2
+ * Version: 1.6.3
  * Author: Faryan Rajabi (HelloCode)
  * Author URI: https://www.linkedin.com/in/reza-rajabi-jorshari/
  * License: GPLv3 or later
@@ -27,7 +27,7 @@ if (!defined('ABSPATH')) {
 define('NH_PLUGIN_FILE', __FILE__);
 define('NH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('NH_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('NH_VERSION', '1.6.2');
+define('NH_VERSION', '1.6.3');
 
 /**
  * Load plugin textdomain.
@@ -69,10 +69,12 @@ function nh_require(string $path): bool {
  */
 nh_require(NH_PLUGIN_DIR . 'core/class-nh-core-registry.php');
 nh_require(NH_PLUGIN_DIR . 'core/class-nh-helpers.php');
+nh_require(NH_PLUGIN_DIR . 'core/class-nh-human.php');
 nh_require(NH_PLUGIN_DIR . 'core/class-nh-security.php');
 nh_require(NH_PLUGIN_DIR . 'core/class-nh-database.php');
 nh_require(NH_PLUGIN_DIR . 'core/class-nh-queue.php');
 nh_require(NH_PLUGIN_DIR . 'core/class-nh-loader.php');
+nh_require(NH_PLUGIN_DIR . 'core/class-nh-template.php');
 
 /**
  * Modules / Admin.
@@ -144,7 +146,7 @@ function nh_activate(): void {
 function nh_deactivate(): void {
     $timestamp = wp_next_scheduled('nh_cron_cleanup');
     if ($timestamp) {
-        wp_unschedule_event($timestamp, 'nh_cron_cleanup');
+        wp_unschedule_event($timestamp);
     }
 }
 

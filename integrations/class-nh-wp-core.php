@@ -105,10 +105,12 @@ class NH_Int_WP_Core {
                         $notifier->queue_send(
                             $primary,
                             [
-                                'title'  => $event['title'],
-                                'body'   => $event['message'],
-                                'source' => $event['source'],
-                                'no_log' => true,
+                                'title'   => $event['title'],
+                                'summary' => $event['message'],
+                                'source'  => $event['source'],
+                                'type'    => $event['type'],
+                                'context' => $event['context'],
+                                'no_log'  => true,
                             ]
                         );
                     }
@@ -212,6 +214,12 @@ class NH_Int_WP_Core {
         $title = sprintf(esc_html__('New comment by %s', 'notification-hub'), (string) $comment->comment_author);
         $body  = wp_kses_post(wp_trim_words((string) $comment->comment_content, 20));
 
+        $context = [
+            'comment_id' => (int) $id,
+            'post_id'    => (int) $comment->comment_post_ID,
+            'actor'      => (string) $comment->comment_author,
+        ];
+
         $db = $this->r->get_svc('db');
         if ($db && method_exists($db, 'insert_notification')) {
             $db->insert_notification(
@@ -220,10 +228,7 @@ class NH_Int_WP_Core {
                     'type'    => 'comment_new',
                     'title'   => $title,
                     'message' => $body,
-                    'context' => [
-                        'comment_id' => (int) $id,
-                        'post_id'    => (int) $comment->comment_post_ID,
-                    ],
+                    'context' => $context,
                 ]
             );
         }
@@ -232,10 +237,13 @@ class NH_Int_WP_Core {
         $notifier = $this->r->get_svc('notifier');
         if ($notifier && method_exists($notifier, 'queue_send')) {
             $payload = [
-                'title'  => $title,
-                'body'   => $body,
-                'source' => 'wp_core',
-                'no_log' => true,
+                'title'   => $title,
+                'summary' => $body,
+                'source'  => 'wp_core',
+                'type'    => 'comment_new',
+                'context' => $context,
+                'link'    => function_exists('get_edit_comment_link') ? (string) get_edit_comment_link((int) $id) : '',
+                'no_log'  => true,
             ];
 
             $notifier->queue_send('email', $payload);
@@ -272,12 +280,14 @@ class NH_Int_WP_Core {
         $title = sprintf(esc_html__('Post %1$d status: %2$s → %3$s', 'notification-hub'), (int) $post->ID, (string) $old, (string) $new);
         $message = esc_html(get_the_title($post->ID));
 
+        $context = ['post_id' => (int) $post->ID, 'old' => (string) $old, 'new' => (string) $new];
+
         $e = [
             'source'  => 'wp_core',
             'type'    => 'post_status_changed',
             'title'   => $title,
             'message' => $message,
-            'context' => ['post_id' => (int) $post->ID, 'old' => (string) $old, 'new' => (string) $new],
+            'context' => $context,
         ];
 
         $db = $this->r->get_svc('db');
@@ -288,10 +298,13 @@ class NH_Int_WP_Core {
         $notifier = $this->r->get_svc('notifier');
         if ($notifier && method_exists($notifier, 'queue_send')) {
             $payload = [
-                'title'  => $e['title'],
-                'body'   => $e['message'],
-                'source' => $e['source'],
-                'no_log' => true,
+                'title'   => $e['title'],
+                'summary' => $e['message'],
+                'source'  => $e['source'],
+                'type'    => $e['type'],
+                'context' => $e['context'],
+                'link'    => function_exists('get_edit_post_link') ? (string) get_edit_post_link((int) $post->ID, '') : '',
+                'no_log'  => true,
             ];
 
             $notifier->queue_send('email', $payload);
@@ -317,12 +330,14 @@ class NH_Int_WP_Core {
         $title = sprintf(esc_html__('New user: %s', 'notification-hub'), (string) $u->user_login);
         $message = esc_html((string) $u->user_email);
 
+        $context = ['user_id' => (int) $user_id];
+
         $e = [
             'source'  => 'wp_core',
             'type'    => 'user_registered',
             'title'   => $title,
             'message' => $message,
-            'context' => ['user_id' => (int) $user_id],
+            'context' => $context,
         ];
 
         $db = $this->r->get_svc('db');
@@ -333,10 +348,13 @@ class NH_Int_WP_Core {
         $notifier = $this->r->get_svc('notifier');
         if ($notifier && method_exists($notifier, 'queue_send')) {
             $payload = [
-                'title'  => $e['title'],
-                'body'   => $e['message'],
-                'source' => $e['source'],
-                'no_log' => true,
+                'title'   => $e['title'],
+                'summary' => $e['message'],
+                'source'  => $e['source'],
+                'type'    => $e['type'],
+                'context' => $e['context'],
+                'link'    => function_exists('get_edit_user_link') ? (string) get_edit_user_link((int) $user_id) : '',
+                'no_log'  => true,
             ];
 
             $notifier->queue_send('email', $payload);

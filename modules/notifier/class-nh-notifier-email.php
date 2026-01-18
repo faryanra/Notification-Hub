@@ -102,11 +102,18 @@ class NH_Notifier_Email {
     /**
      * Get email message (HTML allowed).
      *
-     * @since 1.6.2
+     * @since 1.6.3
      * @param array $payload Notification payload.
      * @return string
      */
     private static function get_message(array $payload): string {
+        if (class_exists('NH_Template')) {
+            $rendered = NH_Template::render_notification('email', $payload);
+            if (is_string($rendered) && trim($rendered) !== '') {
+                return $rendered;
+            }
+        }
+
         if (!empty($payload['body']) && is_string($payload['body'])) {
             return $payload['body'];
         }
