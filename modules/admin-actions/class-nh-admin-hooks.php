@@ -55,12 +55,34 @@ class NH_Admin_Hooks {
             ? NH_Core_Registry::get()
             : null;
 
-        $notifier = $registry && method_exists($registry, 'get')
-            ? $registry->get('notifier')
+        // NOTE: registry getter is get_svc() (not get()).
+        $notifier = $registry && method_exists($registry, 'get_svc')
+            ? $registry->get_svc('notifier')
             : null;
 
+        // Fallback: in case boot order prevents registry population, instantiate notifier directly.
+        if ((!$notifier || !method_exists($notifier, 'send')) && class_exists('NH_Notifier')) {
+            try {
+                $notifier = new NH_Notifier($registry ?: NH_Core_Registry::get());
+            } catch (Throwable $e) {
+                $notifier = null;
+            }
+        }
+
         if (!$notifier || !method_exists($notifier, 'send')) {
-            wp_die(esc_html__('Notifier is not available.', 'notification-hub'));
+            // Avoid white-screen: redirect back to settings with failure notice.
+            wp_safe_redirect(
+                add_query_arg(
+                    [
+                        'page'    => 'nh_settings',
+                        'tab'     => $tab ?: 'general',
+                        'success' => 0,
+                        'nh_test' => $channel,
+                    ],
+                    admin_url('admin.php')
+                )
+            );
+            exit;
         }
 
         $ok = true;

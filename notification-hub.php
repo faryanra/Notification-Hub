@@ -3,7 +3,7 @@
  * Plugin Name: Notification Hub
  * Plugin URI: https://www.hellocode.ir/
  * Description: Central hub for collecting and managing WordPress notifications (Telegram, Email, Slack, WooCommerce, CF7).
- * Version: 1.6.3
+ * Version: 1.7.0
  * Author: Faryan Rajabi (HelloCode)
  * Author URI: https://www.linkedin.com/in/reza-rajabi-jorshari/
  * License: GPLv3 or later
@@ -27,7 +27,7 @@ if (!defined('ABSPATH')) {
 define('NH_PLUGIN_FILE', __FILE__);
 define('NH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('NH_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('NH_VERSION', '1.6.3');
+define('NH_VERSION', '1.7.0');
 
 /**
  * Load plugin textdomain.
@@ -145,9 +145,16 @@ function nh_activate(): void {
  */
 function nh_deactivate(): void {
     $timestamp = wp_next_scheduled('nh_cron_cleanup');
-    if ($timestamp) {
-        wp_unschedule_event($timestamp);
+    if (!$timestamp) {
+        return;
     }
+
+    // WP requires (timestamp, hook, args). Args must match the scheduled event.
+    // We schedule with no args.
+    wp_unschedule_event($timestamp, 'nh_cron_cleanup', []);
+
+    // Extra safety: also clear any stray scheduled events for this hook.
+    wp_clear_scheduled_hook('nh_cron_cleanup');
 }
 
 register_activation_hook(NH_PLUGIN_FILE, 'nh_activate');

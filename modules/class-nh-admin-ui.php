@@ -178,13 +178,21 @@ class NH_Admin_UI {
             ]);
         }
 
-        // Settings assets (replaces inline <script> in templates/settings.php).
+        // Settings assets.
         if ($is_settings) {
+            wp_enqueue_style(
+                'nh-settings',
+                NH_PLUGIN_URL . 'assets/css/settings.css',
+                $style_deps,
+                NH_VERSION . '-settings',
+                'all'
+            );
+
             wp_enqueue_script(
                 'nh-settings',
                 NH_PLUGIN_URL . 'assets/js/settings.js',
                 [],
-                NH_VERSION,
+                NH_VERSION . '-settings-v2',
                 true
             );
         }

@@ -4,7 +4,7 @@ Tags: notifications, dashboard, woocommerce, alerts, admin
 Requires at least: 5.8
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.6.3
+Stable tag: 1.7.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -16,16 +16,14 @@ Notification Hub provides a unified admin dashboard for all important events hap
 
 Whether it's a new WooCommerce order, a comment, a form submission, or a custom event — you'll see it all in a single, sortable, filterable table.
 
-== What's New in v1.6.3 ==
+== What's New in v1.7.0 ==
 
-This release introduces a template-based rendering layer so **Preview = real channel output**, plus human-readable mapping and actionable admin deep-links.
+This release introduces a dedicated license server integration, a redesigned “License & Pro Features” box, and a central policy layer for Pro capabilities.
 
-- 🧩 Template Engine: Central renderer + `templates/notifications/` for email/telegram/slack.
-- 👁️ Real Preview: Dashboard modal uses the same renderer, so what you preview is exactly what channels send.
-- 🏷️ Human Mapping: Central mapping for source/type labels (DB values remain unchanged).
-- 🔗 Action links: wp-admin deep-links for key events (comments, posts, users, orders, products, CF7 forms).
-- 📨 Improved email template: consistent HTML layout + smart CTA per notification type.
-- 🎛️ Preview channel switcher: quickly toggle Email/Telegram/Slack in modal preview.
+- Unified License Box: Save License Server URL + License Key together in Settings → Pro.
+- Central License Core: New NH_License class with normalized state and grace-mode support.
+- Safer Remote Verify: JSON parsing, POST→GET fallback, and richer debug logs for WAF/anti-bot responses.
+- Capability Checks: Pro channels (Telegram/Slack) are gated via NH_License::can() instead of a single is_pro() flag.
 
 == Features ==
 
@@ -51,6 +49,16 @@ This release introduces a template-based rendering layer so **Preview = real cha
 4. Configure channels and settings
 
 == Changelog ==
+
+= 1.7.0 =
+* Added: Central NH_License core with normalized state (status, features, domain, last_check, grace_until, message, license_hash).
+* Added: Strict Pro key format validation (NH-PRO-XXXX-XXXX).
+* Added: Unified License & Pro Features box in Settings → Pro with `nh_save_license_bundle` action.
+* Added: Remote verify with TTL, transient lock, and POST→GET fallback.
+* Added: Support for extended license statuses: active, inactive, revoked, grace, banned, expired.
+* Added: Capability-based checks via NH_License::can() for Pro channels (telegram, slack).
+* Improved: Pro channel gating in NH_Notifier now enforces per-feature capabilities (telegram/slack).
+* Improved: Pro settings UI now enables/disables fields and test actions based on capabilities.
 
 = 1.6.3 =
 * Added: Template Engine (`NH_Template::render_notification`) and new channel templates in `templates/notifications/`.

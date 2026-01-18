@@ -2,8 +2,8 @@
 /**
  * Settings Template
  *
- * Renders Notification Hub settings page (General / Pro tabs) and license box.
- * Tabs are driven by URL param `tab` and enhanced by JS (no inline scripts).
+ * Renders Notification Hub settings page (General / Pro tabs).
+ * License box is extracted into a partial for maintainability.
  *
  * @package Notification_Hub
  * @since 1.6.2
@@ -16,8 +16,9 @@ if (!defined('ABSPATH')) {
 /**
  * Read runtime flags.
  */
-$is_pro     = class_exists('NH_License') ? NH_License::is_pro() : false;
-$active_tab = isset($_GET['tab']) ? sanitize_key(wp_unslash($_GET['tab'])) : 'general';
+$can_telegram = class_exists('NH_License') ? NH_License::can('telegram') : false;
+$can_slack    = class_exists('NH_License') ? NH_License::can('slack') : false;
+$active_tab   = isset($_GET['tab']) ? sanitize_key(wp_unslash($_GET['tab'])) : 'general';
 
 /**
  * Render admin notices from query params.
@@ -82,119 +83,11 @@ $success = isset($_GET['success']) ? sanitize_text_field(wp_unslash($_GET['succe
     </h2>
 
     <?php
-    /**
-     * License box (only if NH_License exists)
-     */
-    if (class_exists('NH_License')) :
-        $current_key   = NH_License::get_key();
-        $is_pro_active = NH_License::is_pro();
-
-        // Mask key (keep first 4 + last 4 visible).
-        $masked = '';
-        if (!empty($current_key)) {
-            $len = strlen($current_key);
-            $masked = $len > 8
-                ? substr($current_key, 0, 4) . str_repeat('•', $len - 8) . substr($current_key, -4)
-                : $current_key;
-        }
-        ?>
-
-        <div class="postbox nh-license-box">
-            <h2 class="hndle">
-                <span><?php esc_html_e('License & Pro Features', 'notification-hub'); ?></span>
-
-                <?php if ($is_pro_active) : ?>
-                    <span class="nh-license-status nh-license-status--active">
-                        <?php esc_html_e('PRO ACTIVE', 'notification-hub'); ?>
-                    </span>
-                <?php else : ?>
-                    <span class="nh-license-status nh-license-status--locked">
-                        <?php esc_html_e('LOCKED', 'notification-hub'); ?>
-                    </span>
-                <?php endif; ?>
-            </h2>
-
-            <div class="inside">
-                <?php if (isset($_GET['nh_license_saved'])) : ?>
-                    <div class="notice notice-success is-dismissible">
-                        <p><?php esc_html_e('License key saved.', 'notification-hub'); ?></p>
-                    </div>
-                <?php elseif (isset($_GET['nh_license_revoked'])) : ?>
-                    <div class="notice notice-info is-dismissible">
-                        <p><?php esc_html_e('License key revoked.', 'notification-hub'); ?></p>
-                    </div>
-                <?php endif; ?>
-
-                <p class="description">
-                    <?php
-                    esc_html_e(
-                        'Enter your license key to unlock Pro features such as Telegram, Slack, multi-channel delivery, and advanced automation tools. Once activated, the Pro modules will automatically load and enhance your notification system.',
-                        'notification-hub'
-                    );
-                    ?>
-                </p>
-
-                <p class="description">
-                    <?php
-                    esc_html_e(
-                        'If you purchased Notification Hub Pro, you should have received a license key in your account or email. Paste it below and click “Activate / Update License”. You can revoke it anytime to deactivate the Pro features.',
-                        'notification-hub'
-                    );
-                    ?>
-                </p>
-
-                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
-                    <?php wp_nonce_field('nh_save_license'); ?>
-                    <input type="hidden" name="action" value="nh_save_license" />
-
-                    <table class="form-table" role="presentation">
-                        <tr>
-                            <th scope="row">
-                                <label for="nh_license_key"><?php esc_html_e('License Key', 'notification-hub'); ?></label>
-                            </th>
-
-                            <td>
-                                <?php if ($is_pro_active && $current_key) : ?>
-                                    <input
-                                        type="text"
-                                        value="<?php echo esc_attr($masked); ?>"
-                                        readonly
-                                        class="regular-text nh-license-key--masked"
-                                    >
-
-                                    <a
-                                        href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=nh_license_revoke'), 'nh_license_revoke')); ?>"
-                                        class="button"
-                                    >
-                                        <?php esc_html_e('Revoke', 'notification-hub'); ?>
-                                    </a>
-
-                                    <p class="description nh-license-hint nh-license-hint--active">
-                                        <?php esc_html_e('Your license is active. Pro modules are loaded and ready to use.', 'notification-hub'); ?>
-                                    </p>
-                                <?php else : ?>
-                                    <input
-                                        type="text"
-                                        name="nh_license_key"
-                                        id="nh_license_key"
-                                        value=""
-                                        placeholder="<?php echo esc_attr($masked !== '' ? $masked : esc_html__('Enter your license key', 'notification-hub')); ?>"
-                                        class="regular-text"
-                                    >
-
-                                    <?php submit_button(esc_html__('Activate / Update License', 'notification-hub'), 'primary', '', false); ?>
-
-                                    <p class="description nh-license-hint">
-                                        <?php esc_html_e('Paste your valid license key to enable premium integrations and remove feature restrictions.', 'notification-hub'); ?>
-                                    </p>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                    </table>
-                </form>
-            </div>
-        </div>
-    <?php endif; ?>
+    $license_partial = NH_PLUGIN_DIR . 'templates/partials/license-box.php';
+    if (file_exists($license_partial)) {
+        include $license_partial;
+    }
+    ?>
 
     <form method="post" action="<?php echo esc_url(admin_url('options.php')); ?>">
         <?php settings_fields('nh_settings'); ?>
@@ -278,7 +171,7 @@ $success = isset($_GET['success']) ? sanitize_text_field(wp_unslash($_GET['succe
                             type="text"
                             value="<?php echo esc_attr(get_option('nh_telegram_bot_token', '')); ?>"
                             class="regular-text"
-                            <?php echo $is_pro ? '' : 'disabled'; ?>
+                            <?php echo $can_telegram ? '' : 'disabled'; ?>
                         >
 
                         <p class="description">
@@ -291,7 +184,7 @@ $success = isset($_GET['success']) ? sanitize_text_field(wp_unslash($_GET['succe
                             ?>
                         </p>
 
-                        <?php if (!$is_pro) : ?>
+                        <?php if (!$can_telegram) : ?>
                             <p class="description">
                                 <em><?php esc_html_e('This field is disabled because it’s only available in the Pro version.', 'notification-hub'); ?></em>
                             </p>
@@ -318,14 +211,14 @@ $success = isset($_GET['success']) ? sanitize_text_field(wp_unslash($_GET['succe
                             type="text"
                             value="<?php echo esc_attr(get_option('nh_telegram_chat_id', '')); ?>"
                             class="regular-text"
-                            <?php echo $is_pro ? '' : 'disabled'; ?>
+                            <?php echo $can_telegram ? '' : 'disabled'; ?>
                         >
 
                         <p class="description">
                             <?php esc_html_e('Send a message to your bot, then run /getUpdates to find your chat ID.', 'notification-hub'); ?>
                         </p>
 
-                        <?php if (!$is_pro) : ?>
+                        <?php if (!$can_telegram) : ?>
                             <p class="description">
                                 <em><?php esc_html_e('This field is disabled because it’s only available in the Pro version.', 'notification-hub'); ?></em>
                             </p>
@@ -342,14 +235,14 @@ $success = isset($_GET['success']) ? sanitize_text_field(wp_unslash($_GET['succe
                             type="url"
                             value="<?php echo esc_attr(get_option('nh_slack_webhook', '')); ?>"
                             class="regular-text"
-                            <?php echo $is_pro ? '' : 'disabled'; ?>
+                            <?php echo $can_slack ? '' : 'disabled'; ?>
                         >
 
                         <p class="description">
                             <?php esc_html_e('Use an Incoming Webhook from Slack → App Integrations → Webhooks.', 'notification-hub'); ?>
                         </p>
 
-                        <?php if (!$is_pro) : ?>
+                        <?php if (!$can_slack) : ?>
                             <p class="description">
                                 <em><?php esc_html_e('This field is disabled because it’s only available in the Pro version.', 'notification-hub'); ?></em>
                             </p>

@@ -164,6 +164,7 @@ class NH_Notifier {
 
             case 'telegram':
                 return $this->send_pro_channel(
+                    'telegram',
                     'Telegram',
                     static function () use ($payload) {
                         return class_exists('NH_Notifier_Telegram') ? (bool) NH_Notifier_Telegram::send($payload) : false;
@@ -172,6 +173,7 @@ class NH_Notifier {
 
             case 'slack':
                 return $this->send_pro_channel(
+                    'slack',
                     'Slack',
                     static function () use ($payload) {
                         return class_exists('NH_Notifier_Slack') ? (bool) NH_Notifier_Slack::send($payload) : false;
@@ -188,12 +190,13 @@ class NH_Notifier {
      * Send to Pro-only channel.
      *
      * @since 1.6.2
+     * @param string   $capability Capability slug.
      * @param string   $name Channel label.
      * @param callable $sender Callback that performs send.
      * @return bool
      */
-    private function send_pro_channel(string $name, callable $sender): bool {
-        if (!class_exists('NH_License') || !method_exists('NH_License', 'is_pro') || !NH_License::is_pro()) {
+    private function send_pro_channel(string $capability, string $name, callable $sender): bool {
+        if (!class_exists('NH_License') || !method_exists('NH_License', 'can') || !NH_License::can($capability)) {
             $this->debug_log(
                 sprintf(
                     /* translators: %s: channel name */

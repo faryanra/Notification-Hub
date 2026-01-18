@@ -126,39 +126,6 @@
 }
 
 /* =====================================================
-   Settings: License box helpers (no inline styles)
-   ===================================================== */
-
-.nh-license-box {
-  margin-top: 20px;
-}
-
-.nh-license-status {
-  font-weight: 700;
-  margin-left: 8px;
-}
-
-.nh-license-status--active {
-  color: #46b450;
-}
-
-.nh-license-status--locked {
-  color: #a00;
-}
-
-.nh-license-key--masked {
-  opacity: 0.6;
-}
-
-.nh-license-hint {
-  margin-top: 6px;
-}
-
-.nh-license-hint--active {
-  color: #46b450;
-}
-
-/* =====================================================
    Optional helpers
    ===================================================== */
 

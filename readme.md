@@ -1,39 +1,43 @@
-# 🚨 Notification Hub (v1.6.3)
+# 🚨 Notification Hub (v1.7.0)
 
 A real-time, AJAX-powered notification manager for WordPress — featuring a unified admin dashboard, multi-channel notifications, and a modular, template-based rendering system.
 
 ---
 
-## ✨ Highlights (v1.6.3)
+## ✨ Highlights (v1.7.0)
 
-### 🧩 Template Engine (Preview = Real Output)
-- ✅ Added a minimal, centralized renderer: `NH_Template::render_notification($channel, $payload)`.
-- ✅ New templates live in `templates/notifications/` (email/telegram/slack).
-- ✅ Dashboard modal preview now renders using the same templates, so the preview matches real channel output.
+### 🔑 License & Pro Features
+- ✅ Redesigned **License & Pro Features** box under *Settings → Pro* with a single, unified form.
+- ✅ Save **License Server URL** + **License Key** together via one action (`nh_save_license_bundle`).
+- ✅ Masked key preview (only first + last 4 characters visible) and “Saved” pill for quick feedback.
 
-### 🏷️ Human Mapping (DB ≠ UI)
-- ✅ Added central human-readable mapping for `source` and `type` in `core/class-nh-human.php`.
-- ✅ Templates and UI can now show user-friendly labels (e.g., `wp_core → WordPress`, `comment_new → New Comment`) without changing DB values.
+### 🧱 Central License Policy (NH_License)
+- ✅ New `NH_License` core with normalized state: `status`, `features`, `domain`, `last_check`, `grace_until`, `message`, `license_hash`.
+- ✅ Strict key format validation: `NH-PRO-XXXX-XXXX` (A–Z / 0–9). Invalid format is rejected and shown as an admin notice.
+- ✅ Grace-mode support so temporary license server outages don’t instantly lock Pro.
 
-### 🔗 Admin Deep-links (Actionable Notifications)
-- ✅ Added wp-admin links for key events so notifications are actionable:
-  - `comment_new` → Edit comment
-  - `post_status_changed` → Edit post
-  - `user_registered` → Edit user
-  - `order_created` → Edit order
-  - `low_stock` → Edit product
-  - `form_sent` / `form_failed` → Edit CF7 form
+### 🛡️ Safer Remote Verify + Anti‑Bot Detection
+- ✅ Remote verification expects JSON, supports POST and GET fallback, and records detailed debug context when WP_DEBUG is enabled.
+- ✅ Detects common JS/WAF “anti-bot challenge” pages and surfaces a clear, actionable message.
 
-### 📨 Better Email Output
-- ✅ HTML email template upgraded with consistent layout + footer.
-- ✅ Smart CTA label per notification type (e.g., “View Order”, “Edit Product”, “Edit Form”).
-
-### 👁️ Preview Polishing
-- ✅ Modal preview supports switching channel output (Email/Telegram/Slack) and remembers selection.
+### 🧠 Capability-based Pro Checks
+- ✅ New `NH_License::can($capability)` API (`telegram`, `slack`, …) as the single source of truth for Pro capabilities.
+- ✅ Settings UI enables/disables Telegram/Slack fields (and test buttons) based on per-feature capabilities.
+- ✅ `NH_Notifier` enforces Pro channels using `NH_License::can()`.
 
 ---
 
 ## 📅 Changelog
+
+### v1.7.0 — License Server + Pro Policy
+- Added: Central `NH_License` core with normalized state.
+- Added: Strict Pro key format validation: `NH-PRO-XXXX-XXXX`.
+- Added: Unified License box in *Settings → Pro* with `nh_save_license_bundle` action.
+- Added: Remote verify with TTL, transient lock, and POST→GET fallback.
+- Added: Support for extended statuses: `active`, `inactive`, `revoked`, `grace`, `banned`, `expired`.
+- Added: Capability-based checks via `NH_License::can()` for Pro channels.
+- Improved: Pro channel gating in `NH_Notifier` now uses `NH_License::can('telegram')` / `NH_License::can('slack')`.
+- Improved: Pro settings UI now enables/disables fields and test actions based on capabilities.
 
 ### v1.6.3 — Template Rendering + Action Links
 - Added: `templates/notifications/` channel templates (email/telegram/slack).
