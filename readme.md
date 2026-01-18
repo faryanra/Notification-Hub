@@ -1,38 +1,50 @@
-# 🚨 Notification Hub (v1.6.2)
+# 🚨 Notification Hub (v1.6.3)
 
-A real-time, AJAX-powered notification manager for WordPress — featuring a unified admin dashboard, multi-channel notifications, and a modular codebase.
+A real-time, AJAX-powered notification manager for WordPress — featuring a unified admin dashboard, multi-channel notifications, and a modular, template-based rendering system.
 
 ---
 
-## ✨ Highlights (v1.6.2)
+## ✨ Highlights (v1.6.3)
 
-### 🔐 Security Hardening
-- ✅ Hardened dashboard query parameters (whitelist/sanitize `orderby`, `order`, paging)
-- ✅ Hardened filter handling (validated keys, numeric priority, sanitized view/status)
-- ✅ Hardened bulk actions (allowlist actions, normalized SQL IN placeholders)
-- ✅ Hardened AJAX actions (absint IDs, safer update formats, escaped error strings)
+### 🧩 Template Engine (Preview = Real Output)
+- ✅ Added a minimal, centralized renderer: `NH_Template::render_notification($channel, $payload)`.
+- ✅ New templates live in `templates/notifications/` (email/telegram/slack).
+- ✅ Dashboard modal preview now renders using the same templates, so the preview matches real channel output.
 
-### 🧼 Safer Sanitization & Integrations
-- ✅ Sanitized notifier settings/inputs (email option, source/type slugs)
-- ✅ Sanitized Slack webhook URL
-- ✅ Sanitized Telegram chat ID
-- ✅ Fixed handler class naming consistency (`NH_Notifier_Telegram`, `NH_Notifier_Slack`)
+### 🏷️ Human Mapping (DB ≠ UI)
+- ✅ Added central human-readable mapping for `source` and `type` in `core/class-nh-human.php`.
+- ✅ Templates and UI can now show user-friendly labels (e.g., `wp_core → WordPress`, `comment_new → New Comment`) without changing DB values.
 
-### 🎨 UI & JS Stability Improvements
-- ✅ Scoped admin CSS so it won’t affect other wp-admin pages
-- ✅ Centralized modal base styles in `assets/css/admin.css`
-- ✅ Fixed dashboard column CSS selectors and removed obsolete CSS rules
-- ✅ Dashboard JS: consistent `window.nhAdmin` usage + removed `innerHTML` usage for modal meta
-- ✅ Admin JS: consistent `window.nhAdmin` usage + NEW-row persistence via `tr[data-id]`
-- ✅ Settings JS: safer URL construction + guards when tabs/panes missing
+### 🔗 Admin Deep-links (Actionable Notifications)
+- ✅ Added wp-admin links for key events so notifications are actionable:
+  - `comment_new` → Edit comment
+  - `post_status_changed` → Edit post
+  - `user_registered` → Edit user
+  - `order_created` → Edit order
+  - `low_stock` → Edit product
+  - `form_sent` / `form_failed` → Edit CF7 form
 
-### 📦 CSV Export Improvements
-- ✅ Hardened capability checks
-- ✅ Added UTF-8 BOM for Excel compatibility
+### 📨 Better Email Output
+- ✅ HTML email template upgraded with consistent layout + footer.
+- ✅ Smart CTA label per notification type (e.g., “View Order”, “Edit Product”, “Edit Form”).
+
+### 👁️ Preview Polishing
+- ✅ Modal preview supports switching channel output (Email/Telegram/Slack) and remembers selection.
 
 ---
 
 ## 📅 Changelog
+
+### v1.6.3 — Template Rendering + Action Links
+- Added: `templates/notifications/` channel templates (email/telegram/slack).
+- Added: Central renderer `NH_Template` to unify channel rendering.
+- Added: Human mapping helpers (`nh_human_source`, `nh_human_type`) for consistent UI labels.
+- Improved: Notification payload normalization (standard keys: `title`, `summary`, `source`, `type`, `context`, `link`).
+- Improved: WooCommerce + CF7 integrations now send richer payloads (type/context/link) for templates.
+- Improved: WordPress core events now include wp-admin deep-links for post/user.
+- Improved: Dashboard modal preview uses template renderer (Preview = output).
+- Improved: Email CTA label is type-aware.
+- Added: Channel switcher inside modal preview.
 
 ### v1.6.2 — Security + Stability
 - Security: Whitelist + sanitize dashboard orderby/order and paging parameters.
@@ -65,9 +77,9 @@ A real-time, AJAX-powered notification manager for WordPress — featuring a uni
 
 ## 👨‍💻 Author
 **Faryan Rajabi Jorshari (HelloCode)**  
-🌐 [hellocode.ir](https://www.hellocode.ir)  
-🐙 [GitHub](https://github.com/faryanra)  
-💼 [LinkedIn](https://www.linkedin.com/in/faryan-rajabi/)
+🌐 https://www.hellocode.ir  
+🐙 https://github.com/faryanra  
+💼 https://www.linkedin.com/in/faryan-rajabi/
 
 ---
 

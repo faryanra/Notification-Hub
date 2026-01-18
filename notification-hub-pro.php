@@ -3,7 +3,7 @@
  * Plugin Name: Notification Hub Pro
  * Plugin URI:  https://hellocode.ir/
  * Description: Premium extension for Notification Hub — adds licensing, network policies, analytics and advanced integrations.
- * Version:     1.6.2
+ * Version:     1.6.3
  * Author:      HelloCode Team
  * Author URI:  https://hellocode.ir/
  * Text Domain: notification-hub
@@ -35,5 +35,5 @@ require_once __DIR__ . '/modules/pro/class-nh-pro-loader.php';
 new NH_Pro_Loader();
 
 if (!defined('NH_PRO_VERSION')) {
-    define('NH_PRO_VERSION', '1.6.2');
+    define('NH_PRO_VERSION', '1.6.3');
 }

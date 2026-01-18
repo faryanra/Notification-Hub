@@ -4,7 +4,7 @@ Tags: notifications, dashboard, woocommerce, alerts, admin
 Requires at least: 5.8
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.6.2
+Stable tag: 1.6.3
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -16,22 +16,25 @@ Notification Hub provides a unified admin dashboard for all important events hap
 
 Whether it's a new WooCommerce order, a comment, a form submission, or a custom event — you'll see it all in a single, sortable, filterable table.
 
-== What's New in v1.6.2 ==
+== What's New in v1.6.3 ==
 
-This release focuses on security hardening, safer sanitization, and UI/JS stability improvements across the dashboard and admin screens.
+This release introduces a template-based rendering layer so **Preview = real channel output**, plus human-readable mapping and actionable admin deep-links.
 
-- 🔐 Security hardening across dashboard queries, filters, AJAX actions, and bulk actions.
-- 🧼 Improved sanitization/escaping for dynamic values (IDs, sort params, webhook URLs, chat IDs).
-- 🧩 Notifier and integrations cleanup (Telegram/Slack handler naming consistency).
-- 🎨 Admin UI polish (CSS scoping, modal styles centralized, table column selector fixes).
-- ⚙️ JS stability fixes (consistent globals, safer URL parsing, reduced risk of DOM injection).
+- 🧩 Template Engine: Central renderer + `templates/notifications/` for email/telegram/slack.
+- 👁️ Real Preview: Dashboard modal uses the same renderer, so what you preview is exactly what channels send.
+- 🏷️ Human Mapping: Central mapping for source/type labels (DB values remain unchanged).
+- 🔗 Action links: wp-admin deep-links for key events (comments, posts, users, orders, products, CF7 forms).
+- 📨 Improved email template: consistent HTML layout + smart CTA per notification type.
+- 🎛️ Preview channel switcher: quickly toggle Email/Telegram/Slack in modal preview.
 
 == Features ==
 
 - 📬 Unified Notification Table (WP_List_Table)
 - 📨 Email alerts
+- 📣 Telegram alerts
+- 💬 Slack alerts
 - 🔔 Admin bar unread badge (live refresh)
-- 💬 Modal viewer (notification preview)
+- 👁️ Modal viewer (template-based preview)
 - 🔄 AJAX interactions: Mark Read/Unread, Important, Delete
 - 📦 Bulk actions support
 - 🔍 Advanced filtering (time, source, type, priority, status)
@@ -48,6 +51,16 @@ This release focuses on security hardening, safer sanitization, and UI/JS stabil
 4. Configure channels and settings
 
 == Changelog ==
+
+= 1.6.3 =
+* Added: Template Engine (`NH_Template::render_notification`) and new channel templates in `templates/notifications/`.
+* Added: Human mapping helpers for consistent UI labels: `nh_human_source()` and `nh_human_type()`.
+* Improved: Standardized notification payload keys (`title`, `summary`, `source`, `type`, `context`, `link`) for all channels.
+* Improved: Dashboard modal preview now renders via templates (Preview = output).
+* Improved: WooCommerce + CF7 payloads now include type/context/link so templates can build outcome-focused output.
+* Improved: WordPress core events now include wp-admin deep-links (Edit Post / Edit User).
+* Improved: Email HTML template with smart CTA label per event type.
+* Added: Modal preview channel switcher (Email/Telegram/Slack).
 
 = 1.6.2 =
 * Security: Whitelist + sanitize dashboard orderby/order and paging parameters.
@@ -100,7 +113,7 @@ This release focuses on security hardening, safer sanitization, and UI/JS stabil
 * Added: Real-time badge refresh via AJAX polling
 * Fixed: Badge count reset to total after zero
 * Fixed: Invalid modal "View" errors
-* Improved: uninstall.php (drop/keep data, Action Scheduler cleanup)
+* Improved: uninstall.php safe cleanup (keeps data, Action Scheduler cleanup)
 * Improved: consistent UI + unified JS structure
 * Cleanup: removed logs + redundant debug files
 
@@ -145,7 +158,7 @@ This release focuses on security hardening, safer sanitization, and UI/JS stabil
 Developed by **Faryan Rajabi Jorshari (HelloCode)**
 🌐 https://www.hellocode.ir
 🐙 https://github.com/faryanra
-💼 https://www.linkedin.com/in/faryan-rajabi/
+💼 https://www.linkedin.com/in/faryan-rajabi-jorshari/
 
 == License ==
 GPLv3 or later
