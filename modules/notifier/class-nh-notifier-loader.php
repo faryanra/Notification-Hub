@@ -23,10 +23,10 @@ class NH_Notifier_Loader {
         self::safe_require_once(__DIR__ . '/class-nh-notifier-queue.php');
         self::safe_require_once(__DIR__ . '/class-nh-notifier-email.php');
 
-        // Pro channels (only when Pro addon is active).
+        // Premium channels (only when Premium addon is active).
         if (defined('NH_PRO_ACTIVE') && (bool) NH_PRO_ACTIVE) {
-            self::safe_require_once(__DIR__ . '/class-nh-notifier-telegram.php');
-            self::safe_require_once(__DIR__ . '/class-nh-notifier-slack.php');
+            self::safe_require_once(__DIR__ . '/premium-class-nh-notifier-telegram.php');
+            self::safe_require_once(__DIR__ . '/premium-class-nh-notifier-slack.php');
         }
     }
 
