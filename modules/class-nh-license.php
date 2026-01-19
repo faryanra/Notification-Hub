@@ -29,9 +29,11 @@ class NH_License {
     /**
      * Enable extra debug logs in WP debug.log.
      *
-     * @since 1.7.0
+     * NOTE: Turned off by default to avoid noisy logs on production.
+     *
+     * @since 1.7.1
      */
-    private const DEBUG = true;
+    private const DEBUG = false;
 
     private const TRANSIENT_LOCK = 'nh_license_check_lock';
 
@@ -71,6 +73,31 @@ class NH_License {
      */
     public static function is_pro_addon_active(): bool {
         return defined('NH_PRO_ACTIVE') && (bool) NH_PRO_ACTIVE;
+    }
+
+    /**
+     * Check compatibility between Free and Pro.
+     *
+     * If Pro defines NH_PRO_VERSION, enforce exact match with NH_VERSION.
+     * This prevents weird runtime failures when the two plugins are out of sync.
+     *
+     * @since 1.7.1
+     */
+    public static function is_pro_version_compatible(): bool {
+        if (!self::is_pro_addon_active()) {
+            return false;
+        }
+
+        if (!defined('NH_VERSION')) {
+            return true;
+        }
+
+        if (!defined('NH_PRO_VERSION')) {
+            // Pro addon didn't declare a version; assume compatible.
+            return true;
+        }
+
+        return (string) NH_PRO_VERSION === (string) NH_VERSION;
     }
 
     /** @since 1.7.0 */
@@ -166,9 +193,15 @@ class NH_License {
             return false;
         }
 
-        // Pro capabilities require Pro addon presence.
-        if (in_array($capability, self::PRO_CAPS, true) && !self::is_pro_addon_active()) {
-            return false;
+        // Pro capabilities require Pro addon presence + version compatibility.
+        if (in_array($capability, self::PRO_CAPS, true)) {
+            if (!self::is_pro_addon_active()) {
+                return false;
+            }
+
+            if (!self::is_pro_version_compatible()) {
+                return false;
+            }
         }
 
         self::maybe_refresh();
