@@ -176,11 +176,14 @@ $success = isset($_GET['success']) ? sanitize_text_field(wp_unslash($_GET['succe
                 if (file_exists($upgrade_partial)) {
                     include $upgrade_partial;
                 }
-            }
 
-            $fields_partial = NH_PLUGIN_DIR . 'templates/partials/pro-settings-fields.php';
-            if (file_exists($fields_partial)) {
-                include $fields_partial;
+                // Hide pro settings fields entirely when Pro addon is not installed.
+                // This avoids showing Pro-only configuration in the Free plugin.
+            } else {
+                $fields_partial = NH_PLUGIN_DIR . 'templates/partials/pro-settings-fields.php';
+                if (file_exists($fields_partial)) {
+                    include $fields_partial;
+                }
             }
             ?>
         </div>
