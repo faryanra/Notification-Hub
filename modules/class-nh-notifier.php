@@ -189,18 +189,20 @@ class NH_Notifier {
     /**
      * Send to Pro-only channel.
      *
-     * @since 1.6.2
-     * @param string   $capability Capability slug.
+     * @since 1.7.1
+     * @param string   $cap Channel capability (telegram/slack).
      * @param string   $name Channel label.
      * @param callable $sender Callback that performs send.
      * @return bool
      */
-    private function send_pro_channel(string $capability, string $name, callable $sender): bool {
-        if (!class_exists('NH_License') || !method_exists('NH_License', 'can') || !NH_License::can($capability)) {
+    private function send_pro_channel(string $cap, string $name, callable $sender): bool {
+        $cap = sanitize_key($cap);
+
+        if (!class_exists('NH_License') || !method_exists('NH_License', 'can') || !NH_License::can($cap)) {
             $this->debug_log(
                 sprintf(
                     /* translators: %s: channel name */
-                    __('%s requires Pro license', 'notification-hub'),
+                    __('%s requires Pro', 'notification-hub'),
                     $name
                 )
             );
