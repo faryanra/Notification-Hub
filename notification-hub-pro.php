@@ -16,6 +16,15 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+// Always declare presence/version early.
+if (!defined('NH_PRO_ACTIVE')) {
+    define('NH_PRO_ACTIVE', true);
+}
+
+if (!defined('NH_PRO_VERSION')) {
+    define('NH_PRO_VERSION', '1.7.0');
+}
+
 // Ensure the core (free) plugin is loaded first.
 if (!defined('NH_VERSION')) {
     add_action(
@@ -28,16 +37,6 @@ if (!defined('NH_VERSION')) {
         }
     );
     return;
-}
-
-// Define Pro presence + version ASAP.
-if (!defined('NH_PRO_ACTIVE')) {
-    define('NH_PRO_ACTIVE', true);
-}
-
-if (!defined('NH_PRO_VERSION')) {
-    // Must match NH_VERSION (Free) for compatibility.
-    define('NH_PRO_VERSION', '1.7.0');
 }
 
 // If Free/Pro versions mismatch, do not boot Pro to avoid fatals.
