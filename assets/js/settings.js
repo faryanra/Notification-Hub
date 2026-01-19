@@ -33,7 +33,6 @@
     );
     if (tabLink) tabLink.classList.add('nav-tab-active');
 
-    // Support both legacy panes (#nh-tab-*) and any pane by data-tab.
     const paneById = document.getElementById(`nh-tab-${tab}`);
     if (paneById) {
       paneById.classList.add('is-active');
@@ -44,8 +43,6 @@
     if (paneByData) paneByData.classList.add('is-active');
   }
 
-  // Root-cause fix: Save button visibility must be updated when tabs switch
-  // because switching is client-side (history.replaceState) and PHP won't rerun.
   function syncSaveButton(tab) {
     const form = document.querySelector('form[action*="options.php"]');
     if (!form) return;
@@ -54,9 +51,9 @@
     if (!submit) return;
 
     const tabsWrap = document.querySelector('.nh-settings-tabs');
-    const proAddonActive = tabsWrap?.getAttribute('data-pro-addon') === '1';
+    const premiumAddonActive = tabsWrap?.getAttribute('data-pro-addon') === '1';
 
-    const hide = tab === 'pro' && !proAddonActive;
+    const hide = tab === 'premium' && !premiumAddonActive;
     submit.style.display = hide ? 'none' : '';
   }
 
@@ -96,7 +93,6 @@
       });
 
       if (saveBtn) {
-        // Disable save when locked; user must click Edit first.
         saveBtn.disabled = locked;
         saveBtn.classList.toggle('disabled', locked);
       }
@@ -107,7 +103,6 @@
         : btnEdit.dataset.labelCancel || 'Cancel';
 
       if (!locked) {
-        // Focus the first input for faster UX.
         const first = inputs[0];
         if (first && typeof first.focus === 'function') first.focus();
       }
@@ -118,7 +113,6 @@
       setLocked(!isLocked());
     });
 
-    // Initial state: if server URL exists (or key exists), start locked.
     const hasValue = Array.from(inputs).some((el) => (el.value || '').trim() !== '');
     setLocked(hasValue);
   }
@@ -128,11 +122,9 @@
     const panes = document.querySelectorAll('.nh-tab');
 
     if (tabs.length > 0 && panes.length > 0) {
-      // Ensure correct pane is active on load.
       const initialTab = getActiveTabFromUrl() || tabs[0]?.dataset?.tab || 'general';
       setActiveTabAndSync(initialTab);
 
-      // Tab click: switch visible pane and update URL.
       tabs.forEach((tabEl) =>
         tabEl.addEventListener('click', (e) => {
           e.preventDefault();
@@ -140,7 +132,6 @@
           const tab = tabEl.dataset.tab || 'general';
           setActiveTabAndSync(tab);
 
-          // Keep ALL query params, just change the tab.
           const href = tabEl.getAttribute('href');
           if (href) {
             try {
@@ -153,20 +144,16 @@
               next.searchParams.set('tab', tab);
 
               history.replaceState(null, '', next.toString());
-            } catch (_) {
-              // ignore
-            }
+            } catch (_) {}
           }
         })
       );
 
-      // If user navigates back/forward, URL changes but no reload.
       window.addEventListener('popstate', () => {
         const tab = getActiveTabFromUrl() || 'general';
         setActiveTabAndSync(tab);
       });
 
-      // Ensure "Send test" links keep tab in URL.
       document.querySelectorAll('.nh-test-btn').forEach((btn) => {
         btn.addEventListener('click', (e) => {
           e.preventDefault();

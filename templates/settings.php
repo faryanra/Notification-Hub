@@ -72,18 +72,18 @@ $success = isset($_GET['success']) ? sanitize_text_field(wp_unslash($_GET['succe
         </a>
 
         <a
-            href="<?php echo esc_url(admin_url('admin.php?page=nh_settings&tab=pro')); ?>"
-            class="nav-tab <?php echo $active_tab === 'pro' ? 'nav-tab-active' : ''; ?>"
-            data-tab="pro"
+            href="<?php echo esc_url(admin_url('admin.php?page=nh_settings&tab=premium')); ?>"
+            class="nav-tab <?php echo $active_tab === 'premium' ? 'nav-tab-active' : ''; ?>"
+            data-tab="premium"
         >
-            <?php esc_html_e('Pro Channels', 'notification-hub'); ?>
+            <?php esc_html_e('Premium Channels', 'notification-hub'); ?>
         </a>
     </h2>
 
     <?php
-    // Pro UI lives under templates/pro/* so it can be extracted later.
+    // Premium UI partials: prefixed with "premium-" for easy extraction into Premium zip.
     if ($is_pro_addon) {
-        $license_partial = NH_PLUGIN_DIR . 'templates/pro/partials/license-box.php';
+        $license_partial = NH_PLUGIN_DIR . 'templates/partials/premium-license-box.php';
         if (file_exists($license_partial)) {
             include $license_partial;
         }
@@ -158,18 +158,18 @@ $success = isset($_GET['success']) ? sanitize_text_field(wp_unslash($_GET['succe
         </div>
 
         <div
-            id="nh-tab-pro"
-            class="nh-tab <?php echo $active_tab === 'pro' ? 'is-active' : ''; ?>"
-            data-tab="pro"
+            id="nh-tab-premium"
+            class="nh-tab <?php echo $active_tab === 'premium' ? 'is-active' : ''; ?>"
+            data-tab="premium"
         >
             <?php
             if (!$is_pro_addon) {
-                $upgrade_partial = NH_PLUGIN_DIR . 'templates/pro/partials/pro-upgrade-panel.php';
+                $upgrade_partial = NH_PLUGIN_DIR . 'templates/partials/premium-upgrade-panel.php';
                 if (file_exists($upgrade_partial)) {
                     include $upgrade_partial;
                 }
             } else {
-                $fields_partial = NH_PLUGIN_DIR . 'templates/pro/partials/pro-settings-fields.php';
+                $fields_partial = NH_PLUGIN_DIR . 'templates/partials/premium-settings-fields.php';
                 if (file_exists($fields_partial)) {
                     include $fields_partial;
                 }
@@ -178,8 +178,8 @@ $success = isset($_GET['success']) ? sanitize_text_field(wp_unslash($_GET['succe
         </div>
 
         <?php
-        // Don't show Save Changes in the Pro tab when Pro addon isn't installed.
-        if (!($active_tab === 'pro' && !$is_pro_addon)) {
+        // Don't show Save Changes in the Premium tab when Premium addon isn't installed.
+        if (!($active_tab === 'premium' && !$is_pro_addon)) {
             submit_button();
         }
         ?>
