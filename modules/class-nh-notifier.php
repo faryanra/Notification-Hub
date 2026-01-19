@@ -48,14 +48,21 @@ class NH_Notifier {
     /**
      * Load internal notifier handlers (if present).
      *
+     * IMPORTANT: Pro channel handlers must not be loaded in the Free plugin.
+     * They are part of the Pro addon.
+     *
      * @since 1.6.2
      * @return void
      */
     public static function load_handlers(): void {
         self::safe_require_once(__DIR__ . '/notifier/class-nh-notifier-queue.php');
         self::safe_require_once(__DIR__ . '/notifier/class-nh-notifier-email.php');
-        self::safe_require_once(__DIR__ . '/notifier/class-nh-notifier-telegram.php');
-        self::safe_require_once(__DIR__ . '/notifier/class-nh-notifier-slack.php');
+
+        // Pro channels (only when Pro addon is active).
+        if (defined('NH_PRO_ACTIVE') && (bool) NH_PRO_ACTIVE) {
+            self::safe_require_once(__DIR__ . '/notifier/class-nh-notifier-telegram.php');
+            self::safe_require_once(__DIR__ . '/notifier/class-nh-notifier-slack.php');
+        }
     }
 
     /**

@@ -45,6 +45,13 @@ class NH_License {
      */
     private const KEY_REGEX = '/^NH-PRO-[A-Z0-9]{4}-[A-Z0-9]{4}$/';
 
+    /**
+     * Capabilities that belong to Pro addon.
+     *
+     * @since 1.7.1
+     */
+    private const PRO_CAPS = ['telegram', 'slack'];
+
     public static function default_state(): array {
         return [
             'status'       => 'unknown',
@@ -55,6 +62,15 @@ class NH_License {
             'message'      => '',
             'license_hash' => '',
         ];
+    }
+
+    /**
+     * Pro addon presence flag.
+     *
+     * @since 1.7.1
+     */
+    public static function is_pro_addon_active(): bool {
+        return defined('NH_PRO_ACTIVE') && (bool) NH_PRO_ACTIVE;
     }
 
     /** @since 1.7.0 */
@@ -147,6 +163,11 @@ class NH_License {
     public static function can(string $capability): bool {
         $capability = sanitize_key($capability);
         if ($capability === '') {
+            return false;
+        }
+
+        // Pro capabilities require Pro addon presence.
+        if (in_array($capability, self::PRO_CAPS, true) && !self::is_pro_addon_active()) {
             return false;
         }
 
@@ -255,15 +276,6 @@ class NH_License {
     private static function is_in_grace(array $state): bool {
         $grace_until = (int) ($state['grace_until'] ?? 0);
         return $grace_until > 0 && time() <= $grace_until;
-    }
-
-    /**
-     * Server-side states that are "not active" but useful for UX.
-     *
-     * @since 1.7.0
-     */
-    private static function is_expired(array $state): bool {
-        return isset($state['status']) && $state['status'] === 'expired';
     }
 
     /** @since 1.7.0 */
