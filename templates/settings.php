@@ -70,7 +70,7 @@ $success = isset($_GET['success']) ? sanitize_text_field(wp_unslash($_GET['succe
         </div>
     <?php endif; ?>
 
-    <h2 class="nav-tab-wrapper nh-settings-tabs" data-active-tab="<?php echo esc_attr($active_tab); ?>">
+    <h2 class="nav-tab-wrapper nh-settings-tabs" data-active-tab="<?php echo esc_attr($active_tab); ?>" data-pro-addon="<?php echo $is_pro_addon ? '1' : '0'; ?>">
         <a
             href="<?php echo esc_url(admin_url('admin.php?page=nh_settings&tab=general')); ?>"
             class="nav-tab <?php echo $active_tab === 'general' ? 'nav-tab-active' : ''; ?>"
