@@ -3,7 +3,6 @@
  * Settings Template
  *
  * Renders Notification Hub settings page (General / Pro tabs).
- * License box is extracted into a partial for maintainability.
  *
  * @package Notification_Hub
  * @since 1.6.2
@@ -13,22 +12,15 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-/**
- * Read runtime flags.
- */
 $can_telegram = class_exists('NH_License') ? NH_License::can('telegram') : false;
 $can_slack    = class_exists('NH_License') ? NH_License::can('slack') : false;
 
-// Pro addon presence (used to decide whether to show license box or upgrade panel).
 $is_pro_addon = (class_exists('NH_License') && method_exists('NH_License', 'is_pro_addon_active'))
     ? NH_License::is_pro_addon_active()
     : (defined('NH_PRO_ACTIVE') && (bool) NH_PRO_ACTIVE);
 
 $active_tab = isset($_GET['tab']) ? sanitize_key(wp_unslash($_GET['tab'])) : 'general';
 
-/**
- * Render admin notices from query params.
- */
 $channel = isset($_GET['nh_test']) ? sanitize_text_field(wp_unslash($_GET['nh_test'])) : '';
 $success = isset($_GET['success']) ? sanitize_text_field(wp_unslash($_GET['success'])) : '';
 ?>
@@ -89,9 +81,9 @@ $success = isset($_GET['success']) ? sanitize_text_field(wp_unslash($_GET['succe
     </h2>
 
     <?php
-    // License box is meaningful only when the Pro addon is installed.
+    // Pro UI lives under templates/pro/* so it can be extracted later.
     if ($is_pro_addon) {
-        $license_partial = NH_PLUGIN_DIR . 'templates/partials/license-box.php';
+        $license_partial = NH_PLUGIN_DIR . 'templates/pro/partials/license-box.php';
         if (file_exists($license_partial)) {
             include $license_partial;
         }
@@ -172,12 +164,12 @@ $success = isset($_GET['success']) ? sanitize_text_field(wp_unslash($_GET['succe
         >
             <?php
             if (!$is_pro_addon) {
-                $upgrade_partial = NH_PLUGIN_DIR . 'templates/partials/pro-upgrade-panel.php';
+                $upgrade_partial = NH_PLUGIN_DIR . 'templates/pro/partials/pro-upgrade-panel.php';
                 if (file_exists($upgrade_partial)) {
                     include $upgrade_partial;
                 }
             } else {
-                $fields_partial = NH_PLUGIN_DIR . 'templates/partials/pro-settings-fields.php';
+                $fields_partial = NH_PLUGIN_DIR . 'templates/pro/partials/pro-settings-fields.php';
                 if (file_exists($fields_partial)) {
                     include $fields_partial;
                 }
