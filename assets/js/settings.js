@@ -136,6 +136,28 @@
     setLocked(hasValue);
   }
 
+  function cleanLicenseQueryParams() {
+    try {
+      const url = new URL(window.location.href);
+      const keys = [
+        'nh_license_saved',
+        'nh_license_revoked',
+        'nh_license_error',
+        'nh_license_server_saved',
+      ];
+      let changed = false;
+      keys.forEach((k) => {
+        if (url.searchParams.has(k)) {
+          url.searchParams.delete(k);
+          changed = true;
+        }
+      });
+      if (changed) {
+        history.replaceState(null, '', url.toString());
+      }
+    } catch (_) {}
+  }
+
   function initAutoHideNotices() {
     const nodes = document.querySelectorAll('.nh-auto-hide[data-auto-hide="1"]');
     if (!nodes || nodes.length === 0) return;
@@ -208,5 +230,6 @@
 
     initLicenseEditToggle();
     initAutoHideNotices();
+    cleanLicenseQueryParams();
   });
 })();
