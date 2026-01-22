@@ -136,8 +136,6 @@ class NH_Admin_License {
             }
         }
 
-        // UX: after saving, show a single action notice (auto-hide) and avoid duplicating server messages.
-        // The UI should decide wording based on status (active/inactive/etc), not the server.
         wp_safe_redirect(admin_url($redirect_base . '&nh_license_saved=1'));
         exit;
     }
@@ -159,7 +157,8 @@ class NH_Admin_License {
             NH_License::revoke();
         }
 
-        wp_safe_redirect(admin_url('admin.php?page=nh_settings&tab=pro&nh_license_revoked=1'));
+        // Keep user on the Premium tab.
+        wp_safe_redirect(admin_url('admin.php?page=nh_settings&tab=premium&nh_license_revoked=1'));
         exit;
     }
 }
