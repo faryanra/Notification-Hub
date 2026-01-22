@@ -4,7 +4,7 @@ Tags: notifications, dashboard, woocommerce, alerts, admin
 Requires at least: 5.8
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.7.0
+Stable tag: 1.7.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -16,14 +16,24 @@ Notification Hub provides a unified admin dashboard for all important events hap
 
 Whether it's a new WooCommerce order, a comment, a form submission, or a custom event — you'll see it all in a single, sortable, filterable table.
 
-== What's New in v1.7.0 ==
+== What's New in v1.7.1 ==
 
-This release introduces a dedicated license server integration, a redesigned “License & Pro Features” box, and a central policy layer for Pro capabilities.
+This release focuses on Premium packaging + improved license UX.
 
-- Unified License Box: Save License Server URL + License Key together in Settings → Pro.
-- Central License Core: New NH_License class with normalized state and grace-mode support.
-- Safer Remote Verify: JSON parsing, POST→GET fallback, and richer debug logs for WAF/anti-bot responses.
-- Capability Checks: Pro channels (Telegram/Slack) are gated via NH_License::can() instead of a single is_pro() flag.
+- Premium packaging: Premium-only classes moved to premium-prefixed files for easy extraction into the Premium ZIP.
+- Premium tab: Settings → Pro renamed to Settings → Premium.
+- License UX: Restored the full postbox UI (lock/edit toggle, saved pill, masked key preview, one-time warning notices).
+- Anti-bot note: Added guidance for Cloudflare/WAF allowlisting for license verify endpoints.
+
+== Cloudflare / WAF Notes (License Verify) ==
+
+If your license verify endpoint is behind Cloudflare (or any WAF) and you receive HTML/JS challenge pages instead of JSON, allowlist the verify URL path.
+
+Recommended:
+- Put the verify endpoint on a dedicated path like: /license/verify.php
+- Cloudflare Security/WAF: allow rule for that path.
+- Disable Bot Fight Mode / JS Challenge for that path.
+- Keep reasonable rate limits (plugin caches checks for hours).
 
 == Features ==
 
@@ -49,6 +59,12 @@ This release introduces a dedicated license server integration, a redesigned “
 4. Configure channels and settings
 
 == Changelog ==
+
+= 1.7.1 =
+* Changed: Premium-only classes moved to premium-prefixed files for clean extraction.
+* Changed: Settings tab renamed from Pro → Premium.
+* Improved: License box UX (lock/edit toggle, saved pill, masked key, warnings).
+* Added: Cloudflare/WAF allowlisting note for license verify endpoint.
 
 = 1.7.0 =
 * Added: Central NH_License core with normalized state (status, features, domain, last_check, grace_until, message, license_hash).
