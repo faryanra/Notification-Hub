@@ -7,6 +7,12 @@
 
 defined('ABSPATH') || exit;
 
-return function () {
-    // TODO(v1.7.2): move dashboard wiring here.
+return function ($r, $context = 'admin') {
+    if ($context !== 'admin') {
+        return;
+    }
+
+    if (class_exists('NH_Dashboard') && method_exists('NH_Dashboard', 'init')) {
+        NH_Dashboard::init($r);
+    }
 };
