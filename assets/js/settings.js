@@ -13,6 +13,8 @@
 (function () {
   'use strict';
 
+  const AUTO_HIDE_MS = 10000;
+
   function getActiveTabFromUrl() {
     const params = new URLSearchParams(window.location.search || '');
     const tab = (params.get('tab') || '').trim();
@@ -168,7 +170,7 @@
         window.setTimeout(() => {
           if (notice && notice.parentNode) notice.parentNode.removeChild(notice);
         }, 500);
-      }, 4500);
+      }, AUTO_HIDE_MS);
     });
   }
 
