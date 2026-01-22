@@ -58,72 +58,20 @@ class NH_License {
     private const PRO_CAPS = ['telegram', 'slack'];
 
     /**
-     * Get option store.
+     * Get License service instance.
      *
      * @since 1.7.2
-     * @return string Class name.
+     * @return NH_License_Service|null
      */
-    private static function option_store_class(): string {
-        // Prefer refactored option store.
-        if (!class_exists('NH_License_Option_Store')) {
-            $path = NH_PLUGIN_DIR . 'modules/license/storage/option-store.php';
+    private static function svc() {
+        if (!class_exists('NH_License_Service')) {
+            $path = NH_PLUGIN_DIR . 'modules/license/services/license-service.php';
             if (file_exists($path)) {
                 require_once $path;
             }
         }
 
-        return class_exists('NH_License_Option_Store') ? 'NH_License_Option_Store' : '';
-    }
-
-    /**
-     * Option getter (delegates to store when available).
-     *
-     * @since 1.7.2
-     * @param string $key Option name.
-     * @param mixed  $default Default.
-     * @return mixed
-     */
-    private static function opt_get(string $key, $default = null) {
-        $cls = self::option_store_class();
-        if ($cls !== '' && method_exists($cls, 'get')) {
-            return $cls::get($key, $default);
-        }
-
-        return get_option($key, $default);
-    }
-
-    /**
-     * Option setter (delegates to store when available).
-     *
-     * @since 1.7.2
-     * @param string $key Option name.
-     * @param mixed  $value Value.
-     * @param bool   $autoload Autoload.
-     * @return bool
-     */
-    private static function opt_set(string $key, $value, bool $autoload = false): bool {
-        $cls = self::option_store_class();
-        if ($cls !== '' && method_exists($cls, 'set')) {
-            return (bool) $cls::set($key, $value, $autoload);
-        }
-
-        return (bool) update_option($key, $value, $autoload);
-    }
-
-    /**
-     * Option delete (delegates to store when available).
-     *
-     * @since 1.7.2
-     * @param string $key Option name.
-     * @return bool
-     */
-    private static function opt_delete(string $key): bool {
-        $cls = self::option_store_class();
-        if ($cls !== '' && method_exists($cls, 'delete')) {
-            return (bool) $cls::delete($key);
-        }
-
-        return (bool) delete_option($key);
+        return class_exists('NH_License_Service') ? new NH_License_Service() : null;
     }
 
     public static function default_state(): array {
@@ -172,29 +120,51 @@ class NH_License {
 
     /** @since 1.7.0 */
     public static function get_server_url(): string {
-        $url = self::opt_get(self::OPT_SERVER_URL, '');
-        $url = is_string($url) ? trim($url) : '';
+        $svc = self::svc();
+        if ($svc) {
+            return (string) $svc->get_server_url();
+        }
 
+        $url = get_option(self::OPT_SERVER_URL, '');
+        $url = is_string($url) ? trim($url) : '';
         if ($url === '') {
             return '';
         }
-
         $url = esc_url_raw($url);
         return is_string($url) ? $url : '';
     }
 
     /** @since 1.6.2 */
     public static function get_key(): string {
-        $key = self::opt_get(self::OPT_KEY, '');
+        $svc = self::svc();
+        if ($svc) {
+            return (string) $svc->get_key();
+        }
+
+        $key = get_option(self::OPT_KEY, '');
         $key = is_string($key) ? $key : '';
-        $key = strtoupper(trim($key));
-        return $key;
+        return strtoupper(trim($key));
     }
 
     /** @since 1.6.2 */
     public static function save_key(string $key): void {
+        // Keep legacy behavior for now (service will own later stages).
         $key = strtoupper(trim((string) $key));
-        self::opt_set(self::OPT_KEY, sanitize_text_field($key));
+
+        // Prefer option store when available.
+        if (!class_exists('NH_License_Option_Store')) {
+            $path = NH_PLUGIN_DIR . 'modules/license/storage/option-store.php';
+            if (file_exists($path)) {
+                require_once $path;
+            }
+        }
+
+        if (class_exists('NH_License_Option_Store')) {
+            NH_License_Option_Store::set(self::OPT_KEY, sanitize_text_field($key));
+        } else {
+            update_option(self::OPT_KEY, sanitize_text_field($key));
+        }
+
         self::reset_state();
     }
 
@@ -213,13 +183,32 @@ class NH_License {
 
     /** @since 1.7.0 */
     public static function reset_state(): void {
-        self::opt_delete(self::OPT_STATE);
-        self::opt_set(self::OPT_VALID, false);
+        // Prefer option store when available.
+        if (!class_exists('NH_License_Option_Store')) {
+            $path = NH_PLUGIN_DIR . 'modules/license/storage/option-store.php';
+            if (file_exists($path)) {
+                require_once $path;
+            }
+        }
+
+        if (class_exists('NH_License_Option_Store')) {
+            NH_License_Option_Store::delete(self::OPT_STATE);
+            NH_License_Option_Store::set(self::OPT_VALID, false);
+            return;
+        }
+
+        delete_option(self::OPT_STATE);
+        update_option(self::OPT_VALID, false);
     }
 
     /** @since 1.7.0 */
     public static function get_state(): array {
-        $state = self::opt_get(self::OPT_STATE, []);
+        $svc = self::svc();
+        if ($svc) {
+            return (array) $svc->read_state();
+        }
+
+        $state = get_option(self::OPT_STATE, []);
         if (!is_array($state)) {
             return self::default_state();
         }
@@ -235,6 +224,12 @@ class NH_License {
      * @since 1.7.0
      */
     public static function set_state(array $state): void {
+        $svc = self::svc();
+        if ($svc) {
+            $svc->write_state($state);
+            return;
+        }
+
         $state = array_merge(self::default_state(), $state);
 
         $state['features'] = is_array($state['features'])
@@ -248,8 +243,8 @@ class NH_License {
         $state['message'] = is_string($state['message']) ? $state['message'] : '';
         $state['license_hash'] = is_string($state['license_hash']) ? $state['license_hash'] : '';
 
-        self::opt_set(self::OPT_STATE, $state, false);
-        self::opt_set(self::OPT_VALID, self::is_active($state));
+        update_option(self::OPT_STATE, $state, false);
+        update_option(self::OPT_VALID, self::is_active($state));
     }
 
     /**
@@ -343,103 +338,27 @@ class NH_License {
      * @since 1.7.0
      */
     public static function maybe_refresh(): void {
-        $state = self::get_state();
-        $now = time();
-
-        $key = self::get_key();
-        if ($key === '') {
+        $svc = self::svc();
+        if ($svc) {
+            $svc->maybe_refresh();
             return;
         }
 
-        // Hard fail fast when key format is invalid.
-        if (!self::is_valid_format($key)) {
-            $state['status'] = 'inactive';
-            $state['message'] = 'Invalid license key format.';
-            $state['domain'] = self::get_current_domain();
-            $state['license_hash'] = self::hash_key($key);
-            $state['last_check'] = $now;
-            $state['grace_until'] = 0;
-            self::set_state($state);
-            return;
-        }
-
-        $server_url = self::get_server_url();
-        if ($server_url === '') {
-            if ((int) ($state['last_check'] ?? 0) === 0) {
-                $state['status'] = 'inactive';
-                $state['message'] = 'License server URL is not configured.';
-                $state['domain'] = self::get_current_domain();
-                $state['license_hash'] = self::hash_key($key);
-                $state['last_check'] = $now;
-                self::set_state($state);
-            }
-            return;
-        }
-
-        if ($state['last_check'] && ($now - (int) $state['last_check']) < self::CHECK_TTL) {
-            return;
-        }
-
-        if (get_transient(self::TRANSIENT_LOCK)) {
-            return;
-        }
-
-        set_transient(self::TRANSIENT_LOCK, 1, 30);
-
-        // Prefer refactored HTTP client wrapper.
-        if (!class_exists('NH_License_HTTP_Client')) {
-            $http = NH_PLUGIN_DIR . 'modules/license/http/license-client.php';
-            if (file_exists($http)) {
-                require_once $http;
-            }
-        }
-
-        if (!class_exists('NH_License_Client')) {
-            $client = NH_PLUGIN_DIR . 'modules/license/class-nh-license-client.php';
-            if (file_exists($client)) {
-                require_once $client;
-            }
-        }
-
-        $result = class_exists('NH_License_HTTP_Client')
-            ? NH_License_HTTP_Client::remote_verify($key, $server_url, self::DEBUG)
-            : (class_exists('NH_License_Client')
-                ? NH_License_Client::remote_verify($key, $server_url, self::DEBUG)
-                : [
-                    'ok' => false,
-                    'message' => 'License client missing.',
-                    'state' => self::default_state(),
-                ]);
-
-        delete_transient(self::TRANSIENT_LOCK);
-
-        if ($result['ok']) {
-            self::set_state(is_array($result['state']) ? $result['state'] : []);
-            return;
-        }
-
-        $was_ok = self::is_active($state) || self::is_in_grace($state);
-        if ($was_ok) {
-            $state['status'] = 'grace';
-            $state['message'] = (string) ($result['message'] ?? '');
-            $state['last_check'] = $now;
-            $state['grace_until'] = max((int) $state['grace_until'], $now + (self::GRACE_DAYS * DAY_IN_SECONDS));
-            self::set_state($state);
-            return;
-        }
-
-        $state['status'] = 'inactive';
-        $state['message'] = (string) ($result['message'] ?? '');
-        $state['last_check'] = $now;
-        self::set_state($state);
+        // Fallback legacy behavior should never run when service exists.
     }
 
     /** @since 1.6.2 */
     public static function revoke(): void {
-        self::opt_delete(self::OPT_KEY);
-        self::opt_delete(self::OPT_VALID);
-        self::opt_delete(self::OPT_STATE);
-        self::opt_delete(self::OPT_SERVER_URL);
+        $svc = self::svc();
+        if ($svc) {
+            $svc->revoke();
+            return;
+        }
+
+        delete_option(self::OPT_KEY);
+        delete_option(self::OPT_VALID);
+        delete_option(self::OPT_STATE);
+        delete_option(self::OPT_SERVER_URL);
     }
 
     /**
