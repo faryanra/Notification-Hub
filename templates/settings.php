@@ -165,25 +165,27 @@ $success = isset($_GET['success']) ? sanitize_text_field(wp_unslash($_GET['succe
             </table>
         </div>
 
-        <div
-            id="nh-tab-premium"
-            class="nh-tab <?php echo $active_tab === 'premium' ? 'is-active' : ''; ?>"
-            data-tab="premium"
-        >
-            <?php
-            if (!$is_pro_addon) {
-                $upgrade_partial = NH_PLUGIN_DIR . 'templates/partials/premium-upgrade-panel.php';
-                if (file_exists($upgrade_partial)) {
-                    include $upgrade_partial;
+        <?php if ($active_tab === 'premium') : ?>
+            <div
+                id="nh-tab-premium"
+                class="nh-tab is-active"
+                data-tab="premium"
+            >
+                <?php
+                if (!$is_pro_addon) {
+                    $upgrade_partial = NH_PLUGIN_DIR . 'templates/partials/premium-upgrade-panel.php';
+                    if (file_exists($upgrade_partial)) {
+                        include $upgrade_partial;
+                    }
+                } else {
+                    $fields_partial = NH_PLUGIN_DIR . 'templates/partials/premium-settings-fields.php';
+                    if (file_exists($fields_partial)) {
+                        include $fields_partial;
+                    }
                 }
-            } else {
-                $fields_partial = NH_PLUGIN_DIR . 'templates/partials/premium-settings-fields.php';
-                if (file_exists($fields_partial)) {
-                    include $fields_partial;
-                }
-            }
-            ?>
-        </div>
+                ?>
+            </div>
+        <?php endif; ?>
 
         <?php
         // Don't show Save Changes in the Premium tab when Premium addon isn't installed.
