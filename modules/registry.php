@@ -17,26 +17,33 @@ return [
      *
      * @since 1.7.2
      */
-    'admin'     => __DIR__ . '/admin/bootstrap.php',
+    'admin'         => __DIR__ . '/admin/bootstrap.php',
 
     /**
      * Licensing (Premium; refactor priority).
      *
      * @since 1.7.2
      */
-    'license'   => __DIR__ . '/license/bootstrap.php',
+    'license'       => __DIR__ . '/license/bootstrap.php',
 
     /**
      * Notifications & queue.
      *
      * @since 1.7.2
      */
-    'notifier'  => __DIR__ . '/notifier/bootstrap.php',
+    'notifier'      => __DIR__ . '/notifier/bootstrap.php',
 
     /**
      * Dashboard.
      *
      * @since 1.7.2
      */
-    'dashboard' => __DIR__ . '/dashboard/bootstrap.php',
+    'dashboard'     => __DIR__ . '/dashboard/bootstrap.php',
+
+    /**
+     * Integrations (WP core events, WooCommerce, CF7, Email).
+     *
+     * @since 1.7.2
+     */
+    'integrations'  => __DIR__ . '/integrations/bootstrap.php',
 ];
