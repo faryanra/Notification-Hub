@@ -8,15 +8,15 @@
 
 defined('ABSPATH') || exit;
 
-$partials_root = NH_PLUGIN_DIR . 'templates/partials/';
+$premium_root = NH_PLUGIN_DIR . 'templates/settings/partials/premium/';
 
-$license_partial = $partials_root . 'premium-license-box.php';
+$license_partial = $premium_root . 'license-box.php';
 if (file_exists($license_partial)) {
     include $license_partial;
 }
 
 if (defined('WP_DEBUG') && WP_DEBUG) {
-    $debug_partial = $partials_root . 'premium-license-debug-panel.php';
+    $debug_partial = $premium_root . 'license-debug-panel.php';
     if (file_exists($debug_partial)) {
         include $debug_partial;
     }

@@ -17,15 +17,15 @@ defined('ABSPATH') || exit;
     data-tab="premium"
 >
     <?php
-    $partials_root = NH_PLUGIN_DIR . 'templates/partials/';
+    $premium_root = NH_PLUGIN_DIR . 'templates/settings/partials/premium/';
 
     if (!$is_pro_addon) {
-        $upgrade_partial = $partials_root . 'premium-upgrade-panel.php';
+        $upgrade_partial = $premium_root . 'upgrade-panel.php';
         if (file_exists($upgrade_partial)) {
             include $upgrade_partial;
         }
     } else {
-        $fields_partial = $partials_root . 'premium-settings-fields.php';
+        $fields_partial = $premium_root . 'settings-fields.php';
         if (file_exists($fields_partial)) {
             include $fields_partial;
         }
