@@ -37,6 +37,9 @@ if (!empty($current_key)) {
 
 $has_saved = (!empty($server_url) || !empty($current_key));
 
+// Show "tip" only after user actions (so it doesn't appear on every settings page load).
+$after_action = isset($_GET['nh_license_saved']) || isset($_GET['nh_license_revoked']) || isset($_GET['nh_license_error']);
+
 // Prefer a human actionable hint when available.
 $hint = method_exists('NH_License', 'status_hint') ? NH_License::status_hint($state) : '';
 
@@ -95,22 +98,22 @@ $error = isset($_GET['nh_license_error']) ? sanitize_key(wp_unslash($_GET['nh_li
         <?php endif; ?>
 
         <?php if (isset($_GET['nh_license_saved'])) : ?>
-            <div class="notice notice-success is-dismissible"><p><?php esc_html_e('License saved.', 'notification-hub'); ?></p></div>
+            <div class="notice notice-success is-dismissible nh-auto-hide" data-auto-hide="1"><p><?php esc_html_e('License saved.', 'notification-hub'); ?></p></div>
         <?php elseif (isset($_GET['nh_license_revoked'])) : ?>
-            <div class="notice notice-info is-dismissible"><p><?php esc_html_e('License revoked.', 'notification-hub'); ?></p></div>
+            <div class="notice notice-info is-dismissible nh-auto-hide" data-auto-hide="1"><p><?php esc_html_e('License revoked.', 'notification-hub'); ?></p></div>
         <?php endif; ?>
 
         <?php if ($flash !== '') : ?>
             <?php
             $notice_id = 'nh_license_msg_' . md5((string) ($state['license_hash'] ?? '') . '|' . (string) ($state['last_check'] ?? '') . '|' . (string) $flash);
             ?>
-            <div class="notice notice-warning is-dismissible nh-notice" data-notice-id="<?php echo esc_attr($notice_id); ?>">
+            <div class="notice notice-warning is-dismissible nh-notice nh-auto-hide" data-auto-hide="1" data-notice-id="<?php echo esc_attr($notice_id); ?>">
                 <p><?php echo esc_html($flash); ?></p>
             </div>
         <?php endif; ?>
 
-        <?php if ($hint !== '') : ?>
-            <div class="notice notice-info">
+        <?php if ($after_action && $hint !== '') : ?>
+            <div class="notice notice-info nh-auto-hide" data-auto-hide="1">
                 <p><strong><?php esc_html_e('Tip:', 'notification-hub'); ?></strong> <?php echo esc_html($hint); ?></p>
             </div>
         <?php endif; ?>

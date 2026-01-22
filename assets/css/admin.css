@@ -1,138 +1,23 @@
-/* ===========================================
-   Notification Hub — Admin Styles
-   @package Notification_Hub
-   @since 1.6.2
-   =========================================== */
-
-/* ---------- Layout ---------- */
-/* Avoid affecting other wp-admin screens by scoping to our plugin pages. */
-.toplevel_page_nh-dashboard .wrap,
-.notification-hub_page_nh-dashboard .wrap,
-.notification-hub_page_notification-hub .wrap {
-  margin: 20px;
-}
-
-/* ---------- Tabs ---------- */
-.nav-tab-wrapper {
-  margin-top: 20px;
-}
-.nav-tab {
-  border-radius: 4px 4px 0 0;
-}
-.nav-tab-active {
-  background: #fff;
-  border-bottom: 1px solid #fff;
-}
-
-/* ---------- Table ---------- */
-.widefat th,
-.widefat td {
-  padding: 10px;
-}
-
-/* ---------- Modal (shared) ---------- */
-.nh-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  display: none;
-}
-
-.nh-modal__backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-}
-
-.nh-modal__content {
-  position: relative;
-  z-index: 2;
-  background: #fff;
-  border-radius: 8px;
-  max-width: 600px;
-  margin: 10% auto;
-  padding: 20px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
-}
-
-.nh-modal__close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-}
-
-.nh-modal__title {
-  font-size: 18px;
-  margin-bottom: 10px;
-}
-
-.nh-modal__message {
-  margin-bottom: 8px;
-}
-
-/* ---------- Buttons ---------- */
-.button.button-primary {
-  background: #007cba;
-  border-color: #007cba;
-}
-.button.button-primary:hover {
-  background: #006ba1;
-}
-
-/* ---------- List table row sizing ---------- */
-.wp-list-table.notifications tbody tr {
-  display: table-row;
-  height: 80px;
-}
-
-.wp-list-table.notifications tbody td {
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 /* =====================================================
-   Admin Bar Badge (no inline styles)
-   Triggered by: #wp-admin-bar-nh_unread.nh-has-new
+   Premium License UI helpers
    ===================================================== */
 
-#wp-admin-bar-nh_unread .ab-label {
-  transition: all 0.3s ease;
+.nh-license-locked-wrap.is-locked input,
+#nh-license-box input.is-locked {
+  background: #f0f0f1;
+  color: #646970;
+  cursor: not-allowed;
+  user-select: none;
 }
 
-#wpadminbar #wp-admin-bar-nh_unread.nh-has-new > .ab-item .ab-icon.dashicons-bell {
-  color: #d63638 !important;
-  animation: nh-pulse 1s ease-in-out 3;
+/* When unlocked, ensure normal caret/selection behavior */
+.nh-license-locked-wrap input {
+  cursor: text;
+  user-select: text;
 }
 
-#wpadminbar #wp-admin-bar-nh_unread.nh-has-new > .ab-item {
-  background-color: rgba(214, 54, 56, 0.1) !important;
-}
-
-@keyframes nh-pulse {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.15);
-    opacity: 0.8;
-  }
-}
-
-/* =====================================================
-   Optional helpers
-   ===================================================== */
-
-a.nh-link-danger {
-  color: #d63638;
-}
-
-a.nh-link-danger:hover {
-  color: #b32d2e;
+/* Fade-out animation for one-time notices */
+.nh-fade-out {
+  opacity: 0;
+  transition: opacity 0.4s ease;
 }

@@ -62,6 +62,24 @@
     syncSaveButton(tab);
   }
 
+  function setReadonlyState(inputs, locked) {
+    inputs.forEach((el) => {
+      if (locked) {
+        el.setAttribute('readonly', 'readonly');
+        el.classList.add('is-locked');
+      } else {
+        el.removeAttribute('readonly');
+        el.classList.remove('is-locked');
+        // Important: some browsers keep focus/selection weird when readonly toggles.
+        el.style.pointerEvents = '';
+        el.style.userSelect = '';
+        el.style.backgroundColor = '';
+        el.style.color = '';
+        el.style.cursor = '';
+      }
+    });
+  }
+
   function initLicenseEditToggle() {
     const box = document.getElementById('nh-license-box');
     if (!box) return;
@@ -82,15 +100,7 @@
     };
 
     const setLocked = (locked) => {
-      inputs.forEach((el) => {
-        if (locked) {
-          el.setAttribute('readonly', 'readonly');
-          el.classList.add('is-locked');
-        } else {
-          el.removeAttribute('readonly');
-          el.classList.remove('is-locked');
-        }
-      });
+      setReadonlyState(inputs, locked);
 
       if (saveBtn) {
         saveBtn.disabled = locked;
@@ -104,8 +114,20 @@
 
       if (!locked) {
         const first = inputs[0];
-        if (first && typeof first.focus === 'function') first.focus();
+        if (first && typeof first.focus === 'function') {
+          first.focus();
+          // Ensure caret is visible.
+          try {
+            const v = first.value || '';
+            first.setSelectionRange(v.length, v.length);
+          } catch (_) {}
+        }
       }
+
+      // Toggle wrapper class so CSS can style locked/unlocked properly.
+      box.querySelectorAll('.nh-license-locked-wrap').forEach((wrap) => {
+        wrap.classList.toggle('is-locked', locked);
+      });
     };
 
     btnEdit.addEventListener('click', (e) => {
@@ -115,6 +137,20 @@
 
     const hasValue = Array.from(inputs).some((el) => (el.value || '').trim() !== '');
     setLocked(hasValue);
+  }
+
+  function initAutoHideNotices() {
+    const nodes = document.querySelectorAll('.nh-auto-hide[data-auto-hide="1"]');
+    if (!nodes || nodes.length === 0) return;
+
+    nodes.forEach((notice) => {
+      window.setTimeout(() => {
+        notice.classList.add('nh-fade-out');
+        window.setTimeout(() => {
+          if (notice && notice.parentNode) notice.parentNode.removeChild(notice);
+        }, 450);
+      }, 4500);
+    });
   }
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -174,5 +210,6 @@
     }
 
     initLicenseEditToggle();
+    initAutoHideNotices();
   });
 })();
