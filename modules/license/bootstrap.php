@@ -3,12 +3,15 @@
  * License module bootstrap.
  *
  * Only registers hooks / wires dependencies.
+ *
+ * @package Notification_Hub
+ * @since 1.7.2
  */
 
 defined('ABSPATH') || exit;
 
 return function ($r, $context = 'admin') {
-    // License is Premium-only and is loaded conditionally.
+    // License is Premium-only.
     if (!(defined('NH_PRO_ACTIVE') && (bool) NH_PRO_ACTIVE)) {
         return;
     }
@@ -26,18 +29,20 @@ return function ($r, $context = 'admin') {
     foreach ($premium_files as $file) {
         if (file_exists($file)) {
             require_once $file;
-        } elseif (defined('WP_DEBUG') && WP_DEBUG) {
+            continue;
+        }
+
+        if (defined('WP_DEBUG') && WP_DEBUG) {
             // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
             error_log(sprintf('Notification Hub: Missing premium file %s', $file));
         }
     }
 
-    // Register license service in registry (legacy class for now).
+    // Legacy wiring (will be refactored into LicenseService).
     if ($r && method_exists($r, 'get_svc') && !$r->get_svc('license') && class_exists('NH_License')) {
         $r->set('license', new NH_License());
     }
 
-    // Premium admin actions.
     if ($context === 'admin') {
         if (class_exists('NH_Admin_License') && method_exists('NH_Admin_License', 'init')) {
             NH_Admin_License::init();

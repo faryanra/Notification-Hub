@@ -1,23 +1,42 @@
 <?php
 /**
- * Module registry for v1.7.2 modular refactor.
+ * Module registry.
  *
- * This file is intentionally lightweight: it only declares which module bootstraps
+ * Intentionally lightweight: it only declares which module bootstraps
  * should be loaded by the core loader.
+ *
+ * @package Notification_Hub
+ * @since 1.7.2
  */
 
 defined('ABSPATH') || exit;
 
 return [
-    // Core/admin UX.
-    'admin'    => __DIR__ . '/admin/bootstrap.php',
+    /**
+     * Core/Admin UI.
+     *
+     * @since 1.7.2
+     */
+    'admin'     => __DIR__ . '/admin/bootstrap.php',
 
-    // Licensing (sensitive; refactor priority).
-    'license'  => __DIR__ . '/license/bootstrap.php',
+    /**
+     * Licensing (Premium; refactor priority).
+     *
+     * @since 1.7.2
+     */
+    'license'   => __DIR__ . '/license/bootstrap.php',
 
-    // Notifications & queue.
-    'notifier' => __DIR__ . '/notifier/bootstrap.php',
+    /**
+     * Notifications & queue.
+     *
+     * @since 1.7.2
+     */
+    'notifier'  => __DIR__ . '/notifier/bootstrap.php',
 
-    // Dashboard (if feature exists).
-    'dashboard'=> __DIR__ . '/dashboard/bootstrap.php',
+    /**
+     * Dashboard.
+     *
+     * @since 1.7.2
+     */
+    'dashboard' => __DIR__ . '/dashboard/bootstrap.php',
 ];

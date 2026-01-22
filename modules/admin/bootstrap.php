@@ -3,6 +3,9 @@
  * Admin module bootstrap.
  *
  * Only registers hooks / wires dependencies.
+ *
+ * @package Notification_Hub
+ * @since 1.7.2
  */
 
 defined('ABSPATH') || exit;
@@ -12,7 +15,7 @@ return function ($r, $context = 'admin') {
         return;
     }
 
-    // Existing v1.7.1 admin wiring (kept for now; will be refactored into smaller classes).
+    // Legacy wiring (will be refactored into smaller classes).
     if (class_exists('NH_Admin_UI')) {
         new NH_Admin_UI($r);
     }

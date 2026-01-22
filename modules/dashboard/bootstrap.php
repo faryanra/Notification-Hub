@@ -3,6 +3,9 @@
  * Dashboard module bootstrap.
  *
  * Only registers hooks / wires dependencies.
+ *
+ * @package Notification_Hub
+ * @since 1.7.2
  */
 
 defined('ABSPATH') || exit;
