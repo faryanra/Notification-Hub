@@ -34,26 +34,19 @@ class NH_Admin_License {
      * @since 1.6.2
      */
     public static function save(): void {
-        if (!class_exists('NH_Security') || !method_exists('NH_Security', 'ensure_cap')) {
-            wp_die(esc_html__('Security module not available.', 'notification-hub'));
-        }
-
-        NH_Security::ensure_cap();
-        check_admin_referer('nh_save_license');
-
-        $key = isset($_POST['nh_license_key']) ? sanitize_text_field(wp_unslash($_POST['nh_license_key'])) : '';
-
-        if (class_exists('NH_License')) {
-            NH_License::save_key($key);
-
-            // Legacy behavior for 1.6.x: mark as valid when non-empty.
-            if (method_exists('NH_License', 'set_valid')) {
-                NH_License::set_valid($key !== '');
+        if (!class_exists('NH_License_Action_Save_Key')) {
+            $path = NH_PLUGIN_DIR . 'modules/license/admin/actions/save-key.php';
+            if (file_exists($path)) {
+                require_once $path;
             }
         }
 
-        wp_safe_redirect(admin_url('admin.php?page=nh_settings&nh_license_saved=1'));
-        exit;
+        if (class_exists('NH_License_Action_Save_Key')) {
+            (new NH_License_Action_Save_Key())->handle();
+            return;
+        }
+
+        wp_die(esc_html__('License action not available.', 'notification-hub'));
     }
 
     /**
@@ -62,26 +55,19 @@ class NH_Admin_License {
      * @since 1.7.0
      */
     public static function save_server(): void {
-        if (!class_exists('NH_Security') || !method_exists('NH_Security', 'ensure_cap')) {
-            wp_die(esc_html__('Security module not available.', 'notification-hub'));
-        }
-
-        NH_Security::ensure_cap();
-        check_admin_referer('nh_save_license_server');
-
-        $url = isset($_POST['nh_license_server_url']) ? esc_url_raw(wp_unslash($_POST['nh_license_server_url'])) : '';
-
-        if (class_exists('NH_License') && defined('NH_License::OPT_SERVER_URL')) {
-            update_option(NH_License::OPT_SERVER_URL, $url, false);
-
-            // If server URL changes, reset state so next load re-checks.
-            if (method_exists('NH_License', 'reset_state')) {
-                NH_License::reset_state();
+        if (!class_exists('NH_License_Action_Save_Server')) {
+            $path = NH_PLUGIN_DIR . 'modules/license/admin/actions/save-server.php';
+            if (file_exists($path)) {
+                require_once $path;
             }
         }
 
-        wp_safe_redirect(admin_url('admin.php?page=nh_settings&nh_license_server_saved=1'));
-        exit;
+        if (class_exists('NH_License_Action_Save_Server')) {
+            (new NH_License_Action_Save_Server())->handle();
+            return;
+        }
+
+        wp_die(esc_html__('License action not available.', 'notification-hub'));
     }
 
     /**
