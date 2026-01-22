@@ -159,6 +159,31 @@ class NH_License {
     }
 
     /**
+     * Persist normalized state.
+     *
+     * NOTE: This method is required by maybe_refresh().
+     *
+     * @since 1.7.0
+     */
+    public static function set_state(array $state): void {
+        $state = array_merge(self::default_state(), $state);
+
+        $state['features'] = is_array($state['features'])
+            ? array_values(array_unique(array_map('strval', $state['features'])))
+            : [];
+
+        $state['last_check'] = (int) ($state['last_check'] ?? 0);
+        $state['grace_until'] = (int) ($state['grace_until'] ?? 0);
+        $state['domain'] = is_string($state['domain']) ? $state['domain'] : '';
+        $state['status'] = is_string($state['status']) ? $state['status'] : 'unknown';
+        $state['message'] = is_string($state['message']) ? $state['message'] : '';
+        $state['license_hash'] = is_string($state['license_hash']) ? $state['license_hash'] : '';
+
+        update_option(self::OPT_STATE, $state, false);
+        update_option(self::OPT_VALID, self::is_active($state));
+    }
+
+    /**
      * Human hints for common statuses.
      *
      * @since 1.7.1
