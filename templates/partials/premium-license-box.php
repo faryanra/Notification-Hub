@@ -37,6 +37,9 @@ if (!empty($current_key)) {
 
 $has_saved = (!empty($server_url) || !empty($current_key));
 
+// Prefer a human actionable hint when available.
+$hint = method_exists('NH_License', 'status_hint') ? NH_License::status_hint($state) : '';
+
 // Only show state message once (dismissible + not persistent across reload)
 $flash = '';
 if (!empty($state['message'])) {
@@ -103,6 +106,12 @@ $error = isset($_GET['nh_license_error']) ? sanitize_key(wp_unslash($_GET['nh_li
             ?>
             <div class="notice notice-warning is-dismissible nh-notice" data-notice-id="<?php echo esc_attr($notice_id); ?>">
                 <p><?php echo esc_html($flash); ?></p>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($hint !== '') : ?>
+            <div class="notice notice-info">
+                <p><strong><?php esc_html_e('Tip:', 'notification-hub'); ?></strong> <?php echo esc_html($hint); ?></p>
             </div>
         <?php endif; ?>
 

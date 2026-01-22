@@ -158,26 +158,53 @@ class NH_License {
         return array_merge(self::default_state(), $state);
     }
 
-    /** @since 1.7.0 */
-    public static function set_state(array $state): void {
-        $state = array_merge(self::default_state(), $state);
+    /**
+     * Human hints for common statuses.
+     *
+     * @since 1.7.1
+     */
+    public static function status_hint(array $state = null): string {
+        $state = is_array($state) ? $state : self::get_state();
+        $status = isset($state['status']) ? (string) $state['status'] : 'unknown';
 
-        $state['features'] = is_array($state['features'])
-            ? array_values(array_unique(array_map('strval', $state['features'])))
-            : [];
+        switch ($status) {
+            case 'active':
+                return 'License is active.';
 
-        $state['last_check'] = (int) ($state['last_check'] ?? 0);
-        $state['grace_until'] = (int) ($state['grace_until'] ?? 0);
-        $state['domain'] = is_string($state['domain']) ? $state['domain'] : '';
-        $state['status'] = is_string($state['status']) ? $state['status'] : 'unknown';
-        $state['message'] = is_string($state['message']) ? $state['message'] : '';
-        $state['license_hash'] = is_string($state['license_hash']) ? $state['license_hash'] : '';
+            case 'grace':
+                return 'License check failed temporarily. Premium remains enabled during the grace window. Check your server/WAF logs.';
 
-        update_option(self::OPT_STATE, $state, false);
-        update_option(self::OPT_VALID, self::is_active($state));
+            case 'expired':
+                return 'License is expired. Renew your subscription and save the updated license key.';
+
+            case 'revoked':
+                return 'License was revoked. Revoke locally and enter a new valid license key.';
+
+            case 'banned':
+                return 'License is banned. Contact support.';
+
+            case 'inactive':
+                $msg = isset($state['message']) ? (string) $state['message'] : '';
+                if (stripos($msg, 'anti-bot') !== false || stripos($msg, 'cloudflare') !== false) {
+                    return 'Your license endpoint may be blocked by Cloudflare/WAF. Allowlist the verify.php path and disable challenges for it.';
+                }
+
+                if (stripos($msg, 'domain') !== false) {
+                    return 'Possible domain mismatch. Ensure the license is issued for this site domain and re-verify.';
+                }
+
+                return 'License is inactive. Verify server URL and key, then try again.';
+
+            default:
+                return 'License status is unknown. Save server URL and key, then refresh.';
+        }
     }
 
-    /** @since 1.7.0 */
+    /**
+     * Pro / Premium flag.
+     *
+     * @since 1.7.0
+     */
     public static function is_pro(): bool {
         $state = self::get_state();
         return self::is_active($state) || self::is_in_grace($state);

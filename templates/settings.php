@@ -87,6 +87,14 @@ $success = isset($_GET['success']) ? sanitize_text_field(wp_unslash($_GET['succe
         if (file_exists($license_partial)) {
             include $license_partial;
         }
+
+        // Optional debug panel for advanced troubleshooting.
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            $debug_partial = NH_PLUGIN_DIR . 'templates/partials/premium-license-debug-panel.php';
+            if (file_exists($debug_partial)) {
+                include $debug_partial;
+            }
+        }
     }
     ?>
 
