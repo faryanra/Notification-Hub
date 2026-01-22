@@ -70,7 +70,6 @@
       } else {
         el.removeAttribute('readonly');
         el.classList.remove('is-locked');
-        // Important: some browsers keep focus/selection weird when readonly toggles.
         el.style.pointerEvents = '';
         el.style.userSelect = '';
         el.style.backgroundColor = '';
@@ -116,7 +115,6 @@
         const first = inputs[0];
         if (first && typeof first.focus === 'function') {
           first.focus();
-          // Ensure caret is visible.
           try {
             const v = first.value || '';
             first.setSelectionRange(v.length, v.length);
@@ -124,7 +122,6 @@
         }
       }
 
-      // Toggle wrapper class so CSS can style locked/unlocked properly.
       box.querySelectorAll('.nh-license-locked-wrap').forEach((wrap) => {
         wrap.classList.toggle('is-locked', locked);
       });
@@ -145,10 +142,10 @@
 
     nodes.forEach((notice) => {
       window.setTimeout(() => {
-        notice.classList.add('nh-fade-out');
+        notice.classList.add('nh-notice-slide-out');
         window.setTimeout(() => {
           if (notice && notice.parentNode) notice.parentNode.removeChild(notice);
-        }, 450);
+        }, 500);
       }, 4500);
     });
   }

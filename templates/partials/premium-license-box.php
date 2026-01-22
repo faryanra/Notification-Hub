@@ -107,7 +107,7 @@ $error = isset($_GET['nh_license_error']) ? sanitize_key(wp_unslash($_GET['nh_li
             <?php
             $notice_id = 'nh_license_msg_' . md5((string) ($state['license_hash'] ?? '') . '|' . (string) ($state['last_check'] ?? '') . '|' . (string) $flash);
             ?>
-            <div class="notice notice-warning is-dismissible nh-notice nh-auto-hide" data-auto-hide="1" data-notice-id="<?php echo esc_attr($notice_id); ?>">
+            <div class="notice notice-warning is-dismissible nh-notice" data-notice-id="<?php echo esc_attr($notice_id); ?>">
                 <p><?php echo esc_html($flash); ?></p>
             </div>
         <?php endif; ?>
