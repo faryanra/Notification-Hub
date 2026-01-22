@@ -3,7 +3,6 @@
  * Settings Template
  *
  * Renders Notification Hub settings page (General / Pro tabs).
- * License box is extracted into a partial for maintainability.
  *
  * @package Notification_Hub
  * @since 1.6.2
@@ -13,16 +12,15 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-/**
- * Read runtime flags.
- */
 $can_telegram = class_exists('NH_License') ? NH_License::can('telegram') : false;
 $can_slack    = class_exists('NH_License') ? NH_License::can('slack') : false;
-$active_tab   = isset($_GET['tab']) ? sanitize_key(wp_unslash($_GET['tab'])) : 'general';
 
-/**
- * Render admin notices from query params.
- */
+$is_pro_addon = (class_exists('NH_License') && method_exists('NH_License', 'is_pro_addon_active'))
+    ? NH_License::is_pro_addon_active()
+    : (defined('NH_PRO_ACTIVE') && (bool) NH_PRO_ACTIVE);
+
+$active_tab = isset($_GET['tab']) ? sanitize_key(wp_unslash($_GET['tab'])) : 'general';
+
 $channel = isset($_GET['nh_test']) ? sanitize_text_field(wp_unslash($_GET['nh_test'])) : '';
 $success = isset($_GET['success']) ? sanitize_text_field(wp_unslash($_GET['success'])) : '';
 ?>
@@ -64,7 +62,7 @@ $success = isset($_GET['success']) ? sanitize_text_field(wp_unslash($_GET['succe
         </div>
     <?php endif; ?>
 
-    <h2 class="nav-tab-wrapper nh-settings-tabs" data-active-tab="<?php echo esc_attr($active_tab); ?>">
+    <h2 class="nav-tab-wrapper nh-settings-tabs" data-active-tab="<?php echo esc_attr($active_tab); ?>" data-pro-addon="<?php echo $is_pro_addon ? '1' : '0'; ?>">
         <a
             href="<?php echo esc_url(admin_url('admin.php?page=nh_settings&tab=general')); ?>"
             class="nav-tab <?php echo $active_tab === 'general' ? 'nav-tab-active' : ''; ?>"
@@ -74,18 +72,29 @@ $success = isset($_GET['success']) ? sanitize_text_field(wp_unslash($_GET['succe
         </a>
 
         <a
-            href="<?php echo esc_url(admin_url('admin.php?page=nh_settings&tab=pro')); ?>"
-            class="nav-tab <?php echo $active_tab === 'pro' ? 'nav-tab-active' : ''; ?>"
-            data-tab="pro"
+            href="<?php echo esc_url(admin_url('admin.php?page=nh_settings&tab=premium')); ?>"
+            class="nav-tab <?php echo $active_tab === 'premium' ? 'nav-tab-active' : ''; ?>"
+            data-tab="premium"
         >
-            <?php esc_html_e('Pro Channels', 'notification-hub'); ?>
+            <?php esc_html_e('Premium Channels', 'notification-hub'); ?>
         </a>
     </h2>
 
     <?php
-    $license_partial = NH_PLUGIN_DIR . 'templates/partials/license-box.php';
-    if (file_exists($license_partial)) {
-        include $license_partial;
+    // Premium UI partials: prefixed with "premium-" for easy extraction into Premium zip.
+    if ($is_pro_addon) {
+        $license_partial = NH_PLUGIN_DIR . 'templates/partials/premium-license-box.php';
+        if (file_exists($license_partial)) {
+            include $license_partial;
+        }
+
+        // Optional debug panel for advanced troubleshooting.
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            $debug_partial = NH_PLUGIN_DIR . 'templates/partials/premium-license-debug-panel.php';
+            if (file_exists($debug_partial)) {
+                include $debug_partial;
+            }
+        }
     }
     ?>
 
@@ -157,111 +166,30 @@ $success = isset($_GET['success']) ? sanitize_text_field(wp_unslash($_GET['succe
         </div>
 
         <div
-            id="nh-tab-pro"
-            class="nh-tab <?php echo $active_tab === 'pro' ? 'is-active' : ''; ?>"
-            data-tab="pro"
+            id="nh-tab-premium"
+            class="nh-tab <?php echo $active_tab === 'premium' ? 'is-active' : ''; ?>"
+            data-tab="premium"
         >
-            <table class="form-table">
-                <tr>
-                    <th><label for="nh_telegram_bot_token"><?php esc_html_e('Telegram Bot Token', 'notification-hub'); ?></label></th>
-                    <td>
-                        <input
-                            name="nh_telegram_bot_token"
-                            id="nh_telegram_bot_token"
-                            type="text"
-                            value="<?php echo esc_attr(get_option('nh_telegram_bot_token', '')); ?>"
-                            class="regular-text"
-                            <?php echo $can_telegram ? '' : 'disabled'; ?>
-                        >
-
-                        <p class="description">
-                            <?php
-                            echo sprintf(
-                                /* translators: %s: example token */
-                                esc_html__('Enter your BotFather token. Example: %s', 'notification-hub'),
-                                '<code>123456:ABC-xyz</code>'
-                            );
-                            ?>
-                        </p>
-
-                        <?php if (!$can_telegram) : ?>
-                            <p class="description">
-                                <em><?php esc_html_e('This field is disabled because it’s only available in the Pro version.', 'notification-hub'); ?></em>
-                            </p>
-                        <?php else : ?>
-                            <p>
-                                <a
-                                    href="<?php echo esc_url(admin_url('admin-post.php?action=nh_test_channel&channel=telegram&_wpnonce=' . wp_create_nonce('nh_test_channel') . '&tab=pro')); ?>"
-                                    data-tab="pro"
-                                    class="button nh-test-btn"
-                                >
-                                    <?php esc_html_e('Send Test to Telegram', 'notification-hub'); ?>
-                                </a>
-                            </p>
-                        <?php endif; ?>
-                    </td>
-                </tr>
-
-                <tr>
-                    <th><label for="nh_telegram_chat_id"><?php esc_html_e('Telegram Chat ID', 'notification-hub'); ?></label></th>
-                    <td>
-                        <input
-                            name="nh_telegram_chat_id"
-                            id="nh_telegram_chat_id"
-                            type="text"
-                            value="<?php echo esc_attr(get_option('nh_telegram_chat_id', '')); ?>"
-                            class="regular-text"
-                            <?php echo $can_telegram ? '' : 'disabled'; ?>
-                        >
-
-                        <p class="description">
-                            <?php esc_html_e('Send a message to your bot, then run /getUpdates to find your chat ID.', 'notification-hub'); ?>
-                        </p>
-
-                        <?php if (!$can_telegram) : ?>
-                            <p class="description">
-                                <em><?php esc_html_e('This field is disabled because it’s only available in the Pro version.', 'notification-hub'); ?></em>
-                            </p>
-                        <?php endif; ?>
-                    </td>
-                </tr>
-
-                <tr>
-                    <th><label for="nh_slack_webhook"><?php esc_html_e('Slack Webhook URL', 'notification-hub'); ?></label></th>
-                    <td>
-                        <input
-                            name="nh_slack_webhook"
-                            id="nh_slack_webhook"
-                            type="url"
-                            value="<?php echo esc_attr(get_option('nh_slack_webhook', '')); ?>"
-                            class="regular-text"
-                            <?php echo $can_slack ? '' : 'disabled'; ?>
-                        >
-
-                        <p class="description">
-                            <?php esc_html_e('Use an Incoming Webhook from Slack → App Integrations → Webhooks.', 'notification-hub'); ?>
-                        </p>
-
-                        <?php if (!$can_slack) : ?>
-                            <p class="description">
-                                <em><?php esc_html_e('This field is disabled because it’s only available in the Pro version.', 'notification-hub'); ?></em>
-                            </p>
-                        <?php else : ?>
-                            <p>
-                                <a
-                                    href="<?php echo esc_url(admin_url('admin-post.php?action=nh_test_channel&channel=slack&_wpnonce=' . wp_create_nonce('nh_test_channel') . '&tab=pro')); ?>"
-                                    data-tab="pro"
-                                    class="button nh-test-btn"
-                                >
-                                    <?php esc_html_e('Send Test to Slack', 'notification-hub'); ?>
-                                </a>
-                            </p>
-                        <?php endif; ?>
-                    </td>
-                </tr>
-            </table>
+            <?php
+            if (!$is_pro_addon) {
+                $upgrade_partial = NH_PLUGIN_DIR . 'templates/partials/premium-upgrade-panel.php';
+                if (file_exists($upgrade_partial)) {
+                    include $upgrade_partial;
+                }
+            } else {
+                $fields_partial = NH_PLUGIN_DIR . 'templates/partials/premium-settings-fields.php';
+                if (file_exists($fields_partial)) {
+                    include $fields_partial;
+                }
+            }
+            ?>
         </div>
 
-        <?php submit_button(); ?>
+        <?php
+        // Don't show Save Changes in the Premium tab when Premium addon isn't installed.
+        if (!($active_tab === 'premium' && !$is_pro_addon)) {
+            submit_button();
+        }
+        ?>
     </form>
 </div>

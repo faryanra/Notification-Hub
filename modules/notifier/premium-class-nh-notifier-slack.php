@@ -2,7 +2,10 @@
 /**
  * NH_Notifier_Slack
  *
- * Slack notification handler (Pro).
+ * Slack notification handler (Premium).
+ *
+ * NOTE: File is premium-prefixed so it can be extracted into the Premium ZIP,
+ * while class name stays unchanged for backward compatibility.
  *
  * @package Notification_Hub
  * @since 1.6.2

@@ -27,6 +27,42 @@
   });
 
   // =====================================================
+  // Settings tabs: keep Save button state in sync
+  // =====================================================
+  function updateSettingsSaveVisibility(activeTab) {
+    const tabs = document.querySelector('.nh-settings-tabs');
+    if (!tabs) return;
+
+    // We set this attribute in PHP so JS can react without reload.
+    const proAddonActive = tabs.getAttribute('data-pro-addon') === '1';
+
+    const form = document.querySelector('form[action*="options.php"]');
+    if (!form) return;
+
+    const submit = form.querySelector('p.submit');
+    if (!submit) return;
+
+    const shouldHide = activeTab === 'pro' && !proAddonActive;
+    submit.style.display = shouldHide ? 'none' : '';
+  }
+
+  document.addEventListener('click', (e) => {
+    const tab = e.target.closest('.nh-settings-tabs a.nav-tab[data-tab]');
+    if (!tab) return;
+
+    const tabKey = tab.getAttribute('data-tab') || '';
+    if (!tabKey) return;
+
+    updateSettingsSaveVisibility(tabKey);
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const tabs = document.querySelector('.nh-settings-tabs');
+    const active = tabs?.getAttribute('data-active-tab') || 'general';
+    updateSettingsSaveVisibility(active);
+  });
+
+  // =====================================================
   // Single "Mark as Read" AJAX Handler
   // =====================================================
   document.addEventListener('click', (e) => {

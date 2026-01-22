@@ -136,3 +136,28 @@ a.nh-link-danger {
 a.nh-link-danger:hover {
   color: #b32d2e;
 }
+
+/* =====================================================
+   Premium License UI helpers
+   ===================================================== */
+
+.nh-license-locked-wrap.is-locked input,
+#nh-license-box input.is-locked {
+  background: #f0f0f1;
+  color: #646970;
+  cursor: not-allowed;
+  user-select: none;
+}
+
+/* When unlocked, ensure normal caret/selection behavior */
+.nh-license-locked-wrap input {
+  cursor: text;
+  user-select: text;
+}
+
+/* Slide-to-left + fade animation for auto-hide notices */
+.nh-notice-slide-out {
+  transform: translateX(-24px);
+  opacity: 0;
+  transition: transform 0.45s ease, opacity 0.45s ease;
+}

@@ -1,17 +1,19 @@
 <?php
 /**
- * License Box Partial
+ * Premium License Box Partial
  *
- * Rendered inside Settings → Pro tab.
+ * Premium-only UI partial rendered inside Settings → Premium tab.
+ * This is designed to be easy to extract into the Premium ZIP by filename prefix.
  *
  * @package Notification_Hub
- * @since 1.7.0
+ * @since 1.7.1
  */
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
+// Premium requires the license class.
 if (!class_exists('NH_License')) {
     return;
 }
@@ -20,7 +22,7 @@ if (!class_exists('NH_License')) {
 $active_tab = isset($active_tab) ? (string) $active_tab : 'general';
 
 $current_key   = NH_License::get_key();
-$is_pro_active = NH_License::is_pro();
+$is_premium_on = NH_License::is_pro();
 $server_url    = method_exists('NH_License', 'get_server_url') ? NH_License::get_server_url() : '';
 $state         = method_exists('NH_License', 'get_state') ? NH_License::get_state() : [];
 
@@ -35,29 +37,71 @@ if (!empty($current_key)) {
 
 $has_saved = (!empty($server_url) || !empty($current_key));
 
-// Only show state message once (dismissible + not persistent across reload)
-$flash = '';
-if (!empty($state['message'])) {
-    $notice_id = 'nh_license_msg_' . md5((string) $state['license_hash'] . '|' . (string) $state['last_check'] . '|' . (string) $state['message']);
+// Detect action outcomes (URL flags).
+$did_save   = isset($_GET['nh_license_saved']);
+$did_revoke = isset($_GET['nh_license_revoked']);
+$error      = isset($_GET['nh_license_error']) ? sanitize_key(wp_unslash($_GET['nh_license_error'])) : '';
 
-    // If user dismissed this notice before, do not show again.
-    $dismissed = isset($_COOKIE[$notice_id]) ? sanitize_text_field(wp_unslash($_COOKIE[$notice_id])) : '';
-    if ($dismissed !== '1') {
-        $flash = (string) $state['message'];
-    }
+// Try to read a normalized status from state.
+$status = '';
+if (is_array($state) && isset($state['status'])) {
+    $status = sanitize_key((string) $state['status']);
 }
 
-// One-time errors from redirects.
-$error = isset($_GET['nh_license_error']) ? sanitize_key(wp_unslash($_GET['nh_license_error'])) : '';
+// Decide what to show:
+// - At most ONE primary notice.
+// - Tips only when there is NO primary notice.
+// - Never show server "active for domain" message as a warning.
+$primary_notice_type = '';
+$primary_notice_text = '';
+$primary_auto_hide   = false;
+
+if ($error === 'invalid_key') {
+    $primary_notice_type = 'error';
+    $primary_notice_text = esc_html__('Invalid license key format. Use: NH-PRO-XXXX-XXXX', 'notification-hub');
+    $primary_auto_hide   = false;
+} elseif ($did_revoke) {
+    $primary_notice_type = 'info';
+    $primary_notice_text = esc_html__('License revoked.', 'notification-hub');
+    $primary_auto_hide   = true;
+} elseif ($did_save) {
+    // After save we show a single, status-aware message.
+    if ($status === 'active') {
+        $primary_notice_type = 'success';
+        $primary_notice_text = esc_html__('License activated.', 'notification-hub');
+        $primary_auto_hide   = true;
+    } elseif (!empty($state['message'])) {
+        // For non-active states, prefer the server/state message as primary.
+        $primary_notice_type = 'warning';
+        $primary_notice_text = sanitize_text_field((string) $state['message']);
+        $primary_auto_hide   = false;
+    } else {
+        // Fallback.
+        $primary_notice_type = 'info';
+        $primary_notice_text = esc_html__('License saved. Please refresh to verify status.', 'notification-hub');
+        $primary_auto_hide   = true;
+    }
+} else {
+    // No recent action. Show nothing by default.
+    $primary_notice_type = '';
+}
+
+// Tip only when there is no primary notice and only after an action.
+$show_tip = false;
+$hint = '';
+if (!$primary_notice_text && ($did_save || $did_revoke || $error !== '')) {
+    $hint = method_exists('NH_License', 'status_hint') ? NH_License::status_hint($state) : '';
+    $show_tip = ($hint !== '');
+}
 ?>
 
-<div id="nh-license-box" class="postbox nh-license-box nh-tab <?php echo $active_tab === 'pro' ? 'is-active' : ''; ?>" data-tab="pro">
+<div id="nh-license-box" class="postbox nh-license-box nh-tab <?php echo $active_tab === 'premium' ? 'is-active' : ''; ?>" data-tab="premium">
     <h2 class="hndle">
         <span class="nh-license-head-left">
-            <span><?php esc_html_e('License & Pro Features', 'notification-hub'); ?></span>
+            <span><?php esc_html_e('License & Premium Features', 'notification-hub'); ?></span>
 
-            <?php if ($is_pro_active) : ?>
-                <span class="nh-license-status nh-license-status--active">★ <?php esc_html_e('PRO', 'notification-hub'); ?></span>
+            <?php if ($is_premium_on) : ?>
+                <span class="nh-license-status nh-license-status--active">★ <?php esc_html_e('PREMIUM', 'notification-hub'); ?></span>
             <?php else : ?>
                 <span class="nh-license-status nh-license-status--locked">☆ <?php esc_html_e('LOCKED', 'notification-hub'); ?></span>
             <?php endif; ?>
@@ -69,7 +113,13 @@ $error = isset($_GET['nh_license_error']) ? sanitize_key(wp_unslash($_GET['nh_li
 
         <span class="nh-license-head-right">
             <?php if ($has_saved) : ?>
-                <a href="#" id="nh-license-edit" class="button button-secondary" data-label-edit="<?php echo esc_attr__('Edit', 'notification-hub'); ?>" data-label-cancel="<?php echo esc_attr__('Cancel', 'notification-hub'); ?>">
+                <a
+                    href="#"
+                    id="nh-license-edit"
+                    class="button button-secondary"
+                    data-label-edit="<?php echo esc_attr__('Edit', 'notification-hub'); ?>"
+                    data-label-cancel="<?php echo esc_attr__('Cancel', 'notification-hub'); ?>"
+                >
                     <?php esc_html_e('Edit', 'notification-hub'); ?>
                 </a>
             <?php endif; ?>
@@ -77,29 +127,20 @@ $error = isset($_GET['nh_license_error']) ? sanitize_key(wp_unslash($_GET['nh_li
     </h2>
 
     <div class="inside">
-        <?php if ($error === 'invalid_key') : ?>
-            <div class="notice notice-error is-dismissible">
-                <p><?php esc_html_e('Invalid license key format. Use: NH-PRO-XXXX-XXXX', 'notification-hub'); ?></p>
+        <?php if ($primary_notice_text !== '') : ?>
+            <div class="notice notice-<?php echo esc_attr($primary_notice_type); ?> is-dismissible <?php echo $primary_auto_hide ? 'nh-auto-hide' : ''; ?>" <?php echo $primary_auto_hide ? 'data-auto-hide="1"' : ''; ?>>
+                <p><?php echo esc_html($primary_notice_text); ?></p>
             </div>
         <?php endif; ?>
 
-        <?php if (isset($_GET['nh_license_saved'])) : ?>
-            <div class="notice notice-success is-dismissible"><p><?php esc_html_e('License saved.', 'notification-hub'); ?></p></div>
-        <?php elseif (isset($_GET['nh_license_revoked'])) : ?>
-            <div class="notice notice-info is-dismissible"><p><?php esc_html_e('License revoked.', 'notification-hub'); ?></p></div>
-        <?php endif; ?>
-
-        <?php if ($flash !== '') : ?>
-            <?php
-            $notice_id = 'nh_license_msg_' . md5((string) $state['license_hash'] . '|' . (string) $state['last_check'] . '|' . (string) $flash);
-            ?>
-            <div class="notice notice-warning is-dismissible nh-notice" data-notice-id="<?php echo esc_attr($notice_id); ?>">
-                <p><?php echo esc_html($flash); ?></p>
+        <?php if ($show_tip) : ?>
+            <div class="notice notice-info is-dismissible nh-auto-hide" data-auto-hide="1">
+                <p><strong><?php esc_html_e('Tip:', 'notification-hub'); ?></strong> <?php echo esc_html($hint); ?></p>
             </div>
         <?php endif; ?>
 
         <p class="description">
-            <?php esc_html_e('Enter your license server URL and key. Save once, then manage Pro features from this tab.', 'notification-hub'); ?>
+            <?php esc_html_e('Enter your license server URL and key. Save once, then manage Premium features from this tab.', 'notification-hub'); ?>
         </p>
 
         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
@@ -160,7 +201,7 @@ $error = isset($_GET['nh_license_error']) ? sanitize_key(wp_unslash($_GET['nh_li
 
                                 <?php if ($has_saved) : ?>
                                     <a
-                                        href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=nh_license_revoke&tab=pro'), 'nh_license_revoke')); ?>"
+                                        href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=nh_license_revoke&tab=premium'), 'nh_license_revoke')); ?>"
                                         class="button"
                                         onclick="return confirm('<?php echo esc_js(esc_html__('Revoke and clear local license data?', 'notification-hub')); ?>');"
                                     >

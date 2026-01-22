@@ -2,7 +2,10 @@
 /**
  * NH_License
  *
- * Central license policy + cached state for Pro features.
+ * Central license policy + cached state for Premium features.
+ *
+ * NOTE: This file is premium-prefixed so it can be extracted into the Premium ZIP.
+ * Class name stays unchanged for backward compatibility.
  *
  * @package Notification_Hub
  * @since 1.7.0
@@ -29,9 +32,11 @@ class NH_License {
     /**
      * Enable extra debug logs in WP debug.log.
      *
-     * @since 1.7.0
+     * NOTE: Turned off by default to avoid noisy logs on production.
+     *
+     * @since 1.7.1
      */
-    private const DEBUG = true;
+    private const DEBUG = false;
 
     private const TRANSIENT_LOCK = 'nh_license_check_lock';
 
@@ -45,6 +50,13 @@ class NH_License {
      */
     private const KEY_REGEX = '/^NH-PRO-[A-Z0-9]{4}-[A-Z0-9]{4}$/';
 
+    /**
+     * Capabilities that belong to Premium addon.
+     *
+     * @since 1.7.1
+     */
+    private const PRO_CAPS = ['telegram', 'slack'];
+
     public static function default_state(): array {
         return [
             'status'       => 'unknown',
@@ -55,6 +67,38 @@ class NH_License {
             'message'      => '',
             'license_hash' => '',
         ];
+    }
+
+    /**
+     * Premium addon presence flag.
+     *
+     * @since 1.7.1
+     */
+    public static function is_pro_addon_active(): bool {
+        return defined('NH_PRO_ACTIVE') && (bool) NH_PRO_ACTIVE;
+    }
+
+    /**
+     * Check compatibility between Free and Premium.
+     *
+     * If Premium defines NH_PRO_VERSION, enforce exact match with NH_VERSION.
+     *
+     * @since 1.7.1
+     */
+    public static function is_pro_version_compatible(): bool {
+        if (!self::is_pro_addon_active()) {
+            return false;
+        }
+
+        if (!defined('NH_VERSION')) {
+            return true;
+        }
+
+        if (!defined('NH_PRO_VERSION')) {
+            return true;
+        }
+
+        return (string) NH_PRO_VERSION === (string) NH_VERSION;
     }
 
     /** @since 1.7.0 */
@@ -114,7 +158,13 @@ class NH_License {
         return array_merge(self::default_state(), $state);
     }
 
-    /** @since 1.7.0 */
+    /**
+     * Persist normalized state.
+     *
+     * NOTE: This method is required by maybe_refresh().
+     *
+     * @since 1.7.0
+     */
     public static function set_state(array $state): void {
         $state = array_merge(self::default_state(), $state);
 
@@ -133,7 +183,53 @@ class NH_License {
         update_option(self::OPT_VALID, self::is_active($state));
     }
 
-    /** @since 1.7.0 */
+    /**
+     * Human hints for common statuses.
+     *
+     * @since 1.7.1
+     */
+    public static function status_hint(array $state = null): string {
+        $state = is_array($state) ? $state : self::get_state();
+        $status = isset($state['status']) ? (string) $state['status'] : 'unknown';
+
+        switch ($status) {
+            case 'active':
+                return 'License is active.';
+
+            case 'grace':
+                return 'License check failed temporarily. Premium remains enabled during the grace window. Check your server/WAF logs.';
+
+            case 'expired':
+                return 'License is expired. Renew your subscription and save the updated license key.';
+
+            case 'revoked':
+                return 'License was revoked. Revoke locally and enter a new valid license key.';
+
+            case 'banned':
+                return 'License is banned. Contact support.';
+
+            case 'inactive':
+                $msg = isset($state['message']) ? (string) $state['message'] : '';
+                if (stripos($msg, 'anti-bot') !== false || stripos($msg, 'cloudflare') !== false) {
+                    return 'Your license endpoint may be blocked by Cloudflare/WAF. Allowlist the verify.php path and disable challenges for it.';
+                }
+
+                if (stripos($msg, 'domain') !== false) {
+                    return 'Possible domain mismatch. Ensure the license is issued for this site domain and re-verify.';
+                }
+
+                return 'License is inactive. Verify server URL and key, then try again.';
+
+            default:
+                return 'License status is unknown. Save server URL and key, then refresh.';
+        }
+    }
+
+    /**
+     * Pro / Premium flag.
+     *
+     * @since 1.7.0
+     */
     public static function is_pro(): bool {
         $state = self::get_state();
         return self::is_active($state) || self::is_in_grace($state);
@@ -148,6 +244,17 @@ class NH_License {
         $capability = sanitize_key($capability);
         if ($capability === '') {
             return false;
+        }
+
+        // Premium capabilities require Premium addon presence + version compatibility.
+        if (in_array($capability, self::PRO_CAPS, true)) {
+            if (!self::is_pro_addon_active()) {
+                return false;
+            }
+
+            if (!self::is_pro_version_compatible()) {
+                return false;
+            }
         }
 
         self::maybe_refresh();
@@ -187,7 +294,8 @@ class NH_License {
             return;
         }
 
-        if (self::get_server_url() === '') {
+        $server_url = self::get_server_url();
+        if ($server_url === '') {
             if ((int) ($state['last_check'] ?? 0) === 0) {
                 $state['status'] = 'inactive';
                 $state['message'] = 'License server URL is not configured.';
@@ -209,19 +317,32 @@ class NH_License {
 
         set_transient(self::TRANSIENT_LOCK, 1, 30);
 
-        $result = self::remote_verify();
+        if (!class_exists('NH_License_Client')) {
+            $client = NH_PLUGIN_DIR . 'modules/license/class-nh-license-client.php';
+            if (file_exists($client)) {
+                require_once $client;
+            }
+        }
+
+        $result = class_exists('NH_License_Client')
+            ? NH_License_Client::remote_verify($key, $server_url, self::DEBUG)
+            : [
+                'ok' => false,
+                'message' => 'License client missing.',
+                'state' => self::default_state(),
+            ];
 
         delete_transient(self::TRANSIENT_LOCK);
 
         if ($result['ok']) {
-            self::set_state($result['state']);
+            self::set_state(is_array($result['state']) ? $result['state'] : []);
             return;
         }
 
         $was_ok = self::is_active($state) || self::is_in_grace($state);
         if ($was_ok) {
             $state['status'] = 'grace';
-            $state['message'] = $result['message'];
+            $state['message'] = (string) ($result['message'] ?? '');
             $state['last_check'] = $now;
             $state['grace_until'] = max((int) $state['grace_until'], $now + (self::GRACE_DAYS * DAY_IN_SECONDS));
             self::set_state($state);
@@ -229,7 +350,7 @@ class NH_License {
         }
 
         $state['status'] = 'inactive';
-        $state['message'] = $result['message'];
+        $state['message'] = (string) ($result['message'] ?? '');
         $state['last_check'] = $now;
         self::set_state($state);
     }
@@ -255,198 +376,6 @@ class NH_License {
     private static function is_in_grace(array $state): bool {
         $grace_until = (int) ($state['grace_until'] ?? 0);
         return $grace_until > 0 && time() <= $grace_until;
-    }
-
-    /**
-     * Server-side states that are "not active" but useful for UX.
-     *
-     * @since 1.7.0
-     */
-    private static function is_expired(array $state): bool {
-        return isset($state['status']) && $state['status'] === 'expired';
-    }
-
-    /** @since 1.7.0 */
-    private static function log(string $msg, array $ctx = []): void {
-        if (!self::DEBUG || !defined('WP_DEBUG') || !WP_DEBUG) {
-            return;
-        }
-
-        $line = '[NH_License] ' . $msg;
-        if (!empty($ctx)) {
-            $line .= ' ' . wp_json_encode($ctx);
-        }
-
-        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-        error_log($line);
-    }
-
-    /**
-     * Remote verification.
-     *
-     * @since 1.7.0
-     */
-    private static function remote_verify(): array {
-        $key = self::get_key();
-        $server_url = self::get_server_url();
-
-        if ($key === '' || $server_url === '') {
-            return [
-                'ok' => false,
-                'message' => 'License key or server URL missing.',
-                'state' => self::default_state(),
-            ];
-        }
-
-        if (!self::is_valid_format($key)) {
-            return [
-                'ok' => false,
-                'message' => 'Invalid license key format.',
-                'state' => self::default_state(),
-            ];
-        }
-
-        $domain = self::get_current_domain();
-        $site_id = md5($domain . '|' . wp_salt('auth'));
-
-        $payload = [
-            'product' => 'notification-hub',
-            'license_key' => $key,
-            'domain' => $domain,
-            'site_id' => $site_id,
-        ];
-
-        $ua = 'NotificationHub/' . (defined('NH_VERSION') ? NH_VERSION : 'dev') . '; ' . home_url('/');
-
-        $headers = [
-            'Accept' => 'application/json',
-            'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
-            'User-Agent' => $ua,
-        ];
-
-        self::log('verify:POST', ['url' => $server_url, 'domain' => $domain]);
-
-        $response = wp_remote_post($server_url, [
-            'timeout' => 15,
-            'redirection' => 5,
-            'headers' => $headers,
-            'body' => $payload,
-        ]);
-
-        // If blocked by WAF on POST, try GET as a fallback.
-        $response_code = !is_wp_error($response) ? (int) wp_remote_retrieve_response_code($response) : 0;
-        $content_type = !is_wp_error($response) ? (string) wp_remote_retrieve_header($response, 'content-type') : '';
-
-        if (!is_wp_error($response) && $response_code === 403) {
-            self::log('verify:post_403_try_get', ['url' => $server_url, 'domain' => $domain, 'content_type' => $content_type]);
-
-            $get_url = add_query_arg($payload, $server_url);
-
-            $response = wp_remote_get($get_url, [
-                'timeout' => 15,
-                'redirection' => 5,
-                'headers' => [
-                    'Accept' => 'application/json',
-                    'User-Agent' => $ua,
-                ],
-            ]);
-        }
-
-        if (is_wp_error($response)) {
-            return [
-                'ok' => false,
-                'message' => $response->get_error_message(),
-                'state' => self::default_state(),
-            ];
-        }
-
-        $raw = wp_remote_retrieve_body($response);
-        $data = json_decode($raw, true);
-
-        if (!is_array($data)) {
-            $code = (int) wp_remote_retrieve_response_code($response);
-            $content_type = (string) wp_remote_retrieve_header($response, 'content-type');
-
-            $snippet = substr((string) $raw, 0, 200);
-            $snippet = preg_replace('/\s+/', ' ', (string) $snippet);
-
-            $looks_like_js_challenge = (
-                stripos($raw, 'aes.js') !== false
-                || stripos($raw, 'toNumbers(') !== false
-                || stripos($raw, 'anti-bot') !== false
-                || stripos($raw, 'cf-browser-verification') !== false
-            );
-
-            self::log('verify:invalid_json', [
-                'http' => $code,
-                'content_type' => $content_type,
-                'raw_prefix' => substr((string) $raw, 0, 200),
-                'js_challenge' => $looks_like_js_challenge,
-            ]);
-
-            if ($looks_like_js_challenge) {
-                return [
-                    'ok' => false,
-                    'message' => 'License server returned a JS anti-bot challenge page instead of JSON (this host blocks server-to-server requests). Move the license server to an API-friendly host or whitelist/disable the anti-bot protection for verify.php.',
-                    'state' => self::default_state(),
-                ];
-            }
-
-            $msg = 'Invalid JSON response from license server.';
-            $msg .= ' HTTP ' . $code;
-            if ($content_type !== '') {
-                $msg .= ' (' . $content_type . ')';
-            }
-            if ($snippet !== '') {
-                $msg .= ' First 200 chars: ' . $snippet;
-            }
-
-            // Hint for common hosting/WAF blocks.
-            if ($code === 403) {
-                $msg .= ' (Hint: hosting/WAF may be blocking server-to-server requests. Try allowing User-Agent: ' . $ua . ')';
-            }
-
-            return [
-                'ok' => false,
-                'message' => $msg,
-                'state' => self::default_state(),
-            ];
-        }
-
-        $status = isset($data['status']) && is_string($data['status']) ? $data['status'] : 'inactive';
-        $features = isset($data['features']) && is_array($data['features']) ? $data['features'] : [];
-        $message = isset($data['message']) && is_string($data['message']) ? $data['message'] : '';
-        $grace_days = isset($data['grace_days']) ? (int) $data['grace_days'] : self::GRACE_DAYS;
-
-        // Accept all meaningful statuses from server.
-        $allowed = ['active', 'inactive', 'revoked', 'grace', 'banned', 'expired'];
-        if (!in_array($status, $allowed, true)) {
-            $status = 'inactive';
-        }
-
-        $state = [
-            'status' => $status,
-            'features' => $features,
-            'domain' => $domain,
-            'last_check' => time(),
-            'message' => $message,
-            'license_hash' => self::hash_key($key),
-        ];
-
-        if ($status === 'grace') {
-            $state['grace_until'] = time() + max(1, $grace_days) * DAY_IN_SECONDS;
-        } else {
-            $state['grace_until'] = 0;
-        }
-
-        self::log('verify:done', ['status' => $status, 'features' => $features]);
-
-        // Only treat active/grace as OK.
-        return [
-            'ok' => ($status === 'active' || $status === 'grace'),
-            'message' => $message !== '' ? $message : 'License server response.',
-            'state' => $state,
-        ];
     }
 
     /** @since 1.7.0 */

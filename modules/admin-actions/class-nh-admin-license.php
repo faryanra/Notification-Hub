@@ -105,9 +105,12 @@ class NH_Admin_License {
         $key = isset($_POST['nh_license_key']) ? sanitize_text_field(wp_unslash($_POST['nh_license_key'])) : '';
         $key = strtoupper(trim((string) $key));
 
+        // IMPORTANT: Use the same tab slug used by the UI (premium).
+        $redirect_base = 'admin.php?page=nh_settings&tab=premium';
+
         // Validate only when user attempts to submit a key.
         if ($key !== '' && !preg_match('/^NH-PRO-[A-Z0-9]{4}-[A-Z0-9]{4}$/', $key)) {
-            wp_safe_redirect(admin_url('admin.php?page=nh_settings&tab=pro&nh_license_error=invalid_key'));
+            wp_safe_redirect(admin_url($redirect_base . '&nh_license_error=invalid_key'));
             exit;
         }
 
@@ -133,7 +136,7 @@ class NH_Admin_License {
             }
         }
 
-        wp_safe_redirect(admin_url('admin.php?page=nh_settings&tab=pro&nh_license_saved=1'));
+        wp_safe_redirect(admin_url($redirect_base . '&nh_license_saved=1'));
         exit;
     }
 
@@ -154,7 +157,8 @@ class NH_Admin_License {
             NH_License::revoke();
         }
 
-        wp_safe_redirect(admin_url('admin.php?page=nh_settings&tab=pro&nh_license_revoked=1'));
+        // Keep user on the Premium tab.
+        wp_safe_redirect(admin_url('admin.php?page=nh_settings&tab=premium&nh_license_revoked=1'));
         exit;
     }
 }

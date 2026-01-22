@@ -40,6 +40,30 @@ class NH_Loader {
      */
     public function boot() {
 
+        // -----------------------------------------
+        // Centralized loading of Premium-only files.
+        // -----------------------------------------
+        // Rule: no pro/premium folders; Premium files are identified by filename prefix.
+        // Premium addon presence is controlled by NH_PRO_ACTIVE.
+        if (defined('NH_PRO_ACTIVE') && (bool) NH_PRO_ACTIVE) {
+            $premium_files = [
+                // License (Premium).
+                NH_PLUGIN_DIR . 'modules/premium-class-nh-license.php',
+
+                // Admin actions (Premium).
+                NH_PLUGIN_DIR . 'modules/admin-actions/premium-class-nh-admin-license.php',
+            ];
+
+            foreach ($premium_files as $file) {
+                if (file_exists($file)) {
+                    require_once $file;
+                } elseif (defined('WP_DEBUG') && WP_DEBUG) {
+                    // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+                    error_log(sprintf('Notification Hub: Missing premium file %s', $file));
+                }
+            }
+        }
+
         /**
          * Shared services.
          */
@@ -70,6 +94,13 @@ class NH_Loader {
 
             if (class_exists('NH_Custom_Hooks') && method_exists('NH_Custom_Hooks', 'init')) {
                 NH_Custom_Hooks::init($this->r);
+            }
+
+            // Premium admin actions.
+            if (defined('NH_PRO_ACTIVE') && (bool) NH_PRO_ACTIVE) {
+                if (class_exists('NH_Admin_License') && method_exists('NH_Admin_License', 'init')) {
+                    NH_Admin_License::init();
+                }
             }
         }
 
