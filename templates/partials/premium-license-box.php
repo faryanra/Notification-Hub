@@ -42,56 +42,33 @@ $did_save   = isset($_GET['nh_license_saved']);
 $did_revoke = isset($_GET['nh_license_revoked']);
 $error      = isset($_GET['nh_license_error']) ? sanitize_key(wp_unslash($_GET['nh_license_error'])) : '';
 
-// Try to read a normalized status from state.
-$status = '';
-if (is_array($state) && isset($state['status'])) {
-    $status = sanitize_key((string) $state['status']);
-}
-
-// Decide what to show:
-// - At most ONE primary notice.
-// - Tips only when there is NO primary notice.
-// - Never show server "active for domain" message as a warning.
-$primary_notice_type = '';
-$primary_notice_text = '';
-$primary_auto_hide   = false;
-
-if ($error === 'invalid_key') {
-    $primary_notice_type = 'error';
-    $primary_notice_text = esc_html__('Invalid license key format. Use: NH-PRO-XXXX-XXXX', 'notification-hub');
-    $primary_auto_hide   = false;
-} elseif ($did_revoke) {
-    $primary_notice_type = 'info';
-    $primary_notice_text = esc_html__('License revoked.', 'notification-hub');
-    $primary_auto_hide   = true;
-} elseif ($did_save) {
-    // After save we show a single, status-aware message.
-    if ($status === 'active') {
-        $primary_notice_type = 'success';
-        $primary_notice_text = esc_html__('License activated.', 'notification-hub');
-        $primary_auto_hide   = true;
-    } elseif (!empty($state['message'])) {
-        // For non-active states, prefer the server/state message as primary.
-        $primary_notice_type = 'warning';
-        $primary_notice_text = sanitize_text_field((string) $state['message']);
-        $primary_auto_hide   = false;
-    } else {
-        // Fallback.
-        $primary_notice_type = 'info';
-        $primary_notice_text = esc_html__('License saved. Please refresh to verify status.', 'notification-hub');
-        $primary_auto_hide   = true;
+// Presenter (UI decisions).
+if (!class_exists('NH_License_Presenter')) {
+    $presenter_file = NH_PLUGIN_DIR . 'modules/license/presenters/license-presenter.php';
+    if (file_exists($presenter_file)) {
+        require_once $presenter_file;
     }
-} else {
-    // No recent action. Show nothing by default.
-    $primary_notice_type = '';
 }
 
-// Tip only when there is no primary notice and only after an action.
-$show_tip = false;
+$vm = [];
+$primary_notice = ['type' => '', 'text' => '', 'auto_hide' => false];
 $hint = '';
-if (!$primary_notice_text && ($did_save || $did_revoke || $error !== '')) {
-    $hint = method_exists('NH_License', 'status_hint') ? NH_License::status_hint($state) : '';
-    $show_tip = ($hint !== '');
+
+if (class_exists('NH_License_Presenter')) {
+    $p = new NH_License_Presenter();
+    $vm = $p->build_view_model(is_array($state) ? $state : []);
+    $primary_notice = $p->build_primary_notice(
+        [
+            'error'      => $error,
+            'did_save'   => $did_save,
+            'did_revoke' => $did_revoke,
+        ],
+        $vm
+    );
+
+    if (empty($primary_notice['text']) && ($did_save || $did_revoke || $error !== '')) {
+        $hint = $p->build_hint($vm);
+    }
 }
 ?>
 
@@ -127,13 +104,13 @@ if (!$primary_notice_text && ($did_save || $did_revoke || $error !== '')) {
     </h2>
 
     <div class="inside">
-        <?php if ($primary_notice_text !== '') : ?>
-            <div class="notice notice-<?php echo esc_attr($primary_notice_type); ?> is-dismissible <?php echo $primary_auto_hide ? 'nh-auto-hide' : ''; ?>" <?php echo $primary_auto_hide ? 'data-auto-hide="1"' : ''; ?>>
-                <p><?php echo esc_html($primary_notice_text); ?></p>
+        <?php if (!empty($primary_notice['text'])) : ?>
+            <div class="notice notice-<?php echo esc_attr((string) $primary_notice['type']); ?> is-dismissible <?php echo !empty($primary_notice['auto_hide']) ? 'nh-auto-hide' : ''; ?>" <?php echo !empty($primary_notice['auto_hide']) ? 'data-auto-hide="1"' : ''; ?>>
+                <p><?php echo esc_html((string) $primary_notice['text']); ?></p>
             </div>
         <?php endif; ?>
 
-        <?php if ($show_tip) : ?>
+        <?php if ($hint !== '') : ?>
             <div class="notice notice-info is-dismissible nh-auto-hide" data-auto-hide="1">
                 <p><strong><?php esc_html_e('Tip:', 'notification-hub'); ?></strong> <?php echo esc_html($hint); ?></p>
             </div>
