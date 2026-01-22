@@ -74,6 +74,23 @@ class NH_License {
         return class_exists('NH_License_Service') ? new NH_License_Service() : null;
     }
 
+    /**
+     * Get presenter instance.
+     *
+     * @since 1.7.2
+     * @return NH_License_Presenter|null
+     */
+    private static function presenter() {
+        if (!class_exists('NH_License_Presenter')) {
+            $path = NH_PLUGIN_DIR . 'modules/license/presenters/license-presenter.php';
+            if (file_exists($path)) {
+                require_once $path;
+            }
+        }
+
+        return class_exists('NH_License_Presenter') ? new NH_License_Presenter() : null;
+    }
+
     public static function default_state(): array {
         return [
             'status'       => 'unknown',
@@ -254,6 +271,15 @@ class NH_License {
      */
     public static function status_hint(array $state = null): string {
         $state = is_array($state) ? $state : self::get_state();
+
+        // Prefer Presenter so all UI messaging lives in one place.
+        $p = self::presenter();
+        if ($p && method_exists($p, 'build_view_model') && method_exists($p, 'build_hint')) {
+            $vm = $p->build_view_model($state);
+            return (string) $p->build_hint($vm);
+        }
+
+        // Legacy fallback (kept for safety).
         $status = isset($state['status']) ? (string) $state['status'] : 'unknown';
 
         switch ($status) {
