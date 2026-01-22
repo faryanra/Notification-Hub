@@ -57,6 +57,75 @@ class NH_License {
      */
     private const PRO_CAPS = ['telegram', 'slack'];
 
+    /**
+     * Get option store.
+     *
+     * @since 1.7.2
+     * @return string Class name.
+     */
+    private static function option_store_class(): string {
+        // Prefer refactored option store.
+        if (!class_exists('NH_License_Option_Store')) {
+            $path = NH_PLUGIN_DIR . 'modules/license/storage/option-store.php';
+            if (file_exists($path)) {
+                require_once $path;
+            }
+        }
+
+        return class_exists('NH_License_Option_Store') ? 'NH_License_Option_Store' : '';
+    }
+
+    /**
+     * Option getter (delegates to store when available).
+     *
+     * @since 1.7.2
+     * @param string $key Option name.
+     * @param mixed  $default Default.
+     * @return mixed
+     */
+    private static function opt_get(string $key, $default = null) {
+        $cls = self::option_store_class();
+        if ($cls !== '' && method_exists($cls, 'get')) {
+            return $cls::get($key, $default);
+        }
+
+        return get_option($key, $default);
+    }
+
+    /**
+     * Option setter (delegates to store when available).
+     *
+     * @since 1.7.2
+     * @param string $key Option name.
+     * @param mixed  $value Value.
+     * @param bool   $autoload Autoload.
+     * @return bool
+     */
+    private static function opt_set(string $key, $value, bool $autoload = false): bool {
+        $cls = self::option_store_class();
+        if ($cls !== '' && method_exists($cls, 'set')) {
+            return (bool) $cls::set($key, $value, $autoload);
+        }
+
+        return (bool) update_option($key, $value, $autoload);
+    }
+
+    /**
+     * Option delete (delegates to store when available).
+     *
+     * @since 1.7.2
+     * @param string $key Option name.
+     * @return bool
+     */
+    private static function opt_delete(string $key): bool {
+        $cls = self::option_store_class();
+        if ($cls !== '' && method_exists($cls, 'delete')) {
+            return (bool) $cls::delete($key);
+        }
+
+        return (bool) delete_option($key);
+    }
+
     public static function default_state(): array {
         return [
             'status'       => 'unknown',
@@ -103,7 +172,7 @@ class NH_License {
 
     /** @since 1.7.0 */
     public static function get_server_url(): string {
-        $url = get_option(self::OPT_SERVER_URL, '');
+        $url = self::opt_get(self::OPT_SERVER_URL, '');
         $url = is_string($url) ? trim($url) : '';
 
         if ($url === '') {
@@ -116,7 +185,7 @@ class NH_License {
 
     /** @since 1.6.2 */
     public static function get_key(): string {
-        $key = get_option(self::OPT_KEY, '');
+        $key = self::opt_get(self::OPT_KEY, '');
         $key = is_string($key) ? $key : '';
         $key = strtoupper(trim($key));
         return $key;
@@ -125,7 +194,7 @@ class NH_License {
     /** @since 1.6.2 */
     public static function save_key(string $key): void {
         $key = strtoupper(trim((string) $key));
-        update_option(self::OPT_KEY, sanitize_text_field($key));
+        self::opt_set(self::OPT_KEY, sanitize_text_field($key));
         self::reset_state();
     }
 
@@ -144,13 +213,13 @@ class NH_License {
 
     /** @since 1.7.0 */
     public static function reset_state(): void {
-        delete_option(self::OPT_STATE);
-        update_option(self::OPT_VALID, false);
+        self::opt_delete(self::OPT_STATE);
+        self::opt_set(self::OPT_VALID, false);
     }
 
     /** @since 1.7.0 */
     public static function get_state(): array {
-        $state = get_option(self::OPT_STATE, []);
+        $state = self::opt_get(self::OPT_STATE, []);
         if (!is_array($state)) {
             return self::default_state();
         }
@@ -179,8 +248,8 @@ class NH_License {
         $state['message'] = is_string($state['message']) ? $state['message'] : '';
         $state['license_hash'] = is_string($state['license_hash']) ? $state['license_hash'] : '';
 
-        update_option(self::OPT_STATE, $state, false);
-        update_option(self::OPT_VALID, self::is_active($state));
+        self::opt_set(self::OPT_STATE, $state, false);
+        self::opt_set(self::OPT_VALID, self::is_active($state));
     }
 
     /**
@@ -317,6 +386,14 @@ class NH_License {
 
         set_transient(self::TRANSIENT_LOCK, 1, 30);
 
+        // Prefer refactored HTTP client wrapper.
+        if (!class_exists('NH_License_HTTP_Client')) {
+            $http = NH_PLUGIN_DIR . 'modules/license/http/license-client.php';
+            if (file_exists($http)) {
+                require_once $http;
+            }
+        }
+
         if (!class_exists('NH_License_Client')) {
             $client = NH_PLUGIN_DIR . 'modules/license/class-nh-license-client.php';
             if (file_exists($client)) {
@@ -324,13 +401,15 @@ class NH_License {
             }
         }
 
-        $result = class_exists('NH_License_Client')
-            ? NH_License_Client::remote_verify($key, $server_url, self::DEBUG)
-            : [
-                'ok' => false,
-                'message' => 'License client missing.',
-                'state' => self::default_state(),
-            ];
+        $result = class_exists('NH_License_HTTP_Client')
+            ? NH_License_HTTP_Client::remote_verify($key, $server_url, self::DEBUG)
+            : (class_exists('NH_License_Client')
+                ? NH_License_Client::remote_verify($key, $server_url, self::DEBUG)
+                : [
+                    'ok' => false,
+                    'message' => 'License client missing.',
+                    'state' => self::default_state(),
+                ]);
 
         delete_transient(self::TRANSIENT_LOCK);
 
@@ -357,10 +436,10 @@ class NH_License {
 
     /** @since 1.6.2 */
     public static function revoke(): void {
-        delete_option(self::OPT_KEY);
-        delete_option(self::OPT_VALID);
-        delete_option(self::OPT_STATE);
-        delete_option(self::OPT_SERVER_URL);
+        self::opt_delete(self::OPT_KEY);
+        self::opt_delete(self::OPT_VALID);
+        self::opt_delete(self::OPT_STATE);
+        self::opt_delete(self::OPT_SERVER_URL);
     }
 
     /**
