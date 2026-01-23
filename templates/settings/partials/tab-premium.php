@@ -17,6 +17,14 @@ defined('ABSPATH') || exit;
     data-tab="premium"
 >
     <?php
+    // License UI should ONLY appear inside the Premium tab.
+    if ($is_pro_addon) {
+        $top = NH_PLUGIN_DIR . 'templates/settings/partials/premium/top.php';
+        if (file_exists($top)) {
+            include $top;
+        }
+    }
+
     $premium_root = NH_PLUGIN_DIR . 'templates/settings/partials/premium/';
 
     if (!$is_pro_addon) {

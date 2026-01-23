@@ -36,14 +36,6 @@ $partials = NH_PLUGIN_DIR . 'templates/settings/partials/';
     if (file_exists($tabs)) {
         include $tabs;
     }
-
-    // Premium header panels (license box + debug) only when pro addon is active.
-    if ($is_pro_addon) {
-        $premium_top = $partials . 'premium/top.php';
-        if (file_exists($premium_top)) {
-            include $premium_top;
-        }
-    }
     ?>
 
     <form method="post" action="<?php echo esc_url(admin_url('options.php')); ?>">
