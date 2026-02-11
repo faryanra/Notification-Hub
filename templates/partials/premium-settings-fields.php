@@ -1,11 +1,13 @@
 <?php
 /**
- * Premium Settings Fields (legacy path)
+ * Premium Settings Fields (legacy stub)
  *
- * Kept for backward compatibility. Delegates to the new location.
+ * DEPRECATED: Use templates/settings/partials/premium/settings-fields.php instead.
+ * Kept for backward compatibility only.
  *
  * @package Notification_Hub
- * @since 1.7.2
+ * @since 1.7.1
+ * @deprecated 1.7.2
  */
 
 defined('ABSPATH') || exit;
@@ -16,4 +18,4 @@ if (file_exists($new)) {
     return;
 }
 
-wp_die(esc_html__('Premium settings fields UI not found.', 'notification-hub'));
+wp_die(esc_html__('Premium settings fields not found.', 'notification-hub'));

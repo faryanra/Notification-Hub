@@ -1,17 +1,27 @@
 <?php
 /**
- * Premium Upgrade Panel (new path)
+ * Premium Upgrade Panel
  *
  * @package Notification_Hub
  * @since 1.7.2
  */
 
-defined('ABSPATH') || exit;
-
-$legacy = NH_PLUGIN_DIR . 'templates/partials/__moved/premium-upgrade-panel.php';
-if (file_exists($legacy)) {
-    include $legacy;
-    return;
+if (!defined('ABSPATH')) {
+    exit;
 }
 
-wp_die(esc_html__('Premium upgrade UI not found.', 'notification-hub'));
+?>
+
+<div class="nh-upgrade-panel">
+    <h2><?php esc_html_e('Premium Channels', 'notification-hub'); ?></h2>
+
+    <p>
+        <?php esc_html_e('Premium Channels are available in the Pro add-on.', 'notification-hub'); ?>
+    </p>
+
+    <p>
+        <a class="button button-primary" href="#">
+            <?php esc_html_e('Upgrade to Pro', 'notification-hub'); ?>
+        </a>
+    </p>
+</div>

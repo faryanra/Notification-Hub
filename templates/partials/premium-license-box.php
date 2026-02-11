@@ -1,11 +1,13 @@
 <?php
 /**
- * Premium License Box (legacy path)
+ * Premium License Box (legacy stub)
  *
- * Kept for backward compatibility. Delegates to the new location.
+ * DEPRECATED: Use templates/settings/partials/premium/license-box.php instead.
+ * Kept for backward compatibility only.
  *
  * @package Notification_Hub
- * @since 1.7.2
+ * @since 1.7.1
+ * @deprecated 1.7.2
  */
 
 defined('ABSPATH') || exit;

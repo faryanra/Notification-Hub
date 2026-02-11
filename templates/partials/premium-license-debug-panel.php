@@ -1,11 +1,13 @@
 <?php
 /**
- * Premium License Debug Panel (legacy path)
+ * Premium License Debug Panel (legacy stub)
  *
- * Kept for backward compatibility. Delegates to the new location.
+ * DEPRECATED: Use templates/settings/partials/premium/license-debug-panel.php instead.
+ * Kept for backward compatibility only.
  *
  * @package Notification_Hub
- * @since 1.7.2
+ * @since 1.7.1
+ * @deprecated 1.7.2
  */
 
 defined('ABSPATH') || exit;
@@ -16,4 +18,4 @@ if (file_exists($new)) {
     return;
 }
 
-wp_die(esc_html__('Premium debug UI not found.', 'notification-hub'));
+wp_die(esc_html__('Premium debug panel not found.', 'notification-hub'));
