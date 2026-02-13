@@ -2,8 +2,6 @@
 /**
  * User Registered Event
  *
- * Listens for new user registrations and creates notifications.
- *
  * @package Notification_Hub
  * @since 2.0.0
  */
@@ -19,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * User_Registered Class
+ * User Registered
  */
 class User_Registered implements Integration_Interface {
 
@@ -28,7 +26,7 @@ class User_Registered implements Integration_Interface {
 	 *
 	 * @var Notifications
 	 */
-	private $notifications_repo;
+	private $repo;
 
 	/**
 	 * Notification dispatcher.
@@ -40,12 +38,12 @@ class User_Registered implements Integration_Interface {
 	/**
 	 * Constructor.
 	 *
-	 * @param Notifications           $notifications_repo Notifications repository.
-	 * @param Notification_Dispatcher $dispatcher         Notification dispatcher.
+	 * @param Notifications            $repo       Notifications repository.
+	 * @param Notification_Dispatcher $dispatcher Dispatcher.
 	 */
-	public function __construct( Notifications $notifications_repo, Notification_Dispatcher $dispatcher ) {
-		$this->notifications_repo = $notifications_repo;
-		$this->dispatcher         = $dispatcher;
+	public function __construct( Notifications $repo, Notification_Dispatcher $dispatcher ) {
+		$this->repo       = $repo;
+		$this->dispatcher = $dispatcher;
 	}
 
 	/**
@@ -54,7 +52,7 @@ class User_Registered implements Integration_Interface {
 	 * @return void
 	 */
 	public function register() {
-		add_action( 'user_register', array( $this, 'on_user_register' ), 10, 1 );
+		add_action( 'user_register', array( $this, 'handle' ), 10, 1 );
 	}
 
 	/**
@@ -63,45 +61,28 @@ class User_Registered implements Integration_Interface {
 	 * @param int $user_id User ID.
 	 * @return void
 	 */
-	public function on_user_register( $user_id ) {
+	public function handle( $user_id ) {
 		$user = get_userdata( $user_id );
+
 		if ( ! $user ) {
 			return;
 		}
 
-		$title = sprintf(
-			/* translators: %s: Username. */
-			esc_html__( 'New user: %s', 'notification-hub' ),
-			(string) $user->user_login
-		);
-
-		$message = esc_html( (string) $user->user_email );
-
-		$context = array( 'user_id' => (int) $user_id );
-
-		// Insert notification.
-		$notification_id = $this->notifications_repo->insert(
+		$notification_id = $this->repo->create(
 			array(
-				'source'  => 'wp_core',
+				'title'   => __( 'New user registered', 'notification-hub' ),
+				'message' => sprintf(
+					__( 'User %s (%s) has registered', 'notification-hub' ),
+					$user->user_login,
+					$user->user_email
+				),
 				'type'    => 'user_registered',
-				'title'   => $title,
-				'message' => $message,
-				'context' => $context,
+				'status'  => 'unread',
 			)
 		);
 
-		// Dispatch to channels.
 		if ( $notification_id ) {
-			$payload = array(
-				'title'   => $title,
-				'summary' => $message,
-				'source'  => 'wp_core',
-				'type'    => 'user_registered',
-				'context' => $context,
-				'link'    => function_exists( 'get_edit_user_link' ) ? (string) get_edit_user_link( (int) $user_id ) : '',
-			);
-
-			$this->dispatcher->dispatch( array( 'email', 'telegram', 'slack' ), $payload );
+			do_action( 'nh_notification_created', $notification_id, 'user_registered' );
 		}
 	}
 }

@@ -2,8 +2,6 @@
 /**
  * Comment Posted Event
  *
- * Listens for new comment submissions and creates notifications.
- *
  * @package Notification_Hub
  * @since 2.0.0
  */
@@ -19,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Comment_Posted Class
+ * Comment Posted
  */
 class Comment_Posted implements Integration_Interface {
 
@@ -28,7 +26,7 @@ class Comment_Posted implements Integration_Interface {
 	 *
 	 * @var Notifications
 	 */
-	private $notifications_repo;
+	private $repo;
 
 	/**
 	 * Notification dispatcher.
@@ -40,12 +38,12 @@ class Comment_Posted implements Integration_Interface {
 	/**
 	 * Constructor.
 	 *
-	 * @param Notifications           $notifications_repo Notifications repository.
-	 * @param Notification_Dispatcher $dispatcher         Notification dispatcher.
+	 * @param Notifications            $repo       Notifications repository.
+	 * @param Notification_Dispatcher $dispatcher Dispatcher.
 	 */
-	public function __construct( Notifications $notifications_repo, Notification_Dispatcher $dispatcher ) {
-		$this->notifications_repo = $notifications_repo;
-		$this->dispatcher         = $dispatcher;
+	public function __construct( Notifications $repo, Notification_Dispatcher $dispatcher ) {
+		$this->repo       = $repo;
+		$this->dispatcher = $dispatcher;
 	}
 
 	/**
@@ -54,65 +52,41 @@ class Comment_Posted implements Integration_Interface {
 	 * @return void
 	 */
 	public function register() {
-		add_action( 'wp_insert_comment', array( $this, 'on_comment' ), 10, 2 );
+		add_action( 'wp_insert_comment', array( $this, 'handle' ), 10, 2 );
 	}
 
 	/**
-	 * Handle new comment notifications.
+	 * Handle comment posted.
 	 *
-	 * @param int    $id      Comment ID.
-	 * @param object $comment WP_Comment.
+	 * @param int    $comment_id Comment ID.
+	 * @param object $comment    Comment object.
 	 * @return void
 	 */
-	public function on_comment( $id, $comment ) {
-		// Skip WooCommerce order notes.
-		if ( isset( $comment->comment_type ) && 'order_note' === $comment->comment_type ) {
+	public function handle( $comment_id, $comment ) {
+		if ( $comment->comment_approved !== '1' ) {
 			return;
 		}
 
-		// Skip if comment belongs to WooCommerce order post.
-		$post_type = get_post_type( $comment->comment_post_ID );
-		if ( 'shop_order' === $post_type ) {
+		$post = get_post( $comment->comment_post_ID );
+
+		if ( ! $post ) {
 			return;
 		}
 
-		$title = sprintf(
-			/* translators: %s: Comment author name. */
-			esc_html__( 'New comment by %s', 'notification-hub' ),
-			(string) $comment->comment_author
-		);
-
-		$body = wp_kses_post( wp_trim_words( (string) $comment->comment_content, 20 ) );
-
-		$context = array(
-			'comment_id' => (int) $id,
-			'post_id'    => (int) $comment->comment_post_ID,
-			'actor'      => (string) $comment->comment_author,
-		);
-
-		// Insert notification.
-		$notification_id = $this->notifications_repo->insert(
+		$notification_id = $this->repo->create(
 			array(
-				'source'  => 'wp_core',
-				'type'    => 'comment_new',
-				'title'   => $title,
-				'message' => $body,
-				'context' => $context,
+				'title'   => sprintf(
+					__( 'New comment on "%s"', 'notification-hub' ),
+					$post->post_title
+				),
+				'message' => wp_trim_words( $comment->comment_content, 20 ),
+				'type'    => 'comment',
+				'status'  => 'unread',
 			)
 		);
 
-		// Dispatch to channels.
 		if ( $notification_id ) {
-			$payload = array(
-				'title'   => $title,
-				'summary' => $body,
-				'source'  => 'wp_core',
-				'type'    => 'comment_new',
-				'context' => $context,
-				'link'    => function_exists( 'get_edit_comment_link' ) ? (string) get_edit_comment_link( (int) $id ) : '',
-			);
-
-			$this->dispatcher->dispatch( array( 'email', 'telegram', 'slack' ), $payload );
+			do_action( 'nh_notification_created', $notification_id, 'comment' );
 		}
 	}
 }

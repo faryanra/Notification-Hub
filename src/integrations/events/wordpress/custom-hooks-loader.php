@@ -1,8 +1,8 @@
 <?php
 /**
- * Custom Hooks Loader Integration
+ * Custom Hooks Loader
  *
- * Dynamically registers custom hooks from database.
+ * Loads custom hooks from database and registers them.
  *
  * @package Notification_Hub
  * @since 2.0.0
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Custom_Hooks_Loader Class
+ * Custom Hooks Loader
  */
 class Custom_Hooks_Loader implements Integration_Interface {
 
@@ -48,15 +48,11 @@ class Custom_Hooks_Loader implements Integration_Interface {
 	/**
 	 * Constructor.
 	 *
-	 * @param Custom_Hooks            $hooks_repo         Custom hooks repository.
-	 * @param Notifications           $notifications_repo Notifications repository.
-	 * @param Notification_Dispatcher $dispatcher         Notification dispatcher.
+	 * @param Custom_Hooks             $hooks_repo         Custom hooks repository.
+	 * @param Notifications            $notifications_repo Notifications repository.
+	 * @param Notification_Dispatcher $dispatcher         Dispatcher.
 	 */
-	public function __construct(
-		Custom_Hooks $hooks_repo,
-		Notifications $notifications_repo,
-		Notification_Dispatcher $dispatcher
-	) {
+	public function __construct( Custom_Hooks $hooks_repo, Notifications $notifications_repo, Notification_Dispatcher $dispatcher ) {
 		$this->hooks_repo         = $hooks_repo;
 		$this->notifications_repo = $notifications_repo;
 		$this->dispatcher         = $dispatcher;
@@ -68,94 +64,51 @@ class Custom_Hooks_Loader implements Integration_Interface {
 	 * @return void
 	 */
 	public function register() {
-		add_action( 'init', array( $this, 'register_custom_hooks' ) );
+		add_action( 'init', array( $this, 'load_custom_hooks' ) );
 	}
 
 	/**
-	 * Register all active custom hooks dynamically.
+	 * Load custom hooks from database.
 	 *
 	 * @return void
 	 */
-	public function register_custom_hooks() {
-		$hooks = $this->hooks_repo->get_active();
-
-		if ( empty( $hooks ) ) {
-			return;
-		}
+	public function load_custom_hooks() {
+		$hooks = $this->hooks_repo->get_all();
 
 		foreach ( $hooks as $hook ) {
-			$action_name = trim( (string) $hook['action_name'] );
-			if ( '' === $action_name ) {
+			if ( $hook->status !== 'active' ) {
 				continue;
 			}
 
-			$channels = isset( $hook['channels'] ) ? json_decode( $hook['channels'], true ) : array();
-			if ( ! is_array( $channels ) ) {
-				$channels = array( 'email' );
-			}
-
 			add_action(
-				$action_name,
-				function ( $payload = array() ) use ( $hook, $action_name, $channels ) {
-					$this->handle_custom_hook_fired( $hook, $action_name, $channels, $payload );
+				$hook->hook_name,
+				function() use ( $hook ) {
+					$this->handle_custom_hook( $hook );
 				},
 				10,
-				1
+				0
 			);
 		}
 	}
 
 	/**
-	 * Handle custom hook fired.
+	 * Handle custom hook.
 	 *
-	 * @param array  $hook        Hook data.
-	 * @param string $action_name Action name.
-	 * @param array  $channels    Channel slugs.
-	 * @param mixed  $payload     Hook payload.
+	 * @param object $hook Hook object.
 	 * @return void
 	 */
-	private function handle_custom_hook_fired( $hook, $action_name, $channels, $payload ) {
-		if ( ! is_array( $payload ) ) {
-			$payload = array();
-		}
-
-		$message = isset( $payload['message'] ) ? (string) $payload['message'] : '';
-		if ( '' === $message ) {
-			$message = sprintf(
-				/* translators: %s: hook action name */
-				esc_html__( 'Hook fired: %s', 'notification-hub' ),
-				$action_name
-			);
-		}
-
-		$source  = isset( $payload['source'] ) ? sanitize_text_field( (string) $payload['source'] ) : 'custom_hook';
-		$title   = isset( $payload['title'] ) ? sanitize_text_field( (string) $payload['title'] ) : ( $hook['title'] ?: $action_name );
-		$context = isset( $payload['context'] ) && is_array( $payload['context'] ) ? $payload['context'] : array();
-		$context['hook_id'] = (int) $hook['id'];
-
-		// Insert notification.
-		$notification_id = $this->notifications_repo->insert(
+	private function handle_custom_hook( $hook ) {
+		$notification_id = $this->notifications_repo->create(
 			array(
-				'source'  => $source,
+				'title'   => $hook->title,
+				'message' => $hook->message,
 				'type'    => 'custom_hook',
-				'title'   => $title,
-				'message' => $message,
-				'context' => $context,
-				'tags'    => array( 'custom_hook', $action_name ),
+				'status'  => 'unread',
 			)
 		);
 
-		// Dispatch to channels.
-		if ( $notification_id && ! empty( $channels ) ) {
-			$dispatch_payload = array(
-				'title'   => $title,
-				'summary' => $message,
-				'source'  => $source,
-				'type'    => 'custom_hook',
-				'context' => $context,
-			);
-
-			$this->dispatcher->dispatch( $channels, $dispatch_payload );
+		if ( $notification_id ) {
+			do_action( 'nh_notification_created', $notification_id, 'custom_hook' );
 		}
 	}
 }

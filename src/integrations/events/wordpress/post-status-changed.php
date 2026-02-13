@@ -2,8 +2,6 @@
 /**
  * Post Status Changed Event
  *
- * Listens for post status transitions and creates notifications.
- *
  * @package Notification_Hub
  * @since 2.0.0
  */
@@ -19,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Post_Status_Changed Class
+ * Post Status Changed
  */
 class Post_Status_Changed implements Integration_Interface {
 
@@ -28,7 +26,7 @@ class Post_Status_Changed implements Integration_Interface {
 	 *
 	 * @var Notifications
 	 */
-	private $notifications_repo;
+	private $repo;
 
 	/**
 	 * Notification dispatcher.
@@ -40,12 +38,12 @@ class Post_Status_Changed implements Integration_Interface {
 	/**
 	 * Constructor.
 	 *
-	 * @param Notifications           $notifications_repo Notifications repository.
-	 * @param Notification_Dispatcher $dispatcher         Notification dispatcher.
+	 * @param Notifications            $repo       Notifications repository.
+	 * @param Notification_Dispatcher $dispatcher Dispatcher.
 	 */
-	public function __construct( Notifications $notifications_repo, Notification_Dispatcher $dispatcher ) {
-		$this->notifications_repo = $notifications_repo;
-		$this->dispatcher         = $dispatcher;
+	public function __construct( Notifications $repo, Notification_Dispatcher $dispatcher ) {
+		$this->repo       = $repo;
+		$this->dispatcher = $dispatcher;
 	}
 
 	/**
@@ -54,71 +52,44 @@ class Post_Status_Changed implements Integration_Interface {
 	 * @return void
 	 */
 	public function register() {
-		add_action( 'transition_post_status', array( $this, 'on_status_change' ), 10, 3 );
+		add_action( 'transition_post_status', array( $this, 'handle' ), 10, 3 );
 	}
 
 	/**
-	 * Handle post status changes.
+	 * Handle post status change.
 	 *
-	 * @param string   $new  New status.
-	 * @param string   $old  Old status.
-	 * @param \WP_Post $post WP_Post object.
+	 * @param string   $new_status New status.
+	 * @param string   $old_status Old status.
+	 * @param \WP_Post $post       Post object.
 	 * @return void
 	 */
-	public function on_status_change( $new, $old, $post ) {
-		if ( $new === $old ) {
+	public function handle( $new_status, $old_status, $post ) {
+		if ( $old_status === $new_status ) {
 			return;
 		}
 
-		// Skip WooCommerce orders.
-		if ( ! is_object( $post ) ) {
+		if ( $new_status !== 'publish' ) {
 			return;
 		}
 
-		$type = isset( $post->post_type ) ? $post->post_type : get_post_type( $post );
-		if ( in_array( $type, array( 'shop_order', 'shop_order_placehold', 'shop_order_refund' ), true ) ) {
-			return;
-		}
-
-		$title = sprintf(
-			/* translators: 1: Post ID, 2: Old status, 3: New status. */
-			esc_html__( 'Post %1$d status: %2$s → %3$s', 'notification-hub' ),
-			(int) $post->ID,
-			(string) $old,
-			(string) $new
-		);
-
-		$message = esc_html( get_the_title( $post->ID ) );
-
-		$context = array(
-			'post_id' => (int) $post->ID,
-			'old'     => (string) $old,
-			'new'     => (string) $new,
-		);
-
-		// Insert notification.
-		$notification_id = $this->notifications_repo->insert(
+		$notification_id = $this->repo->create(
 			array(
-				'source'  => 'wp_core',
-				'type'    => 'post_status_changed',
-				'title'   => $title,
-				'message' => $message,
-				'context' => $context,
+				'title'   => sprintf(
+					__( 'Post published: "%s"', 'notification-hub' ),
+					$post->post_title
+				),
+				'message' => sprintf(
+					__( 'Status changed from %s to %s', 'notification-hub' ),
+					$old_status,
+					$new_status
+				),
+				'type'    => 'post_status',
+				'status'  => 'unread',
 			)
 		);
 
-		// Dispatch to channels.
 		if ( $notification_id ) {
-			$payload = array(
-				'title'   => $title,
-				'summary' => $message,
-				'source'  => 'wp_core',
-				'type'    => 'post_status_changed',
-				'context' => $context,
-				'link'    => function_exists( 'get_edit_post_link' ) ? (string) get_edit_post_link( (int) $post->ID, '' ) : '',
-			);
-
-			$this->dispatcher->dispatch( array( 'email', 'telegram', 'slack' ), $payload );
+			do_action( 'nh_notification_created', $notification_id, 'post_status' );
 		}
 	}
 }
