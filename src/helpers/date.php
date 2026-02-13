@@ -2,8 +2,6 @@
 /**
  * Date Helper
  *
- * Date utilities.
- *
  * @package Notification_Hub
  * @since 2.0.0
  */
@@ -15,12 +13,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Date Helper Class
+ * Date Helper
  */
 class Date {
 
 	/**
-	 * Get current MySQL datetime.
+	 * Get current time in MySQL format.
 	 *
 	 * @return string
 	 */
@@ -29,24 +27,13 @@ class Date {
 	}
 
 	/**
-	 * Convert MySQL datetime to timestamp.
+	 * Format date.
 	 *
-	 * @param string $mysql_date MySQL datetime string.
-	 * @return int
-	 */
-	public static function to_timestamp( $mysql_date ) {
-		return strtotime( $mysql_date );
-	}
-
-	/**
-	 * Format date for display.
-	 *
-	 * @param string $mysql_date MySQL datetime string.
-	 * @param string $format     PHP date format.
+	 * @param string $date   Date string.
+	 * @param string $format Date format.
 	 * @return string
 	 */
-	public static function format( $mysql_date, $format = 'Y-m-d H:i:s' ) {
-		$timestamp = self::to_timestamp( $mysql_date );
-		return date_i18n( $format, $timestamp );
+	public static function format( $date, $format = 'Y-m-d H:i:s' ) {
+		return date_i18n( $format, strtotime( $date ) );
 	}
 }

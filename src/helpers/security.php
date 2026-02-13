@@ -2,8 +2,6 @@
 /**
  * Security Helper
  *
- * Security utilities for capability checks, nonces, and sanitization.
- *
  * @package Notification_Hub
  * @since 2.0.0
  */
@@ -15,103 +13,48 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Security Helper Class
+ * Security Helper
  */
 class Security {
 
 	/**
-	 * Ensure current user can manage plugin settings.
+	 * Verify nonce.
 	 *
-	 * @return void
+	 * @param string $nonce  Nonce value.
+	 * @param string $action Nonce action.
+	 * @return bool
 	 */
-	public static function ensure_cap() {
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'Access denied.', 'notification-hub' ) );
-		}
+	public static function verify_nonce( $nonce, $action ) {
+		return wp_verify_nonce( $nonce, $action );
 	}
 
 	/**
-	 * Verify a request nonce.
+	 * Check capability.
 	 *
-	 * @param string $action_base Action base string.
-	 * @param int    $id          Optional numeric context.
-	 * @return void
+	 * @param string $capability Capability name.
+	 * @return bool
 	 */
-	public static function verify_nonce( $action_base, $id = 0 ) {
-		$nonce = isset( $_REQUEST['_wpnonce'] )
-			? sanitize_text_field( wp_unslash( $_REQUEST['_wpnonce'] ) )
-			: '';
-
-		$action = $id ? ( $action_base . '_' . $id ) : $action_base;
-
-		if ( ! $nonce || ! wp_verify_nonce( $nonce, $action ) ) {
-			wp_die(
-				esc_html__(
-					'Invalid request (nonce). Please refresh and try again.',
-					'notification-hub'
-				)
-			);
-		}
+	public static function can( $capability ) {
+		return current_user_can( $capability );
 	}
 
 	/**
-	 * Output nonce field for use in forms.
+	 * Sanitize text field.
 	 *
-	 * @param string $action_base Action base string.
-	 * @param int    $id          Optional numeric context.
-	 * @return void
+	 * @param string $value Input value.
+	 * @return string
 	 */
-	public static function nonce_field( $action_base, $id = 0 ) {
-		$action = $id ? ( $action_base . '_' . $id ) : $action_base;
-		wp_nonce_field( $action );
+	public static function sanitize_text( $value ) {
+		return sanitize_text_field( $value );
 	}
 
 	/**
-	 * Sanitize and normalize list of selected channels.
+	 * Sanitize textarea.
 	 *
-	 * @param mixed $maybe_channels Channels array from request.
-	 * @return array<string> Clean channel slugs.
+	 * @param string $value Input value.
+	 * @return string
 	 */
-	public static function sanitize_channels( $maybe_channels ) {
-		if ( ! is_array( $maybe_channels ) ) {
-			return array();
-		}
-
-		$clean = array();
-		foreach ( $maybe_channels as $ch ) {
-			$s = sanitize_text_field( (string) $ch );
-			if ( '' !== $s ) {
-				$clean[] = $s;
-			}
-		}
-
-		return $clean;
-	}
-
-	/**
-	 * Validate a custom hook action name.
-	 *
-	 * @param string $raw Raw action name.
-	 * @return string Sanitized action name.
-	 */
-	public static function validate_action_name( $raw ) {
-		$raw = sanitize_text_field( $raw );
-		return preg_replace( '/[^a-zA-Z0-9_\-\.]/', '_', $raw );
-	}
-
-	/**
-	 * Safely pull an integer from POST or GET.
-	 *
-	 * @param string $key Request key.
-	 * @return int Parsed integer.
-	 */
-	public static function request_int( $key ) {
-		if ( isset( $_POST[ $key ] ) ) {
-			return (int) wp_unslash( $_POST[ $key ] );
-		}
-		if ( isset( $_GET[ $key ] ) ) {
-			return (int) wp_unslash( $_GET[ $key ] );
-		}
-		return 0;
+	public static function sanitize_textarea( $value ) {
+		return sanitize_textarea_field( $value );
 	}
 }

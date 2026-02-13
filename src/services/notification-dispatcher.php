@@ -1,8 +1,8 @@
 <?php
 /**
- * Notification Dispatcher Service
+ * Notification Dispatcher
  *
- * Dispatches notifications to multiple channels.
+ * Dispatches notifications to channels.
  *
  * @package Notification_Hub
  * @since 2.0.0
@@ -15,27 +15,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Notification_Dispatcher Class
+ * Notification Dispatcher
  */
 class Notification_Dispatcher {
 
 	/**
-	 * Dispatch notification to multiple channels.
+	 * Dispatch notification.
 	 *
-	 * @param array $channels Channel slugs (e.g., 'email', 'telegram', 'slack').
-	 * @param array $payload  Notification payload.
+	 * @param int    $notification_id Notification ID.
+	 * @param string $type            Notification type.
 	 * @return void
 	 */
-	public function dispatch( array $channels, array $payload ) {
-		// TODO: Implement queue system.
-		// For now, just a stub to prevent fatal errors.
-
-		/**
-		 * Hook for extensibility.
-		 *
-		 * @param array $channels Channel slugs.
-		 * @param array $payload  Notification payload.
-		 */
-		do_action( 'nh_dispatch_notification', $channels, $payload );
+	public function dispatch( $notification_id, $type ) {
+		do_action( 'nh_dispatch_notification', $notification_id, $type );
 	}
 }
