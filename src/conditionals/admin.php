@@ -2,8 +2,6 @@
 /**
  * Admin Conditional
  *
- * Checks if current context is admin area.
- *
  * @package Notification_Hub
  * @since 2.0.0
  */
@@ -15,12 +13,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Admin Conditional Class
+ * Admin Conditional
  */
 class Admin implements Conditional {
 
 	/**
-	 * Check if we're in admin area.
+	 * Check if in admin.
 	 *
 	 * @return bool
 	 */

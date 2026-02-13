@@ -2,8 +2,6 @@
 /**
  * Contact Form 7 Active Conditional
  *
- * Checks if Contact Form 7 is active.
- *
  * @package Notification_Hub
  * @since 2.0.0
  */
@@ -15,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Contact_Form_7_Active Conditional Class
+ * Contact Form 7 Active Conditional
  */
 class Contact_Form_7_Active implements Conditional {
 

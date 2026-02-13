@@ -1,8 +1,6 @@
 <?php
 /**
- * Ajax Conditional
- *
- * Checks if current request is AJAX.
+ * AJAX Conditional
  *
  * @package Notification_Hub
  * @since 2.0.0
@@ -15,12 +13,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Ajax Conditional Class
+ * AJAX Conditional
  */
 class Ajax implements Conditional {
 
 	/**
-	 * Check if we're handling AJAX request.
+	 * Check if doing AJAX.
 	 *
 	 * @return bool
 	 */

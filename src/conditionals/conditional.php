@@ -2,8 +2,6 @@
 /**
  * Conditional Interface
  *
- * All conditionals must implement this interface.
- *
  * @package Notification_Hub
  * @since 2.0.0
  */
@@ -20,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 interface Conditional {
 
 	/**
-	 * Check if the condition is met.
+	 * Check if condition is met.
 	 *
 	 * @return bool
 	 */

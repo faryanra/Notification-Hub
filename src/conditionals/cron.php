@@ -1,6 +1,6 @@
 <?php
 /**
- * WooCommerce Active Conditional
+ * Cron Conditional
  *
  * @package Notification_Hub
  * @since 2.0.0
@@ -13,16 +13,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * WooCommerce Active Conditional
+ * Cron Conditional
  */
-class Woocommerce_Active implements Conditional {
+class Cron implements Conditional {
 
 	/**
-	 * Check if WooCommerce is active.
+	 * Check if doing cron.
 	 *
 	 * @return bool
 	 */
 	public function is_met() {
-		return class_exists( 'WooCommerce' );
+		return defined( 'DOING_CRON' ) && DOING_CRON;
 	}
 }

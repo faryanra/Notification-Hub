@@ -2,8 +2,6 @@
 /**
  * Premium Active Conditional
  *
- * Checks if Premium version is active.
- *
  * @package Notification_Hub
  * @since 2.0.0
  */
@@ -15,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Premium_Active Conditional Class
+ * Premium Active Conditional
  */
 class Premium_Active implements Conditional {
 
@@ -25,6 +23,6 @@ class Premium_Active implements Conditional {
 	 * @return bool
 	 */
 	public function is_met() {
-		return defined( 'NH_PRO_VERSION' );
+		return defined( 'NH_PRO_ACTIVE' ) && NH_PRO_ACTIVE;
 	}
 }
