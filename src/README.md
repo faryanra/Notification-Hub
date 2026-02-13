@@ -1,90 +1,112 @@
 # Notification Hub v2.0.0 - Yoast-Style Architecture
 
-**Complete refactor** based on **SOLID principles**, **Dependency Injection**, and **Yoast SEO architecture**.
+This directory contains the **new architecture** (v2.0.0) built with **SOLID principles** and **Dependency Injection**, inspired by Yoast SEO.
 
 ---
 
-## 📁 Project Structure
+## 📁 Directory Structure
 
 ```
 notification-hub/
-├── notification-hub.php                     # Main bootstrap
-├── uninstall.php                            # Cleanup
-├── readme.txt                               # WordPress.org
 │
-├── src/                                     # PSR-4: Notification_Hub\
-│   ├── main.php                             # DI Container
-│   ├── loader.php                           # Hook Manager
-│   ├── autoloader.php                       # PSR-4 Autoloader
-│   ├── bootstrap.php                        # Bootstrap
+├── notification-hub.php                         # Bootstrap فقط (هیچ logic نداره)
+├── uninstall.php                                # Cleanup on uninstall
+├── readme.txt                                   # WordPress.org readme
+├── readme.md                                    # GitHub readme
+│
+├── languages/                                   # Translation files
+│   ├── notification-hub.pot
+│   └── ...
+│
+├── src/                                         # PSR-4: Notification_Hub\\
 │   │
-│   ├── conditionals/                        # Conditional loading
-│   │   ├── conditional.php
-│   │   ├── admin.php
-│   │   ├── ajax.php
-│   │   ├── cron.php
-│   │   ├── woocommerce-active.php
-│   │   ├── contact-form-7-active.php
-│   │   └── premium-active.php
+│   ├── main.php                                 # 🎯 Container/DI (like Yoast's Main.php)
+│   ├── loader.php                               # 🎯 Hook Manager (Yoast's Loader)
+│   ├── autoloader.php                           # 🎯 PSR-4 Autoloader
+│   ├── bootstrap.php                            # 🎯 Bootstrap
 │   │
-│   ├── integrations/                        # Feature modules
-│   │   ├── integration-interface.php
-│   │   ├── admin/
-│   │   │   ├── menu-registration.php
-│   │   │   ├── settings-registration.php
-│   │   │   ├── admin-assets.php
-│   │   │   └── admin-bar-badge.php
-│   │   ├── events/
-│   │   │   └── wordpress/
-│   │   │       ├── comment-posted.php
-│   │   │       ├── post-status-changed.php
-│   │   │       ├── user-registered.php
-│   │   │       └── custom-hooks-loader.php
-│   │   ├── channels/
-│   │   │   └── email-sender.php
-│   │   ├── api/
-│   │   │   └── rest-routes-registration.php
-│   │   └── cron/
-│   │       ├── cleanup-old-notifications.php
-│   │       └── process-queue.php
+│   ├── conditionals/                            # 🎯 شرایط برای Integrations
+│   │   ├── conditional.php                      # Interface
+│   │   ├── admin.php                            # is_admin()
+│   │   ├── ajax.php                             # wp_doing_ajax()
+│   │   ├── cron.php                             # wp_doing_cron()
+│   │   ├── woocommerce-active.php               # class_exists('WooCommerce')
+│   │   ├── contact-form-7-active.php            # class_exists('WPCF7')
+│   │   └── premium-active.php                   # defined('NH_PRO_ACTIVE')
 │   │
-│   ├── routes/                              # Endpoint handlers
-│   │   ├── admin/
-│   │   │   ├── create-custom-hook.php
-│   │   │   ├── update-custom-hook.php
-│   │   │   ├── delete-custom-hook.php
-│   │   │   └── test-custom-hook.php
-│   │   └── api/
-│   │       ├── get-notifications.php
-│   │       └── webhook.php
+│   ├── integrations/                            # 🎯 هر Integration = یک ویژگی
+│   │   ├── integration-interface.php            # Interface اصلی
+│   │   │
+│   │   ├── admin/                               # 🔹 Admin UI Features
+│   │   │   ├── menu-registration.php            # فقط add_menu_page
+│   │   │   ├── settings-registration.php        # فقط register_setting
+│   │   │   ├── admin-assets.php                 # فقط wp_enqueue_*
+│   │   │   └── admin-bar-badge.php              # فقط admin bar badge
+│   │   │
+│   │   ├── events/                              # 🔹 Event Listeners (به تفکیک کامل)
+│   │   │   │
+│   │   │   ├── wordpress/                       # WordPress Core Events
+│   │   │   │   ├── comment-posted.php           # wp_insert_comment
+│   │   │   │   ├── post-status-changed.php      # transition_post_status
+│   │   │   │   ├── user-registered.php          # user_register
+│   │   │   │   └── custom-hooks-loader.php      # Custom hooks از DB
+│   │   │   │
+│   │   │   ├── woocommerce/                     # WooCommerce Events
+│   │   │   │   ├── order-created.php            # woocommerce_new_order
+│   │   │   │   └── low-stock-alert.php          # woocommerce_low_stock
+│   │   │   │
+│   │   │   └── contact-form-7/                  # CF7 Events
+│   │   │       └── form-submitted.php           # wpcf7_mail_sent
+│   │   │
+│   │   ├── channels/                            # 🔹 Notification Senders
+│   │   │   └── email-sender.php                 # ارسال Email (Free)
+│   │   │
+│   │   ├── api/                                 # 🔹 REST API
+│   │   │   └── rest-routes-registration.php     # ثبت REST routes
+│   │   │
+│   │   └── cron/                                # 🔹 Background Tasks
+│   │       ├── cleanup-old-notifications.php    # Daily cleanup
+│   │       └── process-queue.php                # صف ارسال
 │   │
-│   ├── repositories/                        # Database CRUD
-│   │   ├── notifications.php
-│   │   └── custom-hooks.php
+│   ├── routes/                                  # 🎯 Endpoint Handlers
+│   │   │
+│   │   ├── admin/                               # Admin-post handlers
+│   │   │   ├── create-custom-hook.php           # AJAX: add hook
+│   │   │   ├── update-custom-hook.php           # AJAX: edit hook
+│   │   │   ├── delete-custom-hook.php           # AJAX: delete hook
+│   │   │   └── test-custom-hook.php             # AJAX: test hook
+│   │   │
+│   │   └── api/                                 # REST API handlers
+│   │       ├── get-notifications.php            # GET /notifications
+│   │       └── webhook.php                      # POST /webhook
 │   │
-│   ├── presenters/                          # View layer
+│   ├── repositories/                            # 🎯 Database Layer (CRUD only)
+│   │   ├── notifications.php                    # Notifications CRUD
+│   │   └── custom-hooks.php                     # Custom Hooks CRUD
+│   │
+│   ├── presenters/                              # 🎯 View/Output Layer
 │   │   └── admin/
-│   │       ├── dashboard-page.php
-│   │       ├── hooks-page.php
-│   │       └── settings-page.php
+│   │       ├── dashboard-page.php               # Dashboard page renderer
+│   │       ├── settings-page.php                # Settings page renderer
+│   │       └── hooks-page.php                   # Hooks page renderer
 │   │
-│   ├── services/                            # Business logic
-│   │   └── notification-dispatcher.php
+│   ├── services/                                # 🎯 Business Logic
+│   │   └── notification-dispatcher.php          # توزیع notification به channels
 │   │
-│   ├── helpers/                             # Utilities
-│   │   ├── options.php
-│   │   ├── date.php
-│   │   ├── human-time.php
-│   │   └── security.php
+│   ├── helpers/                                 # 🎯 Utilities
+│   │   ├── options.php                          # get/set options با cache
+│   │   ├── date.php                             # Date utilities
+│   │   ├── human-time.php                       # Human-readable time
+│   │   └── security.php                         # Nonce, sanitization
 │   │
-│   ├── initializers/                        # One-time setup
-│   │   └── database-migration.php
+│   ├── initializers/                            # 🎯 One-time Setup
+│   │   └── database-migration.php               # Schema + migrations
 │   │
-│   └── premium/                             # Premium features
+│   └── premium/                                 # 🎯 Premium-Only Code
 │       ├── integrations/
 │       │   └── channels/
-│       │       ├── telegram-sender.php
-│       │       └── slack-sender.php
+│       │       ├── telegram-sender.php          # Telegram sender
+│       │       └── slack-sender.php             # Slack sender
 │       └── license/
 │           └── bootstrap.php
 │
@@ -113,80 +135,81 @@ notification-hub/
 
 ---
 
-## 🎯 Key Architecture Principles
+## 🎯 Key Principles
 
-### 1. **Dependency Injection**
-- All dependencies injected via constructor
-- No `new Class()` inside classes
-- Managed by `Main` DI Container
+### 1. **Single Responsibility Principle**
+- Each class has **one job**.
+- Example: `Menu_Registration` only registers menus.
 
-### 2. **Single Responsibility**
-- Each class has **one job**
-- Example: `Menu_Registration` only registers admin menus
+### 2. **Dependency Injection**
+- No `new Class()` inside classes.
+- All dependencies injected via constructor.
+- Managed by `Main` DI Container.
 
-### 3. **Conditional Loading**
-- Integrations load **only when conditions are met**
-- Example: Admin integrations load only when `is_admin()` is true
+### 3. **Open/Closed Principle**
+- Add new integrations **without modifying existing code**.
+- Just create a new class implementing `Integration_Interface`.
 
 ### 4. **Interface Segregation**
-- `Integration_Interface`: only `register()` method
-- `Conditional`: only `is_met()` method
+- `Integration_Interface` has only one method: `register()`.
+- `Conditional` interface has only one method: `is_met()`.
 
-### 5. **Open/Closed Principle**
-- Add new features **without modifying existing code**
-- Just create a new Integration class
+### 5. **Conditional Loading**
+- Integrations load only when conditions are met.
+- Example: Admin integrations load only when `is_admin()` is true.
 
 ---
 
 ## 🚀 How It Works
 
-### Step 1: Bootstrap (`notification-hub.php`)
+### 1. Bootstrap (`notification-hub.php`)
 ```php
 require_once plugin_dir_path( __FILE__ ) . 'src/bootstrap.php';
 ```
 
-### Step 2: DI Container (`src/main.php`)
+### 2. DI Container (`src/main.php`)
 ```php
+// Registers all services
 $this->services['notifications_repo'] = function() {
     return new Notifications();
 };
 ```
 
-### Step 3: Hook Manager (`src/loader.php`)
+### 3. Hook Manager (`src/loader.php`)
 ```php
+// Registers integrations with conditionals
 $this->integrations[] = array(
     'integration' => new Menu_Registration( ... ),
     'conditionals' => array( Admin::class ),
 );
 ```
 
-### Step 4: Integration Example
+### 4. Integration Example
 ```php
 class Comment_Posted implements Integration_Interface {
     public function __construct(
         Notifications $repo,
         Notification_Dispatcher $dispatcher
     ) {
-        $this->repo       = $repo;
-        $this->dispatcher = $dispatcher;
+        // Dependencies injected
     }
 
     public function register() {
-        add_action( 'wp_insert_comment', array( $this, 'handle' ), 10, 2 );
+        add_action( 'wp_insert_comment', array( $this, 'on_comment' ), 10, 2 );
     }
 }
 ```
 
 ---
 
-## ➕ Adding New Features
+## 📦 Adding New Integrations
 
 ### Example: Add Telegram Channel
 
-**1. Create integration:**
+1. **Create integration:**
 ```php
 // src/integrations/channels/telegram-sender.php
-namespace Notification_Hub\Integrations\Channels;
+namespace Notification_Hub\\Integrations\\Channels;
 
 class Telegram_Sender implements Integration_Interface {
     public function register() {
@@ -199,7 +222,7 @@ class Telegram_Sender implements Integration_Interface {
 }
 ```
 
-**2. Register in Loader:**
+2. **Register in Loader:**
 ```php
 // src/loader.php
 $this->integrations[] = array(
@@ -214,10 +237,10 @@ Done! 🎉
 
 ## 🧪 Testing
 
-- All classes are **unit testable**
+All classes are **unit testable** because:
 - No global state
 - All dependencies injected
-- Easy to mock
+- Interfaces for easy mocking
 
 ---
 
@@ -231,7 +254,7 @@ Done! 🎉
 
 ## 🔄 Backward Compatibility
 
-New architecture **coexists** with legacy code for seamless migration.
+The new architecture **coexists** with legacy code (`core/`, `modules/`) for backward compatibility. No breaking changes.
 
 ---
 
