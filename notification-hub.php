@@ -3,213 +3,75 @@
  * Plugin Name: Notification Hub
  * Plugin URI: https://www.hellocode.ir/
  * Description: Central hub for collecting and managing WordPress notifications (Telegram, Email, Slack, WooCommerce, CF7).
- * Version: 1.7.1
+ * Version: 2.0.0
  * Author: Faryan Rajabi (HelloCode)
  * Author URI: https://www.linkedin.com/in/reza-rajabi-jorshari/
  * License: GPLv3 or later
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * Text Domain: notification-hub
  * Domain Path: /languages
+ * Requires at least: 5.9
+ * Requires PHP: 7.4
  *
  * @package Notification_Hub
- * @since 1.6.2
+ * @since 2.0.0
  */
 
-if (!defined('ABSPATH')) {
-    exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
 
-/**
- * Plugin constants.
- *
- * @since 1.6.2
- */
-define('NH_PLUGIN_FILE', __FILE__);
-define('NH_PLUGIN_DIR', plugin_dir_path(__FILE__));
-define('NH_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('NH_VERSION', '1.7.1');
+// Plugin constants
+define( 'NH_VERSION', '2.0.0' );
+define( 'NH_PLUGIN_FILE', __FILE__ );
+define( 'NH_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+define( 'NH_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+
+// Load autoloader
+require_once NH_PLUGIN_DIR . 'src/core/autoloader.php';
 
 /**
- * Load plugin textdomain.
+ * Initialize plugin
  *
- * @since 1.6.2
+ * @since 2.0.0
  * @return void
  */
-function nh_load_textdomain(): void {
-    load_plugin_textdomain('notification-hub', false, dirname(plugin_basename(__FILE__)) . '/languages');
+function nh_init_plugin() {
+	load_plugin_textdomain( 'notification-hub', false, dirname( plugin_basename( NH_PLUGIN_FILE ) ) . '/languages' );
+
+	$bootstrap = new \Notification_Hub\Core\Bootstrap();
+	$bootstrap->init();
 }
-add_action('plugins_loaded', 'nh_load_textdomain', 1);
+add_action( 'plugins_loaded', 'nh_init_plugin', 10 );
 
 /**
- * Safe require helper.
+ * Activation hook
  *
- * @since 1.6.2
- *
- * @param string $path Absolute file path.
- * @return bool True when loaded, false otherwise.
- */
-function nh_require(string $path): bool {
-    if (file_exists($path)) {
-        require_once $path;
-        return true;
-    }
-
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-        error_log(sprintf('Notification Hub: Missing file %s', $path));
-    }
-
-    return false;
-}
-
-/**
- * Core includes (order matters).
- *
- * @since 1.6.2
- */
-nh_require(NH_PLUGIN_DIR . 'core/class-nh-core-registry.php');
-nh_require(NH_PLUGIN_DIR . 'core/class-nh-helpers.php');
-nh_require(NH_PLUGIN_DIR . 'core/class-nh-human.php');
-nh_require(NH_PLUGIN_DIR . 'core/class-nh-security.php');
-nh_require(NH_PLUGIN_DIR . 'core/class-nh-database.php');
-nh_require(NH_PLUGIN_DIR . 'core/class-nh-queue.php');
-nh_require(NH_PLUGIN_DIR . 'core/class-nh-loader.php');
-nh_require(NH_PLUGIN_DIR . 'core/class-nh-template.php');
-
-/**
- * Modules / Admin.
- *
- * NOTE: License is Premium-only and is loaded conditionally by NH_Loader
- * when the Premium addon is active (NH_PRO_ACTIVE).
- *
- * @since 1.6.2
- */
-nh_require(NH_PLUGIN_DIR . 'modules/class-nh-admin-ui.php');
-nh_require(NH_PLUGIN_DIR . 'modules/class-nh-dashboard.php');
-nh_require(NH_PLUGIN_DIR . 'modules/dashboard/class-nh-notifications-table.php');
-nh_require(NH_PLUGIN_DIR . 'modules/dashboard/class-nh-dashboard-actions.php');
-nh_require(NH_PLUGIN_DIR . 'modules/class-nh-custom-hooks.php');
-nh_require(NH_PLUGIN_DIR . 'modules/class-nh-notifier.php');
-nh_require(NH_PLUGIN_DIR . 'modules/class-nh-admin-actions.php');
-
-/**
- * Integrations.
- *
- * @since 1.6.2
- */
-nh_require(NH_PLUGIN_DIR . 'integrations/class-nh-wp-core.php');
-nh_require(NH_PLUGIN_DIR . 'integrations/class-nh-woocommerce.php');
-nh_require(NH_PLUGIN_DIR . 'integrations/class-nh-cf7.php');
-nh_require(NH_PLUGIN_DIR . 'integrations/class-nh-email.php');
-
-/**
- * API layer.
- *
- * @since 1.6.2
- */
-nh_require(NH_PLUGIN_DIR . 'api/class-nh-restapi.php');
-nh_require(NH_PLUGIN_DIR . 'api/class-nh-webhook.php');
-
-/**
- * Anti-tamper (light).
- *
- * @since 1.6.2
+ * @since 2.0.0
  * @return void
  */
-function nh_security_boot(): void {
-    if (class_exists('NH_Security')) {
-        NH_Security::anti_tamper_light();
-    }
+function nh_activate_plugin() {
+	require_once NH_PLUGIN_DIR . 'src/core/autoloader.php';
+
+	\Notification_Hub\Initializers\Database_Migration::run();
+	\Notification_Hub\Initializers\Queue_Migration::run();
+	\Notification_Hub\Initializers\Capabilities::run();
+	\Notification_Hub\Initializers\Cron_Schedules::run();
+
+	flush_rewrite_rules();
 }
-add_action('plugins_loaded', 'nh_security_boot', 2);
+register_activation_hook( NH_PLUGIN_FILE, 'nh_activate_plugin' );
 
 /**
- * Plugin activation callback.
+ * Deactivation hook
  *
- * @since 1.6.2
+ * @since 2.0.0
  * @return void
  */
-function nh_activate(): void {
-    if (class_exists('NH_Database')) {
-        (new NH_Database())->maybe_upgrade_database();
-    }
+function nh_deactivate_plugin() {
+	wp_clear_scheduled_hook( 'nh_cron_cleanup' );
+	wp_clear_scheduled_hook( 'nh_process_queue' );
 
-    if (!wp_next_scheduled('nh_cron_cleanup')) {
-        wp_schedule_event(time() + 3600, 'daily', 'nh_cron_cleanup');
-    }
+	flush_rewrite_rules();
 }
-
-/**
- * Plugin deactivation callback.
- *
- * @since 1.6.2
- * @return void
- */
-function nh_deactivate(): void {
-    $timestamp = wp_next_scheduled('nh_cron_cleanup');
-    if (!$timestamp) {
-        return;
-    }
-
-    // WP requires (timestamp, hook, args). Args must match the scheduled event.
-    // We schedule with no args.
-    wp_unschedule_event($timestamp, 'nh_cron_cleanup', []);
-
-    // Extra safety: also clear any stray scheduled events for this hook.
-    wp_clear_scheduled_hook('nh_cron_cleanup');
-}
-
-register_activation_hook(NH_PLUGIN_FILE, 'nh_activate');
-register_deactivation_hook(NH_PLUGIN_FILE, 'nh_deactivate');
-
-/**
- * Cron cleanup task.
- *
- * @since 1.6.2
- * @return void
- */
-function nh_cron_cleanup_handler(): void {
-    if (!class_exists('NH_Database')) {
-        return;
-    }
-
-    (new NH_Database())->cleanup_old();
-}
-add_action('nh_cron_cleanup', 'nh_cron_cleanup_handler');
-
-/**
- * Boot plugin services.
- *
- * @since 1.6.2
- * @return void
- */
-function nh_boot(): void {
-    if (!class_exists('NH_Core_Registry') || !class_exists('NH_Loader')) {
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-            error_log('Notification Hub: Boot failed (Registry/Loader missing).');
-        }
-        return;
-    }
-
-    $r = NH_Core_Registry::get();
-
-    if (class_exists('NH_Database')) {
-        $r->set('db', new NH_Database());
-    }
-
-    if (class_exists('NH_Security')) {
-        $r->set('security', new NH_Security());
-    }
-
-    if (class_exists('NH_Helpers')) {
-        $r->set('helpers', new NH_Helpers());
-    }
-
-    if (class_exists('NH_Notifier')) {
-        $r->set('notifier', new NH_Notifier($r));
-    }
-
-    (new NH_Loader($r))->boot();
-}
-add_action('plugins_loaded', 'nh_boot', 5);
+register_deactivation_hook( NH_PLUGIN_FILE, 'nh_deactivate_plugin' );
