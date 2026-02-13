@@ -1,0 +1,29 @@
+{
+  "name": "faryanra/notification-hub",
+  "description": "Unified notification system for WordPress",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "authors": [
+    {
+      "name": "FaryaN",
+      "email": "faryan@example.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.4"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.0",
+    "wp-coding-standards/wpcs": "^3.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Notification_Hub\\": "src/"
+    }
+  },
+  "scripts": {
+    "phpcs": "phpcs --standard=WordPress src/",
+    "phpcbf": "phpcbf --standard=WordPress src/",
+    "test": "phpunit"
+  }
+}
