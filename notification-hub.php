@@ -3,7 +3,7 @@
  * Plugin Name: Notification Hub
  * Plugin URI: https://www.hellocode.ir/
  * Description: Central hub for collecting and managing WordPress notifications (Telegram, Email, Slack, WooCommerce, CF7).
- * Version: 1.7.1
+ * Version: 2.0.0
  * Author: Faryan Rajabi (HelloCode)
  * Author URI: https://www.linkedin.com/in/reza-rajabi-jorshari/
  * License: GPLv3 or later
@@ -27,7 +27,7 @@ if (!defined('ABSPATH')) {
 define('NH_PLUGIN_FILE', __FILE__);
 define('NH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('NH_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('NH_VERSION', '1.7.1');
+define('NH_VERSION', '2.0.0');
 
 /**
  * Load plugin textdomain.
@@ -61,6 +61,21 @@ function nh_require(string $path): bool {
 
     return false;
 }
+
+/**
+ * ============================================================
+ * NEW ARCHITECTURE (v2.0.0) - Yoast-style with DI
+ * ============================================================
+ */
+if (file_exists(NH_PLUGIN_DIR . 'src/bootstrap.php')) {
+    require_once NH_PLUGIN_DIR . 'src/bootstrap.php';
+}
+
+/**
+ * ============================================================
+ * LEGACY CODE (v1.x) - Keep for backward compatibility
+ * ============================================================
+ */
 
 /**
  * Core includes (order matters).
@@ -130,6 +145,12 @@ add_action('plugins_loaded', 'nh_security_boot', 2);
  * @return void
  */
 function nh_activate(): void {
+    // New architecture: Database migration.
+    if (class_exists('Notification_Hub\\Initializers\\Database_Migration')) {
+        \Notification_Hub\Initializers\Database_Migration::run();
+    }
+
+    // Legacy: Database upgrade.
     if (class_exists('NH_Database')) {
         (new NH_Database())->maybe_upgrade_database();
     }
@@ -178,7 +199,7 @@ function nh_cron_cleanup_handler(): void {
 add_action('nh_cron_cleanup', 'nh_cron_cleanup_handler');
 
 /**
- * Boot plugin services.
+ * Boot plugin services (LEGACY).
  *
  * @since 1.6.2
  * @return void
