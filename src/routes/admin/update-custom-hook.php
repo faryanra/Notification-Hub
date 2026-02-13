@@ -2,23 +2,21 @@
 /**
  * Update Custom Hook Route
  *
- * admin_post handler for updating custom hooks.
- *
  * @package Notification_Hub
  * @since 2.0.0
  */
 
 namespace Notification_Hub\Routes\Admin;
 
-use Notification_Hub\Helpers\Security;
 use Notification_Hub\Repositories\Custom_Hooks;
+use Notification_Hub\Helpers\Security;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * Update_Custom_Hook Class
+ * Update Custom Hook
  */
 class Update_Custom_Hook {
 
@@ -27,24 +25,15 @@ class Update_Custom_Hook {
 	 *
 	 * @var Custom_Hooks
 	 */
-	private $hooks_repo;
+	private $repo;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param Custom_Hooks $hooks_repo Custom hooks repository.
+	 * @param Custom_Hooks $repo Custom hooks repository.
 	 */
-	public function __construct( Custom_Hooks $hooks_repo ) {
-		$this->hooks_repo = $hooks_repo;
-	}
-
-	/**
-	 * Register hooks.
-	 *
-	 * @return void
-	 */
-	public function register() {
-		add_action( 'admin_post_nh_update_hook', array( $this, 'handle' ) );
+	public function __construct( Custom_Hooks $repo ) {
+		$this->repo = $repo;
 	}
 
 	/**
@@ -53,41 +42,38 @@ class Update_Custom_Hook {
 	 * @return void
 	 */
 	public function handle() {
-		Security::ensure_cap();
-
-		$id = isset( $_POST['id'] ) ? absint( wp_unslash( $_POST['id'] ) ) : 0;
-		Security::verify_nonce( 'nh_update_hook', $id );
-
-		if ( $id <= 0 ) {
-			wp_safe_redirect( add_query_arg( array( 'page' => 'nh-hooks', 'nh_err' => 1 ), admin_url( 'admin.php' ) ) );
-			exit;
+		if ( ! Security::verify_nonce( $_POST['nonce'] ?? '', 'nh_admin_nonce' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid nonce', 'notification-hub' ) ) );
 		}
 
-		$title    = isset( $_POST['title'] ) ? sanitize_text_field( wp_unslash( $_POST['title'] ) ) : '';
-		$action   = isset( $_POST['action_name'] ) ? Security::validate_action_name( wp_unslash( $_POST['action_name'] ) ) : '';
-		$channels = isset( $_POST['channels'] ) ? Security::sanitize_channels( wp_unslash( $_POST['channels'] ) ) : array();
-
-		if ( '' === $title || '' === $action ) {
-			wp_safe_redirect( add_query_arg( array( 'page' => 'nh-hooks', 'nh_err' => 1, 'edit' => $id ), admin_url( 'admin.php' ) ) );
-			exit;
+		if ( ! Security::can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied', 'notification-hub' ) ) );
 		}
 
-		// Update.
-		$result = $this->hooks_repo->update(
+		$id        = absint( $_POST['id'] ?? 0 );
+		$hook_name = Security::sanitize_text( $_POST['hook_name'] ?? '' );
+		$title     = Security::sanitize_text( $_POST['title'] ?? '' );
+		$message   = Security::sanitize_textarea( $_POST['message'] ?? '' );
+		$status    = Security::sanitize_text( $_POST['status'] ?? 'active' );
+
+		if ( ! $id ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid hook ID', 'notification-hub' ) ) );
+		}
+
+		$result = $this->repo->update(
 			$id,
 			array(
-				'title'       => $title,
-				'action_name' => $action,
-				'channels'    => $channels,
+				'hook_name' => $hook_name,
+				'title'     => $title,
+				'message'   => $message,
+				'status'    => $status,
 			)
 		);
 
-		if ( false === $result ) {
-			wp_safe_redirect( add_query_arg( array( 'page' => 'nh-hooks', 'nh_dup' => 1, 'edit' => $id ), admin_url( 'admin.php' ) ) );
-			exit;
+		if ( $result ) {
+			wp_send_json_success( array( 'message' => __( 'Custom hook updated successfully', 'notification-hub' ) ) );
+		} else {
+			wp_send_json_error( array( 'message' => __( 'Failed to update custom hook', 'notification-hub' ) ) );
 		}
-
-		wp_safe_redirect( add_query_arg( array( 'page' => 'nh-hooks', 'hook_updated' => 1 ), admin_url( 'admin.php' ) ) );
-		exit;
 	}
 }

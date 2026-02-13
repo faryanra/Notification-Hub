@@ -2,23 +2,21 @@
 /**
  * Test Custom Hook Route
  *
- * admin_post handler for testing custom hooks.
- *
  * @package Notification_Hub
  * @since 2.0.0
  */
 
 namespace Notification_Hub\Routes\Admin;
 
-use Notification_Hub\Helpers\Security;
 use Notification_Hub\Repositories\Custom_Hooks;
+use Notification_Hub\Helpers\Security;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * Test_Custom_Hook Class
+ * Test Custom Hook
  */
 class Test_Custom_Hook {
 
@@ -27,24 +25,15 @@ class Test_Custom_Hook {
 	 *
 	 * @var Custom_Hooks
 	 */
-	private $hooks_repo;
+	private $repo;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param Custom_Hooks $hooks_repo Custom hooks repository.
+	 * @param Custom_Hooks $repo Custom hooks repository.
 	 */
-	public function __construct( Custom_Hooks $hooks_repo ) {
-		$this->hooks_repo = $hooks_repo;
-	}
-
-	/**
-	 * Register hooks.
-	 *
-	 * @return void
-	 */
-	public function register() {
-		add_action( 'admin_post_nh_test_hook', array( $this, 'handle' ) );
+	public function __construct( Custom_Hooks $repo ) {
+		$this->repo = $repo;
 	}
 
 	/**
@@ -53,39 +42,36 @@ class Test_Custom_Hook {
 	 * @return void
 	 */
 	public function handle() {
-		Security::ensure_cap();
-
-		$id = isset( $_GET['id'] ) ? absint( wp_unslash( $_GET['id'] ) ) : 0;
-		Security::verify_nonce( 'nh_test_hook', $id );
-
-		$hook = $this->hooks_repo->get_by_id( $id );
-
-		if ( ! $hook ) {
-			wp_safe_redirect( add_query_arg( array( 'page' => 'nh-hooks', 'notfound' => 1 ), admin_url( 'admin.php' ) ) );
-			exit;
+		if ( ! Security::verify_nonce( $_POST['nonce'] ?? '', 'nh_admin_nonce' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid nonce', 'notification-hub' ) ) );
 		}
 
-		// Fire the custom hook.
-		do_action(
-			(string) $hook['action_name'],
+		if ( ! Security::can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied', 'notification-hub' ) ) );
+		}
+
+		$id = absint( $_POST['id'] ?? 0 );
+
+		if ( ! $id ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid hook ID', 'notification-hub' ) ) );
+		}
+
+		$hook = $this->repo->get( $id );
+
+		if ( ! $hook ) {
+			wp_send_json_error( array( 'message' => __( 'Hook not found', 'notification-hub' ) ) );
+		}
+
+		// Trigger the hook
+		do_action( $hook->hook_name );
+
+		wp_send_json_success(
 			array(
-				'test'    => true,
-				'source'  => 'custom_hook_test',
-				'title'   => sprintf(
-					/* translators: %s: hook action name */
-					esc_html__( 'Test: %s', 'notification-hub' ),
-					$hook['title']
-				),
 				'message' => sprintf(
-					/* translators: %s: hook action name */
-					esc_html__( 'This is a test notification for hook: %s', 'notification-hub' ),
-					(string) $hook['action_name']
+					__( 'Hook "%s" triggered successfully', 'notification-hub' ),
+					$hook->hook_name
 				),
-				'context' => array( 'hook_id' => (int) $hook['id'] ),
 			)
 		);
-
-		wp_safe_redirect( add_query_arg( array( 'page' => 'nh-hooks', 'hook_tested' => 1 ), admin_url( 'admin.php' ) ) );
-		exit;
 	}
 }

@@ -1,8 +1,8 @@
 <?php
 /**
- * Routes Registration Integration
+ * Routes Registration
  *
- * Registers admin_post route handlers.
+ * Registers AJAX routes.
  *
  * @package Notification_Hub
  * @since 2.0.0
@@ -21,24 +21,45 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Routes_Registration Class
+ * Routes Registration
  */
 class Routes_Registration implements Integration_Interface {
 
 	/**
-	 * Route handlers.
+	 * Create hook route.
 	 *
-	 * @var array
+	 * @var Create_Custom_Hook
 	 */
-	private $routes;
+	private $create_hook;
+
+	/**
+	 * Update hook route.
+	 *
+	 * @var Update_Custom_Hook
+	 */
+	private $update_hook;
+
+	/**
+	 * Delete hook route.
+	 *
+	 * @var Delete_Custom_Hook
+	 */
+	private $delete_hook;
+
+	/**
+	 * Test hook route.
+	 *
+	 * @var Test_Custom_Hook
+	 */
+	private $test_hook;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param Create_Custom_Hook $create_hook Create hook handler.
-	 * @param Update_Custom_Hook $update_hook Update hook handler.
-	 * @param Delete_Custom_Hook $delete_hook Delete hook handler.
-	 * @param Test_Custom_Hook   $test_hook   Test hook handler.
+	 * @param Create_Custom_Hook $create_hook Create route.
+	 * @param Update_Custom_Hook $update_hook Update route.
+	 * @param Delete_Custom_Hook $delete_hook Delete route.
+	 * @param Test_Custom_Hook   $test_hook   Test route.
 	 */
 	public function __construct(
 		Create_Custom_Hook $create_hook,
@@ -46,12 +67,10 @@ class Routes_Registration implements Integration_Interface {
 		Delete_Custom_Hook $delete_hook,
 		Test_Custom_Hook $test_hook
 	) {
-		$this->routes = array(
-			$create_hook,
-			$update_hook,
-			$delete_hook,
-			$test_hook,
-		);
+		$this->create_hook = $create_hook;
+		$this->update_hook = $update_hook;
+		$this->delete_hook = $delete_hook;
+		$this->test_hook   = $test_hook;
 	}
 
 	/**
@@ -60,8 +79,9 @@ class Routes_Registration implements Integration_Interface {
 	 * @return void
 	 */
 	public function register() {
-		foreach ( $this->routes as $route ) {
-			$route->register();
-		}
+		add_action( 'wp_ajax_nh_create_hook', array( $this->create_hook, 'handle' ) );
+		add_action( 'wp_ajax_nh_update_hook', array( $this->update_hook, 'handle' ) );
+		add_action( 'wp_ajax_nh_delete_hook', array( $this->delete_hook, 'handle' ) );
+		add_action( 'wp_ajax_nh_test_hook', array( $this->test_hook, 'handle' ) );
 	}
 }

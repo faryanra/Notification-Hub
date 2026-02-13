@@ -2,23 +2,21 @@
 /**
  * Delete Custom Hook Route
  *
- * admin_post handler for deleting custom hooks.
- *
  * @package Notification_Hub
  * @since 2.0.0
  */
 
 namespace Notification_Hub\Routes\Admin;
 
-use Notification_Hub\Helpers\Security;
 use Notification_Hub\Repositories\Custom_Hooks;
+use Notification_Hub\Helpers\Security;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * Delete_Custom_Hook Class
+ * Delete Custom Hook
  */
 class Delete_Custom_Hook {
 
@@ -27,24 +25,15 @@ class Delete_Custom_Hook {
 	 *
 	 * @var Custom_Hooks
 	 */
-	private $hooks_repo;
+	private $repo;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param Custom_Hooks $hooks_repo Custom hooks repository.
+	 * @param Custom_Hooks $repo Custom hooks repository.
 	 */
-	public function __construct( Custom_Hooks $hooks_repo ) {
-		$this->hooks_repo = $hooks_repo;
-	}
-
-	/**
-	 * Register hooks.
-	 *
-	 * @return void
-	 */
-	public function register() {
-		add_action( 'admin_post_nh_delete_hook', array( $this, 'handle' ) );
+	public function __construct( Custom_Hooks $repo ) {
+		$this->repo = $repo;
 	}
 
 	/**
@@ -53,19 +42,26 @@ class Delete_Custom_Hook {
 	 * @return void
 	 */
 	public function handle() {
-		Security::ensure_cap();
-
-		$id = isset( $_GET['id'] ) ? absint( wp_unslash( $_GET['id'] ) ) : 0;
-		Security::verify_nonce( 'nh_delete_hook', $id );
-
-		if ( $id <= 0 ) {
-			wp_safe_redirect( add_query_arg( array( 'page' => 'nh-hooks', 'nh_err' => 1 ), admin_url( 'admin.php' ) ) );
-			exit;
+		if ( ! Security::verify_nonce( $_POST['nonce'] ?? '', 'nh_admin_nonce' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid nonce', 'notification-hub' ) ) );
 		}
 
-		$this->hooks_repo->delete( $id );
+		if ( ! Security::can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied', 'notification-hub' ) ) );
+		}
 
-		wp_safe_redirect( add_query_arg( array( 'page' => 'nh-hooks', 'hook_deleted' => 1 ), admin_url( 'admin.php' ) ) );
-		exit;
+		$id = absint( $_POST['id'] ?? 0 );
+
+		if ( ! $id ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid hook ID', 'notification-hub' ) ) );
+		}
+
+		$result = $this->repo->delete( $id );
+
+		if ( $result ) {
+			wp_send_json_success( array( 'message' => __( 'Custom hook deleted successfully', 'notification-hub' ) ) );
+		} else {
+			wp_send_json_error( array( 'message' => __( 'Failed to delete custom hook', 'notification-hub' ) ) );
+		}
 	}
 }
