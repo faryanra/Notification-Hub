@@ -1,9 +1,9 @@
 <?php
 /**
- * Hook Manager (Loader)
+ * Hook Manager (Integration Loader)
  *
- * Registers integrations with conditional loading support.
- * Inspired by Yoast SEO's Integration_Manager.
+ * Registers and loads integrations with conditional support.
+ * Inspired by Yoast SEO's Loader.
  *
  * @package Notification_Hub
  * @since 2.0.0
@@ -11,22 +11,16 @@
 
 namespace Notification_Hub;
 
-use Notification_Hub\Conditionals\Admin;
-use Notification_Hub\Conditionals\Ajax;
 use Notification_Hub\Integrations\Admin\Menu_Registration;
 use Notification_Hub\Integrations\Admin\Settings_Registration;
 use Notification_Hub\Integrations\Admin\Admin_Assets;
 use Notification_Hub\Integrations\Admin\Admin_Bar_Badge;
-use Notification_Hub\Integrations\Admin\Routes_Registration;
 use Notification_Hub\Integrations\Events\WordPress\Comment_Posted;
 use Notification_Hub\Integrations\Events\WordPress\Post_Status_Changed;
 use Notification_Hub\Integrations\Events\WordPress\User_Registered;
 use Notification_Hub\Integrations\Events\WordPress\Custom_Hooks_Loader;
 use Notification_Hub\Integrations\Channels\Email_Sender;
-use Notification_Hub\Routes\Admin\Create_Custom_Hook;
-use Notification_Hub\Routes\Admin\Update_Custom_Hook;
-use Notification_Hub\Routes\Admin\Delete_Custom_Hook;
-use Notification_Hub\Routes\Admin\Test_Custom_Hook;
+use Notification_Hub\Conditionals\Admin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -45,7 +39,7 @@ class Loader {
 	private $container;
 
 	/**
-	 * Integrations to register.
+	 * Integrations to load.
 	 *
 	 * @var array
 	 */
@@ -67,7 +61,7 @@ class Loader {
 	 * @return void
 	 */
 	private function register_integrations() {
-		// Admin integrations (only load in admin).
+		// Admin integrations (load only in admin)
 		$this->integrations[] = array(
 			'integration' => new Menu_Registration(
 				$this->container->get( 'dashboard_presenter' ),
@@ -92,22 +86,10 @@ class Loader {
 			'conditionals' => array( Admin::class ),
 		);
 
-		// Route handlers (admin + ajax).
-		$hooks_repo = $this->container->get( 'custom_hooks_repo' );
-
-		$this->integrations[] = array(
-			'integration'  => new Routes_Registration(
-				new Create_Custom_Hook( $hooks_repo ),
-				new Update_Custom_Hook( $hooks_repo ),
-				new Delete_Custom_Hook( $hooks_repo ),
-				new Test_Custom_Hook( $hooks_repo )
-			),
-			'conditionals' => array( Admin::class ),
-		);
-
-		// Event listeners (always load).
+		// Event listeners (always load)
 		$notifications_repo = $this->container->get( 'notifications_repo' );
 		$dispatcher        = $this->container->get( 'notification_dispatcher' );
+		$hooks_repo        = $this->container->get( 'custom_hooks_repo' );
 
 		$this->integrations[] = array(
 			'integration'  => new Comment_Posted( $notifications_repo, $dispatcher ),
@@ -129,7 +111,7 @@ class Loader {
 			'conditionals' => array(),
 		);
 
-		// Channels (always load).
+		// Channels (always load)
 		$this->integrations[] = array(
 			'integration'  => new Email_Sender(),
 			'conditionals' => array(),
@@ -146,12 +128,10 @@ class Loader {
 			$integration  = $item['integration'];
 			$conditionals = isset( $item['conditionals'] ) ? $item['conditionals'] : array();
 
-			// Check conditionals.
 			if ( ! $this->should_load( $conditionals ) ) {
 				continue;
 			}
 
-			// Register integration.
 			if ( method_exists( $integration, 'register' ) ) {
 				$integration->register();
 			}
@@ -159,9 +139,9 @@ class Loader {
 	}
 
 	/**
-	 * Check if integration should be loaded based on conditionals.
+	 * Check if integration should load.
 	 *
-	 * @param array $conditionals Array of conditional class names.
+	 * @param array $conditionals Conditional class names.
 	 * @return bool
 	 */
 	private function should_load( array $conditionals ) {
