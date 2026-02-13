@@ -1,0 +1,160 @@
+/**
+ * Notification Hub - Admin Global Styles
+ *
+ * @package Notification_Hub
+ * @since 2.0.0
+ */
+
+/* Dashboard Stats */
+.nh-stats {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 20px;
+	margin: 20px 0;
+}
+
+.nh-stat-card {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	padding: 20px;
+	text-align: center;
+}
+
+.nh-stat-card h3 {
+	margin: 0 0 10px;
+	font-size: 14px;
+	color: #646970;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.nh-stat-number {
+	font-size: 32px;
+	font-weight: bold;
+	margin: 0;
+	color: #2271b1;
+}
+
+/* Notifications List */
+.nh-notifications-list {
+	margin-top: 30px;
+}
+
+.nh-notifications-list h2 {
+	font-size: 18px;
+	margin-bottom: 15px;
+}
+
+/* Status Badges */
+.nh-status {
+	display: inline-block;
+	padding: 4px 10px;
+	border-radius: 3px;
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+}
+
+.nh-status-unread {
+	background: #f0f6fc;
+	color: #0550ae;
+}
+
+.nh-status-read {
+	background: #dafbe1;
+	color: #0f5132;
+}
+
+.nh-status-active {
+	background: #d1e7dd;
+	color: #0f5132;
+}
+
+.nh-status-inactive {
+	background: #f8d7da;
+	color: #842029;
+}
+
+/* Custom Hooks Page */
+.nh-hooks-list {
+	margin-top: 20px;
+}
+
+/* Modal */
+.nh-modal {
+	position: fixed;
+	z-index: 100000;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	overflow: auto;
+	background-color: rgba(0, 0, 0, 0.5);
+}
+
+.nh-modal-content {
+	background-color: #fff;
+	margin: 5% auto;
+	padding: 30px;
+	border: 1px solid #888;
+	border-radius: 4px;
+	width: 90%;
+	max-width: 600px;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.nh-modal-close {
+	color: #aaa;
+	float: right;
+	font-size: 28px;
+	font-weight: bold;
+	cursor: pointer;
+}
+
+.nh-modal-close:hover,
+.nh-modal-close:focus {
+	color: #000;
+}
+
+.nh-modal h2 {
+	margin-top: 0;
+	margin-bottom: 20px;
+}
+
+.nh-modal label {
+	display: block;
+	margin-bottom: 5px;
+	font-weight: 600;
+}
+
+.nh-modal input[type="text"],
+.nh-modal input[type="email"],
+.nh-modal textarea {
+	width: 100%;
+}
+
+/* Admin Bar Badge */
+#wp-admin-bar-notification-hub .nh-count {
+	display: inline-block;
+	background: #d63638;
+	color: #fff;
+	padding: 2px 6px;
+	border-radius: 10px;
+	font-size: 11px;
+	font-weight: bold;
+	margin-left: 5px;
+}
+
+/* Responsive */
+@media screen and (max-width: 782px) {
+	.nh-stats {
+		grid-template-columns: 1fr;
+	}
+
+	.nh-modal-content {
+		width: 95%;
+		margin: 10% auto;
+		padding: 20px;
+	}
+}
