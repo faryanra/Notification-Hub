@@ -2,40 +2,47 @@
 /**
  * Hooks Page Presenter
  *
- * Renders the Hooks management page.
- *
  * @package Notification_Hub
  * @since 2.0.0
  */
 
 namespace Notification_Hub\Presenters\Admin;
 
+use Notification_Hub\Repositories\Custom_Hooks;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * Hooks_Page Class
+ * Hooks Page Presenter
  */
 class Hooks_Page {
 
 	/**
-	 * Render hooks page.
+	 * Custom hooks repository.
+	 *
+	 * @var Custom_Hooks
+	 */
+	private $repo;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param Custom_Hooks $repo Custom hooks repository.
+	 */
+	public function __construct( Custom_Hooks $repo ) {
+		$this->repo = $repo;
+	}
+
+	/**
+	 * Render page.
 	 *
 	 * @return void
 	 */
 	public function render() {
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'Access denied.', 'notification-hub' ) );
-		}
+		$hooks = $this->repo->get_all();
 
-		$file = defined( 'NH_PLUGIN_DIR' ) ? NH_PLUGIN_DIR . 'templates/hooks.php' : '';
-
-		if ( $file && file_exists( $file ) ) {
-			include $file;
-			return;
-		}
-
-		echo '<div class="wrap"><h1>' . esc_html__( 'Hooks', 'notification-hub' ) . '</h1><p>' . esc_html__( 'Template not found.', 'notification-hub' ) . '</p></div>';
+		include NH_PLUGIN_DIR . 'templates/admin/hooks.php';
 	}
 }

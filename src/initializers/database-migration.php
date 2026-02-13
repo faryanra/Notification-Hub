@@ -1,8 +1,8 @@
 <?php
 /**
- * Database Migration Initializer
+ * Database Migration
  *
- * Handles database schema creation and migrations.
+ * Creates and updates database tables.
  *
  * @package Notification_Hub
  * @since 2.0.0
@@ -15,44 +15,33 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Database_Migration Class
+ * Database Migration
  */
 class Database_Migration {
 
 	/**
-	 * Database schema version.
+	 * Current schema version.
 	 *
 	 * @var string
 	 */
-	const DB_VERSION = '2.0.0';
+	const SCHEMA_VERSION = '2.0.0';
 
 	/**
-	 * Run database migrations.
+	 * Run migrations.
 	 *
 	 * @return void
 	 */
 	public static function run() {
-		$installed = (string) get_option( 'nh_db_version', '' );
+		$installed_version = get_option( 'nh_schema_version', '0' );
 
-		if ( $installed === self::DB_VERSION ) {
+		if ( version_compare( $installed_version, self::SCHEMA_VERSION, '>=' ) ) {
 			return;
 		}
 
-		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-
-		// Create/update notifications table.
 		self::create_notifications_table();
+		self::create_custom_hooks_table();
 
-		// Create/update hooks table.
-		self::create_hooks_table();
-
-		// Ensure additional columns exist (backward compatibility).
-		self::ensure_notifications_columns();
-
-		// Ensure indexes exist.
-		self::ensure_notifications_indexes();
-
-		update_option( 'nh_db_version', self::DB_VERSION );
+		update_option( 'nh_schema_version', self::SCHEMA_VERSION );
 	}
 
 	/**
@@ -63,126 +52,50 @@ class Database_Migration {
 	private static function create_notifications_table() {
 		global $wpdb;
 
-		$table   = $wpdb->prefix . 'nh_notifications';
-		$charset = $wpdb->get_charset_collate();
+		$table_name      = $wpdb->prefix . 'nh_notifications';
+		$charset_collate = $wpdb->get_charset_collate();
 
-		$sql = "CREATE TABLE {$table} (
-			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-			source VARCHAR(64) NOT NULL,
-			type VARCHAR(64) NOT NULL,
-			title VARCHAR(255) NOT NULL,
-			message LONGTEXT NOT NULL,
-			status TINYINT NOT NULL DEFAULT 0,
-			priority TINYINT UNSIGNED NOT NULL DEFAULT 50,
-			context LONGTEXT NULL,
-			tags LONGTEXT NULL,
-			created_at DATETIME NOT NULL,
-			updated_at DATETIME NULL,
-			read_at DATETIME NULL,
+		$sql = "CREATE TABLE IF NOT EXISTS {$table_name} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			title varchar(255) NOT NULL,
+			message text NOT NULL,
+			type varchar(50) NOT NULL DEFAULT 'general',
+			status varchar(20) NOT NULL DEFAULT 'unread',
+			created_at datetime NOT NULL,
 			PRIMARY KEY (id),
-			KEY idx_source (source),
-			KEY idx_status_created (status, created_at),
-			KEY idx_type_created (type, created_at),
-			KEY idx_status_priority_created (status, priority, created_at)
-		) {$charset};";
+			KEY status (status),
+			KEY type (type),
+			KEY created_at (created_at)
+		) {$charset_collate};";
 
+		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql );
 	}
 
 	/**
-	 * Create hooks table.
+	 * Create custom hooks table.
 	 *
 	 * @return void
 	 */
-	private static function create_hooks_table() {
+	private static function create_custom_hooks_table() {
 		global $wpdb;
 
-		$table   = $wpdb->prefix . 'nh_hooks';
-		$charset = $wpdb->get_charset_collate();
+		$table_name      = $wpdb->prefix . 'nh_custom_hooks';
+		$charset_collate = $wpdb->get_charset_collate();
 
-		$sql = "CREATE TABLE {$table} (
-			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-			title VARCHAR(160) NOT NULL,
-			action_name VARCHAR(160) NOT NULL,
-			channels LONGTEXT NULL,
-			status TINYINT(1) NOT NULL DEFAULT 1,
-			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		$sql = "CREATE TABLE IF NOT EXISTS {$table_name} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			hook_name varchar(100) NOT NULL,
+			title varchar(255) NOT NULL,
+			message text NOT NULL,
+			status varchar(20) NOT NULL DEFAULT 'active',
+			created_at datetime NOT NULL,
 			PRIMARY KEY (id),
-			KEY action_name (action_name)
-		) {$charset};";
+			KEY hook_name (hook_name),
+			KEY status (status)
+		) {$charset_collate};";
 
+		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql );
-	}
-
-	/**
-	 * Ensure additional columns exist (backward compatibility).
-	 *
-	 * @return void
-	 */
-	private static function ensure_notifications_columns() {
-		global $wpdb;
-
-		$table = $wpdb->prefix . 'nh_notifications';
-
-		self::ensure_column_exists(
-			$table,
-			'read_at',
-			"ALTER TABLE {$table} ADD COLUMN read_at DATETIME NULL AFTER updated_at"
-		);
-
-		self::ensure_column_exists(
-			$table,
-			'priority',
-			"ALTER TABLE {$table} ADD COLUMN priority TINYINT UNSIGNED NOT NULL DEFAULT 50 AFTER status"
-		);
-
-		self::ensure_column_exists(
-			$table,
-			'tags',
-			"ALTER TABLE {$table} ADD COLUMN tags LONGTEXT NULL AFTER context"
-		);
-	}
-
-	/**
-	 * Ensure indexes exist.
-	 *
-	 * @return void
-	 */
-	private static function ensure_notifications_indexes() {
-		global $wpdb;
-
-		$table = $wpdb->prefix . 'nh_notifications';
-
-		$idx = $wpdb->get_var(
-			$wpdb->prepare(
-				"SELECT INDEX_NAME
-				 FROM INFORMATION_SCHEMA.STATISTICS
-				 WHERE TABLE_SCHEMA=%s AND TABLE_NAME=%s AND INDEX_NAME='idx_status_priority_created'",
-				DB_NAME,
-				str_replace( $wpdb->prefix, '', $table )
-			)
-		);
-
-		if ( ! $idx ) {
-			$wpdb->query( "ALTER TABLE {$table} ADD KEY idx_status_priority_created (status, priority, created_at)" );
-		}
-	}
-
-	/**
-	 * Ensure a column exists; otherwise run an ALTER statement.
-	 *
-	 * @param string $table     Table name.
-	 * @param string $column    Column name.
-	 * @param string $alter_sql ALTER TABLE statement.
-	 * @return void
-	 */
-	private static function ensure_column_exists( $table, $column, $alter_sql ) {
-		global $wpdb;
-
-		$col = $wpdb->get_results( "SHOW COLUMNS FROM {$table} LIKE '{$column}'" );
-
-		if ( empty( $col ) ) {
-			$wpdb->query( $alter_sql );
-		}
 	}
 }
