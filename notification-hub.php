@@ -10,227 +10,100 @@
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * Text Domain: notification-hub
  * Domain Path: /languages
+ * Requires at least: 5.8
+ * Requires PHP: 7.4
  *
  * @package Notification_Hub
- * @since 1.6.2
+ * @since 2.0.0
  */
 
-if (!defined('ABSPATH')) {
-    exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
 
 /**
  * Plugin constants.
  *
- * @since 1.6.2
+ * @since 2.0.0
  */
-define('NH_PLUGIN_FILE', __FILE__);
-define('NH_PLUGIN_DIR', plugin_dir_path(__FILE__));
-define('NH_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('NH_VERSION', '2.0.0');
+define( 'NH_PLUGIN_FILE', __FILE__ );
+define( 'NH_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+define( 'NH_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+define( 'NH_VERSION', '2.0.0' );
 
 /**
  * Load plugin textdomain.
  *
- * @since 1.6.2
+ * @since 2.0.0
  * @return void
  */
 function nh_load_textdomain(): void {
-    load_plugin_textdomain('notification-hub', false, dirname(plugin_basename(__FILE__)) . '/languages');
+	load_plugin_textdomain( 'notification-hub', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 }
-add_action('plugins_loaded', 'nh_load_textdomain', 1);
-
-/**
- * Safe require helper.
- *
- * @since 1.6.2
- *
- * @param string $path Absolute file path.
- * @return bool True when loaded, false otherwise.
- */
-function nh_require(string $path): bool {
-    if (file_exists($path)) {
-        require_once $path;
-        return true;
-    }
-
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-        error_log(sprintf('Notification Hub: Missing file %s', $path));
-    }
-
-    return false;
-}
+add_action( 'plugins_loaded', 'nh_load_textdomain', 1 );
 
 /**
  * ============================================================
  * NEW ARCHITECTURE (v2.0.0) - Yoast-style with DI
  * ============================================================
  */
-if (file_exists(NH_PLUGIN_DIR . 'src/bootstrap.php')) {
-    require_once NH_PLUGIN_DIR . 'src/bootstrap.php';
+if ( file_exists( NH_PLUGIN_DIR . 'src/bootstrap.php' ) ) {
+	require_once NH_PLUGIN_DIR . 'src/bootstrap.php';
+} else {
+	if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		error_log( 'Notification Hub: Missing bootstrap file (src/bootstrap.php)' );
+	}
 }
-
-/**
- * ============================================================
- * LEGACY CODE (v1.x) - Keep for backward compatibility
- * ============================================================
- */
-
-/**
- * Core includes (order matters).
- *
- * @since 1.6.2
- */
-nh_require(NH_PLUGIN_DIR . 'core/class-nh-core-registry.php');
-nh_require(NH_PLUGIN_DIR . 'core/class-nh-helpers.php');
-nh_require(NH_PLUGIN_DIR . 'core/class-nh-human.php');
-nh_require(NH_PLUGIN_DIR . 'core/class-nh-security.php');
-nh_require(NH_PLUGIN_DIR . 'core/class-nh-database.php');
-nh_require(NH_PLUGIN_DIR . 'core/class-nh-queue.php');
-nh_require(NH_PLUGIN_DIR . 'core/class-nh-loader.php');
-nh_require(NH_PLUGIN_DIR . 'core/class-nh-template.php');
-
-/**
- * Modules / Admin.
- *
- * NOTE: License is Premium-only and is loaded conditionally by NH_Loader
- * when the Premium addon is active (NH_PRO_ACTIVE).
- *
- * @since 1.6.2
- */
-nh_require(NH_PLUGIN_DIR . 'modules/class-nh-admin-ui.php');
-nh_require(NH_PLUGIN_DIR . 'modules/class-nh-dashboard.php');
-nh_require(NH_PLUGIN_DIR . 'modules/dashboard/class-nh-notifications-table.php');
-nh_require(NH_PLUGIN_DIR . 'modules/dashboard/class-nh-dashboard-actions.php');
-nh_require(NH_PLUGIN_DIR . 'modules/class-nh-custom-hooks.php');
-nh_require(NH_PLUGIN_DIR . 'modules/class-nh-notifier.php');
-nh_require(NH_PLUGIN_DIR . 'modules/class-nh-admin-actions.php');
-
-/**
- * Integrations.
- *
- * @since 1.6.2
- */
-nh_require(NH_PLUGIN_DIR . 'integrations/class-nh-wp-core.php');
-nh_require(NH_PLUGIN_DIR . 'integrations/class-nh-woocommerce.php');
-nh_require(NH_PLUGIN_DIR . 'integrations/class-nh-cf7.php');
-nh_require(NH_PLUGIN_DIR . 'integrations/class-nh-email.php');
-
-/**
- * API layer.
- *
- * @since 1.6.2
- */
-nh_require(NH_PLUGIN_DIR . 'api/class-nh-restapi.php');
-nh_require(NH_PLUGIN_DIR . 'api/class-nh-webhook.php');
-
-/**
- * Anti-tamper (light).
- *
- * @since 1.6.2
- * @return void
- */
-function nh_security_boot(): void {
-    if (class_exists('NH_Security')) {
-        NH_Security::anti_tamper_light();
-    }
-}
-add_action('plugins_loaded', 'nh_security_boot', 2);
 
 /**
  * Plugin activation callback.
  *
- * @since 1.6.2
+ * @since 2.0.0
  * @return void
  */
 function nh_activate(): void {
-    // New architecture: Database migration.
-    if (class_exists('Notification_Hub\\Initializers\\Database_Migration')) {
-        \Notification_Hub\Initializers\Database_Migration::run();
-    }
+	// Database migration
+	if ( class_exists( 'Notification_Hub\\Initializers\\Database_Migration' ) ) {
+		\Notification_Hub\Initializers\Database_Migration::run();
+	}
 
-    // Legacy: Database upgrade.
-    if (class_exists('NH_Database')) {
-        (new NH_Database())->maybe_upgrade_database();
-    }
+	// Queue migration
+	if ( class_exists( 'Notification_Hub\\Initializers\\Queue_Migration' ) ) {
+		\Notification_Hub\Initializers\Queue_Migration::run();
+	}
 
-    if (!wp_next_scheduled('nh_cron_cleanup')) {
-        wp_schedule_event(time() + 3600, 'daily', 'nh_cron_cleanup');
-    }
+	// Capabilities
+	if ( class_exists( 'Notification_Hub\\Initializers\\Capabilities' ) ) {
+		\Notification_Hub\Initializers\Capabilities::run();
+	}
+
+	// Cron schedules
+	if ( class_exists( 'Notification_Hub\\Initializers\\Cron_Schedules' ) ) {
+		\Notification_Hub\Initializers\Cron_Schedules::run();
+	}
 }
 
 /**
  * Plugin deactivation callback.
  *
- * @since 1.6.2
+ * @since 2.0.0
  * @return void
  */
 function nh_deactivate(): void {
-    $timestamp = wp_next_scheduled('nh_cron_cleanup');
-    if (!$timestamp) {
-        return;
-    }
+	$timestamp = wp_next_scheduled( 'nh_cron_cleanup' );
+	if ( $timestamp ) {
+		wp_unschedule_event( $timestamp, 'nh_cron_cleanup', array() );
+	}
 
-    // WP requires (timestamp, hook, args). Args must match the scheduled event.
-    // We schedule with no args.
-    wp_unschedule_event($timestamp, 'nh_cron_cleanup', []);
+	$timestamp = wp_next_scheduled( 'nh_process_queue' );
+	if ( $timestamp ) {
+		wp_unschedule_event( $timestamp, 'nh_process_queue', array() );
+	}
 
-    // Extra safety: also clear any stray scheduled events for this hook.
-    wp_clear_scheduled_hook('nh_cron_cleanup');
+	wp_clear_scheduled_hook( 'nh_cron_cleanup' );
+	wp_clear_scheduled_hook( 'nh_process_queue' );
 }
 
-register_activation_hook(NH_PLUGIN_FILE, 'nh_activate');
-register_deactivation_hook(NH_PLUGIN_FILE, 'nh_deactivate');
-
-/**
- * Cron cleanup task.
- *
- * @since 1.6.2
- * @return void
- */
-function nh_cron_cleanup_handler(): void {
-    if (!class_exists('NH_Database')) {
-        return;
-    }
-
-    (new NH_Database())->cleanup_old();
-}
-add_action('nh_cron_cleanup', 'nh_cron_cleanup_handler');
-
-/**
- * Boot plugin services (LEGACY).
- *
- * @since 1.6.2
- * @return void
- */
-function nh_boot(): void {
-    if (!class_exists('NH_Core_Registry') || !class_exists('NH_Loader')) {
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-            error_log('Notification Hub: Boot failed (Registry/Loader missing).');
-        }
-        return;
-    }
-
-    $r = NH_Core_Registry::get();
-
-    if (class_exists('NH_Database')) {
-        $r->set('db', new NH_Database());
-    }
-
-    if (class_exists('NH_Security')) {
-        $r->set('security', new NH_Security());
-    }
-
-    if (class_exists('NH_Helpers')) {
-        $r->set('helpers', new NH_Helpers());
-    }
-
-    if (class_exists('NH_Notifier')) {
-        $r->set('notifier', new NH_Notifier($r));
-    }
-
-    (new NH_Loader($r))->boot();
-}
-add_action('plugins_loaded', 'nh_boot', 5);
+register_activation_hook( NH_PLUGIN_FILE, 'nh_activate' );
+register_deactivation_hook( NH_PLUGIN_FILE, 'nh_deactivate' );
