@@ -1,8 +1,8 @@
 <?php
 /**
- * Menu Registration Integration
+ * Admin Menu Registration
  *
- * Registers admin menu pages for Notification Hub.
+ * Registers admin menu pages.
  *
  * @package Notification_Hub
  * @since 2.0.0
@@ -20,46 +20,42 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Menu_Registration Class
+ * Menu Registration
  */
 class Menu_Registration implements Integration_Interface {
 
 	/**
-	 * Dashboard page presenter.
+	 * Dashboard presenter.
 	 *
 	 * @var Dashboard_Page
 	 */
-	private $dashboard_page;
+	private $dashboard;
 
 	/**
-	 * Hooks page presenter.
+	 * Hooks presenter.
 	 *
 	 * @var Hooks_Page
 	 */
-	private $hooks_page;
+	private $hooks;
 
 	/**
-	 * Settings page presenter.
+	 * Settings presenter.
 	 *
 	 * @var Settings_Page
 	 */
-	private $settings_page;
+	private $settings;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param Dashboard_Page $dashboard_page Dashboard page presenter.
-	 * @param Hooks_Page     $hooks_page     Hooks page presenter.
-	 * @param Settings_Page  $settings_page  Settings page presenter.
+	 * @param Dashboard_Page $dashboard Dashboard presenter.
+	 * @param Hooks_Page     $hooks     Hooks presenter.
+	 * @param Settings_Page  $settings  Settings presenter.
 	 */
-	public function __construct(
-		Dashboard_Page $dashboard_page,
-		Hooks_Page $hooks_page,
-		Settings_Page $settings_page
-	) {
-		$this->dashboard_page = $dashboard_page;
-		$this->hooks_page     = $hooks_page;
-		$this->settings_page  = $settings_page;
+	public function __construct( Dashboard_Page $dashboard, Hooks_Page $hooks, Settings_Page $settings ) {
+		$this->dashboard = $dashboard;
+		$this->hooks     = $hooks;
+		$this->settings  = $settings;
 	}
 
 	/**
@@ -78,40 +74,40 @@ class Menu_Registration implements Integration_Interface {
 	 */
 	public function register_menus() {
 		add_menu_page(
-			esc_html__( 'Notification Hub', 'notification-hub' ),
-			esc_html__( 'Notification Hub', 'notification-hub' ),
+			__( 'Notification Hub', 'notification-hub' ),
+			__( 'Notifications', 'notification-hub' ),
 			'manage_options',
-			'nh-dashboard',
-			array( $this->dashboard_page, 'render' ),
+			'notification-hub',
+			array( $this->dashboard, 'render' ),
 			'dashicons-bell',
-			58
+			30
 		);
 
 		add_submenu_page(
-			'nh-dashboard',
-			esc_html__( 'Dashboard', 'notification-hub' ),
-			esc_html__( 'Dashboard', 'notification-hub' ),
+			'notification-hub',
+			__( 'Dashboard', 'notification-hub' ),
+			__( 'Dashboard', 'notification-hub' ),
 			'manage_options',
-			'nh-dashboard',
-			array( $this->dashboard_page, 'render' )
+			'notification-hub',
+			array( $this->dashboard, 'render' )
 		);
 
 		add_submenu_page(
-			'nh-dashboard',
-			esc_html__( 'Hooks', 'notification-hub' ),
-			esc_html__( 'Hooks', 'notification-hub' ),
+			'notification-hub',
+			__( 'Custom Hooks', 'notification-hub' ),
+			__( 'Custom Hooks', 'notification-hub' ),
 			'manage_options',
-			'nh-hooks',
-			array( $this->hooks_page, 'render' )
+			'notification-hub-hooks',
+			array( $this->hooks, 'render' )
 		);
 
 		add_submenu_page(
-			'nh-dashboard',
-			esc_html__( 'Settings', 'notification-hub' ),
-			esc_html__( 'Settings', 'notification-hub' ),
+			'notification-hub',
+			__( 'Settings', 'notification-hub' ),
+			__( 'Settings', 'notification-hub' ),
 			'manage_options',
-			'nh_settings',
-			array( $this->settings_page, 'render' )
+			'notification-hub-settings',
+			array( $this->settings, 'render' )
 		);
 	}
 }

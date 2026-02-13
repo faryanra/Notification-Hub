@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 interface Integration_Interface {
 
 	/**
-	 * Register hooks for this integration.
+	 * Register hooks.
 	 *
 	 * @return void
 	 */

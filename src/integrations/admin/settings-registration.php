@@ -1,8 +1,8 @@
 <?php
 /**
- * Settings Registration Integration
+ * Settings Registration
  *
- * Registers plugin settings with WordPress Settings API.
+ * Registers plugin settings.
  *
  * @package Notification_Hub
  * @since 2.0.0
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Settings_Registration Class
+ * Settings Registration
  */
 class Settings_Registration implements Integration_Interface {
 
@@ -36,14 +36,8 @@ class Settings_Registration implements Integration_Interface {
 	 * @return void
 	 */
 	public function register_settings() {
-		// General settings.
-		register_setting( 'nh_settings', 'nh_retention_days' );
-		register_setting( 'nh_settings', 'nh_email_to' );
-		register_setting( 'nh_settings', 'nh_keep_data_on_uninstall' );
-
-		// Premium settings.
-		register_setting( 'nh_settings', 'nh_telegram_bot_token' );
-		register_setting( 'nh_settings', 'nh_telegram_chat_id' );
-		register_setting( 'nh_settings', 'nh_slack_webhook' );
+		register_setting( 'notification_hub_settings', 'nh_email_enabled' );
+		register_setting( 'notification_hub_settings', 'nh_admin_email' );
+		register_setting( 'notification_hub_settings', 'nh_retention_days' );
 	}
 }

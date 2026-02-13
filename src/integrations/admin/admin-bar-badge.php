@@ -1,8 +1,8 @@
 <?php
 /**
- * Admin Bar Badge Integration
+ * Admin Bar Badge
  *
- * Adds unread notification count badge to admin bar.
+ * Shows unread notification count in admin bar.
  *
  * @package Notification_Hub
  * @since 2.0.0
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Admin_Bar_Badge Class
+ * Admin Bar Badge
  */
 class Admin_Bar_Badge implements Integration_Interface {
 
@@ -27,37 +27,38 @@ class Admin_Bar_Badge implements Integration_Interface {
 	 * @return void
 	 */
 	public function register() {
-		add_action( 'admin_bar_menu', array( $this, 'add_badge' ), 100 );
+		add_action( 'admin_bar_menu', array( $this, 'add_badge' ), 999 );
 	}
 
 	/**
-	 * Add unread badge to admin bar.
+	 * Add badge to admin bar.
 	 *
-	 * @param \WP_Admin_Bar $wp_admin_bar Admin bar instance.
+	 * @param \WP_Admin_Bar $admin_bar Admin bar instance.
 	 * @return void
 	 */
-	public function add_badge( $wp_admin_bar ) {
+	public function add_badge( $admin_bar ) {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
 
 		global $wpdb;
-		$table = $wpdb->prefix . 'nh_notifications';
 
-		// Count active + unread notifications.
-		$count_new = (int) $wpdb->get_var(
-			"SELECT COUNT(*) FROM {$table} WHERE status IN (0,3) AND read_at IS NULL"
+		$count = $wpdb->get_var(
+			"SELECT COUNT(*) FROM {$wpdb->prefix}nh_notifications WHERE status = 'unread'"
 		);
 
-		$title  = '<span class="ab-icon dashicons dashicons-bell"></span>';
-		$title .= '<span class="ab-label"> ' . (int) $count_new . ' ' . esc_html__( 'New', 'notification-hub' ) . '</span>';
+		if ( ! $count ) {
+			return;
+		}
 
-		$wp_admin_bar->add_node(
+		$admin_bar->add_node(
 			array(
-				'id'    => 'nh_unread',
-				'title' => $title,
-				'href'  => admin_url( 'admin.php?page=nh-dashboard' ),
-				'meta'  => array( 'title' => esc_html__( 'View Notifications', 'notification-hub' ) ),
+				'id'    => 'notification-hub',
+				'title' => sprintf(
+					'<span class="ab-icon dashicons dashicons-bell"></span> %s',
+					'<span class="nh-count">' . absint( $count ) . '</span>'
+				),
+				'href'  => admin_url( 'admin.php?page=notification-hub' ),
 			)
 		);
 	}
