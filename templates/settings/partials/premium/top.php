@@ -1,23 +1,17 @@
 <?php
 /**
- * Premium Top Panels
+ * Premium Tab Top Partial
  *
  * @package Notification_Hub
- * @since 1.7.2
+ * @since 2.0.0
  */
 
-defined('ABSPATH') || exit;
-
-$premium_root = NH_PLUGIN_DIR . 'templates/settings/partials/premium/';
-
-$license_partial = $premium_root . 'license-box.php';
-if (file_exists($license_partial)) {
-    include $license_partial;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
+?>
 
-if (defined('WP_DEBUG') && WP_DEBUG) {
-    $debug_partial = $premium_root . 'license-debug-panel.php';
-    if (file_exists($debug_partial)) {
-        include $debug_partial;
-    }
-}
+<div class="nh-premium-header">
+	<h1><?php esc_html_e( 'Premium Settings', 'notification-hub' ); ?></h1>
+	<p><?php esc_html_e( 'Manage your premium features and license.', 'notification-hub' ); ?></p>
+</div>

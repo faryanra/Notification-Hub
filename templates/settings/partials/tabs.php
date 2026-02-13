@@ -1,28 +1,30 @@
 <?php
 /**
- * Settings Tabs
+ * Settings Tabs Partial
  *
  * @package Notification_Hub
- * @since 1.7.2
+ * @since 2.0.0
  */
 
-defined('ABSPATH') || exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+$current_tab = $_GET['tab'] ?? 'general';
+
+$tabs = array(
+	'general' => __( 'General', 'notification-hub' ),
+	'premium' => __( 'Premium', 'notification-hub' ),
+);
 ?>
 
-<h2 class="nav-tab-wrapper nh-settings-tabs" data-active-tab="<?php echo esc_attr($active_tab); ?>" data-pro-addon="<?php echo $is_pro_addon ? '1' : '0'; ?>">
-    <a
-        href="<?php echo esc_url(admin_url('admin.php?page=nh_settings&tab=general')); ?>"
-        class="nav-tab <?php echo $active_tab === 'general' ? 'nav-tab-active' : ''; ?>"
-        data-tab="general"
-    >
-        <?php esc_html_e('General', 'notification-hub'); ?>
-    </a>
-
-    <a
-        href="<?php echo esc_url(admin_url('admin.php?page=nh_settings&tab=premium')); ?>"
-        class="nav-tab <?php echo $active_tab === 'premium' ? 'nav-tab-active' : ''; ?>"
-        data-tab="premium"
-    >
-        <?php esc_html_e('Premium Channels', 'notification-hub'); ?>
-    </a>
+<h2 class="nav-tab-wrapper">
+	<?php foreach ( $tabs as $tab_key => $tab_label ) : ?>
+		<a 
+			href="<?php echo esc_url( admin_url( 'admin.php?page=notification-hub-settings&tab=' . $tab_key ) ); ?>"
+			class="nav-tab <?php echo $current_tab === $tab_key ? 'nav-tab-active' : ''; ?>"
+		>
+			<?php echo esc_html( $tab_label ); ?>
+		</a>
+	<?php endforeach; ?>
 </h2>

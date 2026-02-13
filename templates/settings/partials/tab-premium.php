@@ -1,42 +1,22 @@
 <?php
 /**
- * Settings Tab: Premium
- *
- * Rendered only when active tab is premium.
+ * Premium Settings Tab Partial
  *
  * @package Notification_Hub
- * @since 1.7.2
+ * @since 2.0.0
  */
 
-defined('ABSPATH') || exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 ?>
 
-<div
-    id="nh-tab-premium"
-    class="nh-tab is-active"
-    data-tab="premium"
->
-    <?php
-    // License UI should ONLY appear inside the Premium tab.
-    if ($is_pro_addon) {
-        $top = NH_PLUGIN_DIR . 'templates/settings/partials/premium/top.php';
-        if (file_exists($top)) {
-            include $top;
-        }
-    }
+<?php include NH_PLUGIN_DIR . 'templates/settings/partials/premium/top.php'; ?>
 
-    $premium_root = NH_PLUGIN_DIR . 'templates/settings/partials/premium/';
-
-    if (!$is_pro_addon) {
-        $upgrade_partial = $premium_root . 'upgrade-panel.php';
-        if (file_exists($upgrade_partial)) {
-            include $upgrade_partial;
-        }
-    } else {
-        $fields_partial = $premium_root . 'settings-fields.php';
-        if (file_exists($fields_partial)) {
-            include $fields_partial;
-        }
-    }
-    ?>
-</div>
+<?php if ( defined( 'NH_PRO_ACTIVE' ) && NH_PRO_ACTIVE ) : ?>
+	<?php include NH_PLUGIN_DIR . 'templates/settings/partials/premium/license-box.php'; ?>
+	<?php include NH_PLUGIN_DIR . 'templates/settings/partials/premium/settings-fields.php'; ?>
+	<?php include NH_PLUGIN_DIR . 'templates/settings/partials/premium/license-debug-panel.php'; ?>
+<?php else : ?>
+	<?php include NH_PLUGIN_DIR . 'templates/settings/partials/premium/upgrade-panel.php'; ?>
+<?php endif; ?>

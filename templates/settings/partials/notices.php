@@ -1,44 +1,29 @@
 <?php
 /**
- * Settings Notices
+ * Notices Partial
  *
  * @package Notification_Hub
- * @since 1.7.2
+ * @since 2.0.0
  */
 
-defined('ABSPATH') || exit;
-?>
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
-<?php if (!empty($success)) : ?>
-    <?php if ((string) $success === '1') : ?>
-        <div class="notice notice-success is-dismissible">
-            <p>
-                <?php
-                echo sprintf(
-                    /* translators: %s: channel name (email/telegram/slack) */
-                    esc_html__('Test sent successfully to %s.', 'notification-hub'),
-                    '<strong>' . esc_html(!empty($channel) ? $channel : 'email') . '</strong>'
-                );
-                ?>
-            </p>
-        </div>
-    <?php else : ?>
-        <div class="notice notice-error is-dismissible">
-            <p>
-                <?php
-                echo sprintf(
-                    /* translators: %s: channel name (email/telegram/slack) */
-                    esc_html__('Test failed to send to %s.', 'notification-hub'),
-                    '<strong>' . esc_html(!empty($channel) ? $channel : 'email') . '</strong>'
-                );
-                ?>
-            </p>
-        </div>
-    <?php endif; ?>
-<?php endif; ?>
+$notices = get_transient( 'nh_admin_notices' );
 
-<?php if (isset($_GET['settings-updated'])) : ?>
-    <div class="notice notice-success is-dismissible">
-        <p><?php esc_html_e('Settings saved successfully.', 'notification-hub'); ?></p>
-    </div>
-<?php endif; ?>
+if ( empty( $notices ) ) {
+	return;
+}
+
+foreach ( $notices as $notice ) :
+	$type    = $notice['type'] ?? 'info';
+	$message = $notice['message'] ?? '';
+	?>
+	<div class="notice notice-<?php echo esc_attr( $type ); ?> is-dismissible">
+		<p><?php echo wp_kses_post( $message ); ?></p>
+	</div>
+	<?php
+endforeach;
+
+delete_transient( 'nh_admin_notices' );
