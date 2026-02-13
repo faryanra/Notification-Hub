@@ -1,0 +1,18 @@
+# Legacy Folders Removed
+
+The following legacy folders have been permanently deleted:
+
+- ❌ `core/` - 9 files removed
+- ❌ `modules/` - Removed
+- ❌ `integrations/` - Removed
+- ❌ `api/` - Removed
+
+**Date:** February 13, 2026
+**Reason:** Full migration to v2.0.0 architecture in `src/`
+**User Request:** "نمیخوام هیچ فایل قدیمی باشه که ازش هیچ استفاده ای بشه اگه کرش میخواد کنه بزار بکنه"
+
+## New Architecture Only
+
+All functionality is now in:
+- `src/` - Complete v2.0.0 architecture (105 files)
+- `notification-hub.php` - Loads only `src/bootstrap.php`
