@@ -1,17 +1,17 @@
 <?php
+
+namespace NotificationHub\Conditionals;
+
 /**
- * Conditional Interface
+ * A simple conditional used to decide whether an integration should run.
  *
- * @package Notification_Hub
- * @since 2.0.0
+ * @since 1.7.2
  */
-
-namespace Notification_Hub\Conditionals;
-
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-
 interface Conditional {
-	public function is_met(): bool;
+    /**
+     * Determine if the condition passes.
+     *
+     * @since 1.7.2
+     */
+    public function passes(): bool;
 }

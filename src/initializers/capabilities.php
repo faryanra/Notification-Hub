@@ -1,26 +1,33 @@
 <?php
+
+namespace NotificationHub\Initializers;
+
+use NotificationHub\Integrations\Integration;
+use NotificationHub\Loader;
+
 /**
- * Capabilities
+ * Ensure required capabilities exist for admins.
  *
- * Add custom capabilities on activation.
- *
- * @package Notification_Hub
- * @since 2.0.0
+ * @since 1.7.2
  */
+final class Capabilities implements Integration {
+    /**
+     * @since 1.7.2
+     */
+    public function register(Loader $loader): void {
+        // Run on admin_init to avoid unnecessary frontend work.
+        $loader->addAction('admin_init', [$this, 'ensure']);
+    }
 
-namespace Notification_Hub\Initializers;
+    public function ensure(): void {
+        $role = get_role('administrator');
+        if (!$role) {
+            return;
+        }
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-
-class Capabilities {
-
-	public static function run() {
-		$role = get_role( 'administrator' );
-
-		if ( $role ) {
-			$role->add_cap( 'manage_notification_hub' );
-		}
-	}
+        // Future-proof custom capability; for now dashboard uses manage_options.
+        if (!$role->has_cap('nh_manage_notifications')) {
+            $role->add_cap('nh_manage_notifications');
+        }
+    }
 }

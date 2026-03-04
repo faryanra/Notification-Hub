@@ -1,69 +1,142 @@
-# 🚨 Notification Hub (v1.7.1)
+﻿# Notification Hub (v1.7.2)
 
-A real-time, AJAX-powered notification manager for WordPress — featuring a unified admin dashboard, multi-channel notifications, and a modular, template-based rendering system.
+Notification Hub is a modular notification management plugin for WordPress that centralizes important operational events into a single admin dashboard and routes them to multiple delivery channels.
 
----
-
-## ✨ Highlights (v1.7.1)
-
-### 🔑 License & Premium Features
-- ✅ Premium-only license UI (Settings → Premium) with a single, unified form.
-- ✅ Save **License Server URL** + **License Key** together via one action (`nh_save_license_bundle`).
-- ✅ Polished UX: masked key preview, “Saved” pill, lock/edit toggle, one-time warning notices.
-
-### 🧱 Central License Policy (NH_License)
-- ✅ Normalized state: `status`, `features`, `domain`, `last_check`, `grace_until`, `message`, `license_hash`.
-- ✅ Strict key format validation: `NH-PRO-XXXX-XXXX` (A–Z / 0–9).
-- ✅ Grace-mode support so temporary license server outages don’t instantly lock Premium.
-
-### 🛡️ Cloudflare / Anti‑Bot Notes (License Endpoint)
-If your license endpoint is behind Cloudflare/WAF and you see non‑JSON responses (challenge pages), allowlist the verification URL so the plugin receives clean JSON.
-
-Recommended setup:
-- Put your verify endpoint on a dedicated path, for example: `/license/verify.php`.
-- Cloudflare → Security/WAF: create an allow rule for that exact path.
-- Disable/skip Bot Fight Mode / JS Challenge for that path.
-- If you use rate limiting, set a reasonable window (the plugin caches checks for a few hours).
-
-### 🧩 Real “two‑plugin” model
-- ✅ Premium capabilities are gated by both:
-  - Premium addon presence (`NH_PRO_ACTIVE`), and
-  - license state/capabilities (`NH_License::can('telegram')`, `NH_License::can('slack')`).
+The plugin is designed with a scalable architecture so that integrations, channels, and routes can evolve independently.
 
 ---
 
-## 📅 Changelog
+## Highlights (v1.7.2)
 
-### v1.7.1 — Premium Packaging + UX
-- Changed: Premium-only classes moved to premium-prefixed files for clean extraction.
-- Changed: Settings tab renamed from Pro → Premium.
-- Improved: License box UX (lock/edit toggle, saved pill, masked key, warnings).
-- Fixed: Free plugin no longer loads license classes when Premium addon is not active.
+### Stable Free/Pro Boot Flow
+Premium now boots only after the Free plugin has fully initialized.
 
-### v1.7.0 — License Server + Pro Policy
-- Added: Central `NH_License` core with normalized state.
-- Added: Strict Pro key format validation: `NH-PRO-XXXX-XXXX`.
-- Added: Unified License box in *Settings → Pro* with `nh_save_license_bundle` action.
-- Added: Remote verify with TTL, transient lock, and POST→GET fallback.
-- Added: Support for extended statuses: `active`, `inactive`, `revoked`, `grace`, `banned`, `expired`.
-- Added: Capability-based checks via `NH_License::can()` for Pro channels.
-- Improved: Pro channel gating in `NH_Notifier` now uses `NH_License::can('telegram')` / `NH_License::can('slack')`.
-- Improved: Pro settings UI now enables/disables fields and test actions based on capabilities.
-
-### v1.6.3 — Template Rendering + Action Links
-- Added: `templates/notifications/` channel templates (email/telegram/slack).
-- Added: Central renderer `NH_Template` to unify channel rendering.
-- Improved: Notification payload normalization (standard keys: `title`, `summary`, `source`, `type`, `context`, `link`).
+This is implemented through the `nh_loaded` hook to ensure dependency-safe loading similar to large WordPress plugins.
 
 ---
 
-## 👨‍💻 Author
-**Faryan Rajabi Jorshari (HelloCode)**  
-🌐 https://www.hellocode.ir  
-🐙 https://github.com/faryanra  
-💼 https://www.linkedin.com/in/faryan-rajabi/
+### Safer Data Migration
+Database migrations now run earlier during runtime to ensure notification tables exist before events are processed.
+
+This prevents failures when events occur before an admin page is opened.
 
 ---
 
-## 📜 License
-GPL v3 or later — free to use, modify, and distribute.
+### Reliable Settings Handling
+General and Premium settings are saved independently.
+
+Saving one tab will no longer reset values in the other tab.
+
+Stable defaults are now enforced for:
+
+- Notification retention
+- Keep data on uninstall
+
+---
+
+### Cleaner Notification Behavior
+New notifications now default to **Unread**.
+
+Internal technical events are hidden from dashboard views and badge counters:
+
+- `dispatch_check`
+- `email_sent`
+
+---
+
+### Clean Repository Structure
+Version 1.7.2 completes a major internal cleanup.
+
+Removed legacy components:
+
+- Duplicate root CSS files
+- Duplicate root JavaScript files
+- Legacy integrations folder
+
+This results in a cleaner and more maintainable codebase.
+
+---
+
+### Development Safety
+Smoke-test AJAX routes used during development now load only when `WP_DEBUG` is enabled.
+
+---
+
+## Core Features
+
+- Unified notification dashboard (`WP_List_Table`)
+- Email notification delivery
+- Telegram notifications (Premium)
+- Slack notifications (Premium)
+- Admin bar unread badge
+- Notification detail preview modal
+- AJAX actions for notification management
+- Bulk actions
+- Advanced filtering
+- CSV export
+- Custom hooks with channel routing
+- Integrations:
+  - WordPress Core
+  - WooCommerce
+  - Contact Form 7
+
+---
+
+## Architecture
+
+The plugin uses a modular internal structure with:
+
+- Container-based boot process
+- Integration modules
+- Event listeners
+- Channel dispatchers
+- Repository-based data layer
+- Presenters for UI rendering
+
+This architecture allows new integrations and channels to be added without affecting the core system.
+
+---
+
+## Changelog
+
+### v1.7.2
+
+- Changed: Free/Pro boot now uses `nh_loaded` dependency model.
+- Changed: Premium bootstrap no longer depends on legacy loaders.
+- Changed: Database migration runs earlier during runtime.
+- Fixed: Settings tabs no longer reset values across sections.
+- Fixed: Stable defaults for retention and uninstall behavior.
+- Changed: New notifications default to unread.
+- Improved: Dashboard hides internal system events.
+- Changed: Removed legacy duplicate assets and integrations folder.
+- Changed: Development smoke routes limited to `WP_DEBUG`.
+
+### v1.7.1
+
+- Reorganized Premium classes.
+- Renamed settings tab from Pro to Premium.
+- Improved license UX and editing flow.
+
+### v1.7.0
+
+- Introduced central license state model.
+- Added license key format validation.
+- Added unified license bundle saving.
+- Added remote verification with TTL caching.
+
+---
+
+## Author
+
+Faryan Rajabi Jorshari  
+HelloCode
+
+https://www.hellocode.ir  
+https://github.com/faryanra  
+https://www.linkedin.com/in/faryan-rajabi-jorshari/
+
+---
+
+## License
+
+GPL v3 or later

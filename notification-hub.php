@@ -2,76 +2,98 @@
 /**
  * Plugin Name: Notification Hub
  * Plugin URI: https://www.hellocode.ir/
- * Description: Central hub for collecting and managing WordPress notifications (Telegram, Email, Slack, WooCommerce, CF7).
- * Version: 2.0.0
+ * Description: Central hub for collecting and managing WordPress notifications.
+ * Version: 1.7.2
  * Author: Faryan Rajabi (HelloCode)
  * Author URI: https://www.linkedin.com/in/reza-rajabi-jorshari/
  * License: GPLv3 or later
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * Text Domain: notification-hub
  * Domain Path: /languages
- * Requires at least: 5.9
- * Requires PHP: 7.4
  *
- * @package Notification_Hub
- * @since 2.0.0
+ * @package NotificationHub
+ * @since 1.7.2
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
+if (!defined('ABSPATH')) {
+    exit;
 }
 
-// Plugin constants
-define( 'NH_VERSION', '2.0.0' );
-define( 'NH_PLUGIN_FILE', __FILE__ );
-define( 'NH_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
-define( 'NH_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+define('NH_PLUGIN_FILE', __FILE__);
+define('NH_PLUGIN_DIR', plugin_dir_path(__FILE__));
+define('NH_PLUGIN_URL', plugin_dir_url(__FILE__));
+define('NH_VERSION', '1.7.2');
 
-// Load autoloader
-require_once NH_PLUGIN_DIR . 'src/core/autoloader.php';
+define('NH_SRC_DIR', NH_PLUGIN_DIR . 'src/');
+define('NH_TEMPLATES_DIR', NH_PLUGIN_DIR . 'templates/');
+define('NH_ASSETS_URL', NH_PLUGIN_URL . 'assets/');
 
 /**
- * Initialize plugin
+ * Load plugin translations.
  *
- * @since 2.0.0
+ * @since 1.7.2
  * @return void
  */
-function nh_init_plugin() {
-	load_plugin_textdomain( 'notification-hub', false, dirname( plugin_basename( NH_PLUGIN_FILE ) ) . '/languages' );
-
-	$bootstrap = new \Notification_Hub\Core\Bootstrap();
-	$bootstrap->init();
+function nh_load_textdomain(): void {
+    load_plugin_textdomain('notification-hub', false, dirname(plugin_basename(__FILE__)) . '/languages');
 }
-add_action( 'plugins_loaded', 'nh_init_plugin', 10 );
+add_action('plugins_loaded', 'nh_load_textdomain', 1);
 
 /**
- * Activation hook
+ * PSR-4 autoloader for NotificationHub\
  *
- * @since 2.0.0
+ * @since 1.7.2
  * @return void
  */
-function nh_activate_plugin() {
-	require_once NH_PLUGIN_DIR . 'src/core/autoloader.php';
+function nh_register_autoloader(): void {
+    spl_autoload_register(
+        static function (string $class): void {
+            $prefix = 'NotificationHub\\';
+            $base_dir = NH_SRC_DIR;
 
-	\Notification_Hub\Initializers\Database_Migration::run();
-	\Notification_Hub\Initializers\Queue_Migration::run();
-	\Notification_Hub\Initializers\Capabilities::run();
-	\Notification_Hub\Initializers\Cron_Schedules::run();
+            if (strncmp($prefix, $class, strlen($prefix)) !== 0) {
+                return;
+            }
 
-	flush_rewrite_rules();
+            $relative = substr($class, strlen($prefix));
+            $relative = str_replace('\\', '/', $relative);
+
+            $file = $base_dir . $relative . '.php';
+            if (file_exists($file)) {
+                require_once $file;
+            }
+        }
+    );
 }
-register_activation_hook( NH_PLUGIN_FILE, 'nh_activate_plugin' );
+nh_register_autoloader();
+
+if (file_exists(NH_SRC_DIR . 'Compat/legacy-notifier.php')) {
+    require_once NH_SRC_DIR . 'Compat/legacy-notifier.php';
+}
+if (file_exists(NH_SRC_DIR . 'Compat/legacy-admin-actions.php')) {
+    require_once NH_SRC_DIR . 'Compat/legacy-admin-actions.php';
+}
 
 /**
- * Deactivation hook
+ * Boot plugin.
  *
- * @since 2.0.0
+ * @since 1.7.2
  * @return void
  */
-function nh_deactivate_plugin() {
-	wp_clear_scheduled_hook( 'nh_cron_cleanup' );
-	wp_clear_scheduled_hook( 'nh_process_queue' );
+function nh_boot(): void {
+    if (!class_exists('NotificationHub\\Main')) {
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+            error_log('Notification Hub: Missing NotificationHub\\Main.');
+        }
+        return;
+    }
 
-	flush_rewrite_rules();
+    $main = new \NotificationHub\Main();
+    $main->boot();
+
+    // Pro addon boot signal (Yoast-like dependency model).
+    do_action('nh_loaded');
 }
-register_deactivation_hook( NH_PLUGIN_FILE, 'nh_deactivate_plugin' );
+add_action('plugins_loaded', 'nh_boot', 5);
+

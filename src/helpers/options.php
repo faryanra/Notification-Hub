@@ -1,36 +1,33 @@
 <?php
+
+namespace NotificationHub\Helpers;
+
 /**
- * Options Helper
+ * Options helper.
  *
- * Wrapper for get_option/update_option with caching.
- *
- * @package Notification_Hub
- * @since 2.0.0
+ * @since 1.7.2
  */
+final class Options {
+    /**
+     * @template T
+     * @param string $key
+     * @param T $default
+     * @return mixed
+     */
+    public static function get(string $key, $default = null) {
+        return get_option($key, $default);
+    }
 
-namespace Notification_Hub\Helpers;
+    /**
+     * @param string $key
+     * @param mixed $value
+     * @param bool $autoload
+     */
+    public static function set(string $key, $value, bool $autoload = false): bool {
+        return update_option($key, $value, $autoload);
+    }
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-
-class Options {
-
-	private static $cache = array();
-
-	public static function get( $key, $default = '' ) {
-		if ( isset( self::$cache[ $key ] ) ) {
-			return self::$cache[ $key ];
-		}
-
-		$value = get_option( $key, $default );
-		self::$cache[ $key ] = $value;
-
-		return $value;
-	}
-
-	public static function set( $key, $value ) {
-		update_option( $key, $value );
-		self::$cache[ $key ] = $value;
-	}
+    public static function delete(string $key): bool {
+        return delete_option($key);
+    }
 }

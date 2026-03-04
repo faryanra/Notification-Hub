@@ -1,26 +1,25 @@
 <?php
+
+namespace NotificationHub\Helpers;
+
 /**
- * Date Helper
+ * Date helper.
  *
- * Date/time utilities.
- *
- * @package Notification_Hub
- * @since 2.0.0
+ * @since 1.7.2
  */
+final class Date {
+    /**
+     * @return string MySQL datetime in WP timezone.
+     */
+    public static function nowMysql(): string {
+        return current_time('mysql');
+    }
 
-namespace Notification_Hub\Helpers;
-
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-
-class Date {
-
-	public static function format( $timestamp, $format = 'Y-m-d H:i:s' ) {
-		return gmdate( $format, $timestamp );
-	}
-
-	public static function now() {
-		return current_time( 'timestamp' );
-	}
+    /**
+     * @param string $mysql
+     */
+    public static function toTimestamp(string $mysql): int {
+        $ts = strtotime($mysql);
+        return $ts ? (int) $ts : 0;
+    }
 }

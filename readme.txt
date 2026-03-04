@@ -1,64 +1,78 @@
-=== Notification Hub ===
+﻿=== Notification Hub ===
 Contributors: faryanra
 Tags: notifications, dashboard, woocommerce, alerts, admin
 Requires at least: 5.8
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.7.1
+Stable tag: 1.7.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-A unified admin dashboard for all important events happening across your WordPress site.
+A unified admin dashboard for important WordPress, WooCommerce, and CF7 notifications.
 
 == Description ==
 
-Notification Hub provides a unified admin dashboard for all important events happening across your WordPress site.
+Notification Hub provides a central dashboard for operational events across your WordPress site.
 
-Whether it's a new WooCommerce order, a comment, a form submission, or a custom event — you'll see it all in a single, sortable, filterable table.
+Track comments, user registrations, post events, WooCommerce orders, Contact Form 7 submissions, and custom hooks in one sortable table with quick actions.
 
-== What's New in v1.7.1 ==
+The plugin uses a modular architecture designed for scalability and maintainability, allowing notifications to be routed to multiple channels such as Email, Telegram, and Slack.
 
-This release focuses on Premium packaging + improved license UX.
+== What's New in v1.7.2 ==
 
-- Premium packaging: Premium-only classes moved to premium-prefixed files for easy extraction into the Premium ZIP.
-- Premium tab: Settings → Pro renamed to Settings → Premium.
-- License UX: Restored the full postbox UI (lock/edit toggle, saved pill, masked key preview, one-time warning notices).
-- Anti-bot note: Added guidance for Cloudflare/WAF allowlisting for license verify endpoints.
+This release focuses on architecture stability, cleaner boot flow, and repository cleanup.
 
-== Cloudflare / WAF Notes (License Verify) ==
-
-If your license verify endpoint is behind Cloudflare (or any WAF) and you receive HTML/JS challenge pages instead of JSON, allowlist the verify URL path.
-
-Recommended:
-- Put the verify endpoint on a dedicated path like: /license/verify.php
-- Cloudflare Security/WAF: allow rule for that path.
-- Disable Bot Fight Mode / JS Challenge for that path.
-- Keep reasonable rate limits (plugin caches checks for hours).
+- Free/Pro boot now follows a dependency-safe model using `nh_loaded`.
+- Premium bootstrap no longer depends on legacy loader files.
+- Database migration now runs earlier during runtime to ensure schema readiness.
+- Settings save flow is split by tab (General vs Premium) to prevent accidental resets.
+- General defaults are hardened for retention and uninstall behavior.
+- New notifications now default to the "Unread" state.
+- Internal technical events (`dispatch_check`, `email_sent`) are hidden from dashboard views.
+- Dashboard search and export toolbar improvements.
+- Legacy duplicate root assets were removed.
+- Legacy integrations folder removed for a cleaner architecture.
+- Development smoke-test AJAX routes now load only when `WP_DEBUG` is enabled.
 
 == Features ==
 
-- 📬 Unified Notification Table (WP_List_Table)
-- 📨 Email alerts
-- 📣 Telegram alerts
-- 💬 Slack alerts
-- 🔔 Admin bar unread badge (live refresh)
-- 👁️ Modal viewer (template-based preview)
-- 🔄 AJAX interactions: Mark Read/Unread, Important, Delete
-- 📦 Bulk actions support
-- 🔍 Advanced filtering (time, source, type, priority, status)
-- ✅ Export to CSV (supports current filters)
-- 📦 Custom hooks with channel targets
-- 🧩 Integrations: WooCommerce / CF7 / Core event hooks
-- 🎯 Smart priority system (0–100 scale)
+- Unified Notification Table (`WP_List_Table`)
+- Email notification channel
+- Telegram notification channel (Premium)
+- Slack notification channel (Premium)
+- Admin bar unread badge
+- Modal preview for notification details
+- AJAX actions (mark read, mark unread, delete)
+- Bulk actions
+- Advanced filters
+- CSV export
+- Custom hooks with channel targeting
+- Integrations:
+  - WordPress Core
+  - WooCommerce
+  - Contact Form 7
+- Priority system (0–100)
 
 == Installation ==
 
 1. Upload the plugin to `/wp-content/plugins/notification-hub`
-2. Activate via "Plugins" menu
-3. Open "Notification Hub" from admin menu
-4. Configure channels and settings
+2. Activate it from the Plugins screen
+3. Open `Notification Hub` from the WordPress admin menu
+4. Configure General and Premium settings
 
 == Changelog ==
+
+= 1.7.2 =
+* Changed: Free/Pro boot flow migrated to `nh_loaded` dependency model.
+* Changed: Premium bootstrap no longer relies on legacy loader files.
+* Changed: Database migration runs earlier during runtime.
+* Fixed: Settings tab saves no longer reset values across tabs.
+* Fixed: General defaults for retention and keep-data settings.
+* Changed: New notifications default to unread state.
+* Improved: Dashboard hides internal technical events (`dispatch_check`, `email_sent`).
+* Changed: Removed duplicate legacy root assets.
+* Changed: Removed legacy integrations folder for clean architecture.
+* Changed: Development smoke-test AJAX routes restricted to `WP_DEBUG`.
 
 = 1.7.1 =
 * Changed: Premium-only classes moved to premium-prefixed files for clean extraction.
