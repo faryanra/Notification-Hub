@@ -19,6 +19,15 @@ final class TelegramSender {
     }
 
     public function send(array $payload): bool {
+        $result = $this->sendWithResult($payload);
+        return !empty($result['ok']);
+    }
+
+    /**
+     * @param array<string,mixed> $payload
+     * @return array{ok:bool,retryable:bool,http_code:int,error:string}
+     */
+    public function sendWithResult(array $payload): array {
         $pro = $this->settings->getPro();
 
         $token = isset($payload['token']) ? (string) $payload['token'] : (string) $pro['telegram_bot_token'];
@@ -30,7 +39,12 @@ final class TelegramSender {
         }
 
         if ($token === '' || $chatId === '' || $text === '') {
-            return false;
+            return [
+                'ok' => false,
+                'retryable' => false,
+                'http_code' => 400,
+                'error' => 'telegram_payload_invalid',
+            ];
         }
 
         $url = sprintf('https://api.telegram.org/bot%s/sendMessage', rawurlencode($token));
@@ -46,10 +60,30 @@ final class TelegramSender {
         ]);
 
         if (is_wp_error($res)) {
-            return false;
+            return [
+                'ok' => false,
+                'retryable' => true,
+                'http_code' => 0,
+                'error' => sanitize_text_field($res->get_error_message()),
+            ];
         }
 
         $code = (int) wp_remote_retrieve_response_code($res);
-        return $code >= 200 && $code < 300;
+        if ($code >= 200 && $code < 300) {
+            return [
+                'ok' => true,
+                'retryable' => false,
+                'http_code' => $code,
+                'error' => '',
+            ];
+        }
+
+        $retryable = ($code === 429) || ($code >= 500);
+        return [
+            'ok' => false,
+            'retryable' => $retryable,
+            'http_code' => $code,
+            'error' => 'telegram_http_' . $code,
+        ];
     }
 }

@@ -3,7 +3,7 @@
  * Plugin Name: Notification Hub
  * Plugin URI: https://www.hellocode.ir/
  * Description: Central hub for collecting and managing WordPress notifications.
- * Version: 1.7.2
+ * Version: 1.7.3
  * Author: Faryan Rajabi (HelloCode)
  * Author URI: https://www.linkedin.com/in/reza-rajabi-jorshari/
  * License: GPLv3 or later
@@ -12,7 +12,7 @@
  * Domain Path: /languages
  *
  * @package NotificationHub
- * @since 1.7.2
+ * @since 1.7.3
  */
 
 if (!defined('ABSPATH')) {
@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) {
 define('NH_PLUGIN_FILE', __FILE__);
 define('NH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('NH_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('NH_VERSION', '1.7.2');
+define('NH_VERSION', '1.7.3');
 
 define('NH_SRC_DIR', NH_PLUGIN_DIR . 'src/');
 define('NH_TEMPLATES_DIR', NH_PLUGIN_DIR . 'templates/');
@@ -31,7 +31,7 @@ define('NH_ASSETS_URL', NH_PLUGIN_URL . 'assets/');
 /**
  * Load plugin translations.
  *
- * @since 1.7.2
+ * @since 1.7.3
  * @return void
  */
 function nh_load_textdomain(): void {
@@ -42,7 +42,7 @@ add_action('plugins_loaded', 'nh_load_textdomain', 1);
 /**
  * PSR-4 autoloader for NotificationHub\
  *
- * @since 1.7.2
+ * @since 1.7.3
  * @return void
  */
 function nh_register_autoloader(): void {
@@ -77,7 +77,7 @@ if (file_exists(NH_SRC_DIR . 'Compat/legacy-admin-actions.php')) {
 /**
  * Boot plugin.
  *
- * @since 1.7.2
+ * @since 1.7.3
  * @return void
  */
 function nh_boot(): void {
@@ -96,4 +96,3 @@ function nh_boot(): void {
     do_action('nh_loaded');
 }
 add_action('plugins_loaded', 'nh_boot', 5);
-

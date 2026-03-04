@@ -12,10 +12,6 @@ use NotificationHub\Repositories\SettingsRepository;
 final class ServiceFactory {
     public static function makeQueueService(): QueueService {
         return new QueueService(
-            static function (string $channel, array $payload): void {
-                $dispatcher = self::makeNotificationDispatcher();
-                $dispatcher->sendNow($channel, $payload);
-            },
             static function (): bool {
                 $host = isset($_SERVER['HTTP_HOST']) ? (string) $_SERVER['HTTP_HOST'] : '';
                 if ($host === '') {

@@ -20,7 +20,7 @@ final class DatabaseMigration implements Integration {
      *
      * @since 1.7.2
      */
-    public const DB_VERSION = '1.7.2';
+    public const DB_VERSION = '1.7.3';
 
     public function register(Loader $loader): void {
         // Ensure schema is ready for both admin and frontend flows.
@@ -37,6 +37,7 @@ final class DatabaseMigration implements Integration {
 
         dbDelta($this->schemaNotifications());
         $this->createHooksTable();
+        $this->createLogsTable();
 
         global $wpdb;
         $table = $wpdb->prefix . 'nh_notifications';
@@ -92,6 +93,28 @@ final class DatabaseMigration implements Integration {
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
             KEY action_name (action_name)
+        ) {$charset};";
+
+        dbDelta($sql);
+    }
+
+    private function createLogsTable(): void {
+        global $wpdb;
+
+        $charset = $wpdb->get_charset_collate();
+        $table   = $wpdb->prefix . 'nh_logs';
+
+        $sql = "CREATE TABLE {$table} (
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            created_at DATETIME NOT NULL,
+            level VARCHAR(10) NOT NULL,
+            scope VARCHAR(32) NOT NULL,
+            event VARCHAR(64) NOT NULL,
+            message VARCHAR(500) NOT NULL,
+            context LONGTEXT NULL,
+            PRIMARY KEY (id),
+            KEY idx_scope_event (scope, event),
+            KEY idx_level_created (level, created_at)
         ) {$charset};";
 
         dbDelta($sql);

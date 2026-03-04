@@ -4,7 +4,7 @@ Tags: notifications, dashboard, woocommerce, alerts, admin
 Requires at least: 5.8
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.7.2
+Stable tag: 1.7.3
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -18,7 +18,7 @@ Track comments, user registrations, post events, WooCommerce orders, Contact For
 
 The plugin uses a modular architecture designed for scalability and maintainability, allowing notifications to be routed to multiple channels such as Email, Telegram, and Slack.
 
-== What's New in v1.7.2 ==
+== What's New in v1.7.3 ==
 
 This release focuses on architecture stability, cleaner boot flow, and repository cleanup.
 
@@ -61,6 +61,15 @@ This release focuses on architecture stability, cleaner boot flow, and repositor
 4. Configure General and Premium settings
 
 == Changelog ==
+
+= 1.7.3 =
+* Security: REST admin routes now require both manage_options and valid X-WP-Nonce (wp_rest).
+* Security: Webhook auth upgraded to HMAC signature verification with timestamp window and replay protection.
+* Security: Webhook rate limiting added (transient-based per IP).
+* Improved: Queue jobs now persist state (pending/processing/done/failed) with retry attempts and retry schedule.
+* Improved: Retry/backoff policy added for retryable delivery failures (60s, 300s, 900s).
+* Added: Structured plugin logging table (nh_logs) for webhook/queue/channel diagnostics.
+* Changed: Plugin version bumped to 1.7.3.
 
 = 1.7.2 =
 * Changed: Free/Pro boot flow migrated to `nh_loaded` dependency model.

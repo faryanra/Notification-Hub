@@ -20,6 +20,15 @@ final class EmailSender {
     }
 
     public function send(array $payload): bool {
+        $result = $this->sendWithResult($payload);
+        return !empty($result['ok']);
+    }
+
+    /**
+     * @param array<string,mixed> $payload
+     * @return array{ok:bool,retryable:bool,http_code:int,error:string}
+     */
+    public function sendWithResult(array $payload): array {
         $general = $this->settings->getGeneral();
 
         $to = isset($payload['to']) ? (string) $payload['to'] : '';
@@ -52,7 +61,23 @@ final class EmailSender {
             $html = (string) $data['summary'];
         }
 
+        if (!is_email($to)) {
+            return [
+                'ok' => false,
+                'retryable' => false,
+                'http_code' => 400,
+                'error' => 'invalid_email_recipient',
+            ];
+        }
+
         $headers = ['Content-Type: text/html; charset=UTF-8'];
-        return (bool) wp_mail($to, $subject, $html, $headers);
+        $ok = (bool) wp_mail($to, $subject, $html, $headers);
+
+        return [
+            'ok' => $ok,
+            'retryable' => !$ok,
+            'http_code' => 0,
+            'error' => $ok ? '' : 'wp_mail_failed',
+        ];
     }
 }

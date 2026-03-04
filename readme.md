@@ -1,4 +1,4 @@
-﻿# Notification Hub (v1.7.2)
+﻿# Notification Hub (v1.7.3)
 
 Notification Hub is a modular notification management plugin for WordPress that centralizes important operational events into a single admin dashboard and routes them to multiple delivery channels.
 
@@ -6,7 +6,7 @@ The plugin is designed with a scalable architecture so that integrations, channe
 
 ---
 
-## Highlights (v1.7.2)
+## Highlights (v1.7.3)
 
 ### Stable Free/Pro Boot Flow
 Premium now boots only after the Free plugin has fully initialized.
@@ -45,7 +45,7 @@ Internal technical events are hidden from dashboard views and badge counters:
 ---
 
 ### Clean Repository Structure
-Version 1.7.2 completes a major internal cleanup.
+Version 1.7.3 continues internal cleanup and hardening.
 
 Removed legacy components:
 
@@ -99,6 +99,16 @@ This architecture allows new integrations and channels to be added without affec
 
 ## Changelog
 
+### v1.7.3
+
+- Security: REST admin endpoints now require capability + valid `X-WP-Nonce` (`wp_rest`).
+- Security: Webhook authentication upgraded to HMAC signature + timestamp validation.
+- Security: Webhook replay protection and per-IP rate limiting added.
+- Improved: Queue jobs now track lifecycle state (`pending`, `processing`, `done`, `failed`).
+- Improved: Retry/backoff policy added for retryable send failures (60s, 300s, 900s).
+- Added: Structured logging (`nh_logs`) for webhook, queue, and channel diagnostics.
+- Changed: Version bumped to `1.7.3`.
+
 ### v1.7.2
 
 - Changed: Free/Pro boot now uses `nh_loaded` dependency model.
@@ -140,3 +150,5 @@ https://www.linkedin.com/in/faryan-rajabi-jorshari/
 ## License
 
 GPL v3 or later
+
+

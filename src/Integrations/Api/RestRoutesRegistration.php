@@ -9,6 +9,7 @@ use NotificationHub\Routes\Api\GetNotifications;
 use NotificationHub\Routes\Api\TestTrigger;
 use NotificationHub\Routes\Api\UpdateNotification;
 use NotificationHub\Routes\Api\Webhook;
+use NotificationHub\Security\RestGuard;
 
 /**
  * Register REST API routes.
@@ -29,9 +30,7 @@ final class RestRoutesRegistration implements Integration {
 
         register_rest_route('nh/v1', '/notifications', [
             'methods'             => 'GET',
-            'permission_callback' => static function () {
-                return current_user_can('manage_options');
-            },
+            'permission_callback' => [RestGuard::class, 'requireAdminAndNonce'],
             'args'                => [
                 'since'          => ['type' => 'string', 'sanitize_callback' => 'sanitize_text_field'],
                 'status'         => ['type' => 'string', 'sanitize_callback' => 'sanitize_text_field'],
@@ -48,9 +47,7 @@ final class RestRoutesRegistration implements Integration {
 
         register_rest_route('nh/v1', '/notifications/(?P<id>\d+)', [
             'methods'             => 'POST',
-            'permission_callback' => static function () {
-                return current_user_can('manage_options');
-            },
+            'permission_callback' => [RestGuard::class, 'requireAdminAndNonce'],
             'args'                => [
                 'action' => ['type' => 'string', 'required' => true, 'sanitize_callback' => 'sanitize_key'],
             ],
@@ -59,9 +56,7 @@ final class RestRoutesRegistration implements Integration {
 
         register_rest_route('nh/v1', '/notifications/(?P<id>\d+)', [
             'methods'             => 'DELETE',
-            'permission_callback' => static function () {
-                return current_user_can('manage_options');
-            },
+            'permission_callback' => [RestGuard::class, 'requireAdminAndNonce'],
             'callback'            => [new DeleteNotification(), 'handle'],
         ]);
 
@@ -76,9 +71,7 @@ final class RestRoutesRegistration implements Integration {
 
         register_rest_route('nh/v1', '/test-trigger/(?P<id>\d+)', [
             'methods'             => 'POST',
-            'permission_callback' => static function () {
-                return current_user_can('manage_options');
-            },
+            'permission_callback' => [RestGuard::class, 'requireAdminAndNonce'],
             'callback'            => [new TestTrigger(), 'handle'],
         ]);
     }
