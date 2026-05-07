@@ -1,0 +1,850 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Notification Hub 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-03 09:00+0000\n"
+"PO-Revision-Date: 2026-05-03 09:00+0000\n"
+"Last-Translator: Notification Hub Team\n"
+"Language-Team: \n"
+"Language: fa_IR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Domain: notification-hub\n"
+msgid "%1$s is low on stock. Remaining quantity: %2$d."
+msgstr "%1$s is low on stock. Remaining quantity: %2$d."
+
+msgid "%s is low on stock."
+msgstr "%s is low on stock."
+
+msgid "%s notification"
+msgstr "%s اعلان"
+
+msgid "(HTTP %d)"
+msgstr "(HTTP %d)"
+
+msgid "(no title)"
+msgstr "(بدون عنوان)"
+
+msgid "7 Days"
+msgstr "۷ روز"
+
+msgid "30 Days"
+msgstr "۳۰ روز"
+
+msgid "Access denied."
+msgstr "دسترسی مجاز نیست."
+
+msgid "A Contact Form 7 submission was received."
+msgstr "A Contact Form 7 submission was received."
+
+msgid "A Contact Form 7 submission was received. Preview: %s"
+msgstr "A Contact Form 7 submission was received. Preview: %s"
+
+msgid "Action"
+msgstr "اقدام"
+
+msgid "Action: <%1$s|%2$s>"
+msgstr "اقدام: <%1$s|%2$s>"
+
+msgid "Action name"
+msgstr "اقدام name"
+
+msgid "Actions"
+msgstr "اقدامات"
+
+msgid "Actions (JSON)"
+msgstr "اقدامات (JSON)"
+
+msgid "Active"
+msgstr "فعال"
+
+msgid "AJAX URL not available."
+msgstr "AJAX URL not available."
+
+msgid "All"
+msgstr "All"
+
+msgid "All priorities"
+msgstr "همه اولویت‌ها"
+
+msgid "All sources"
+msgstr "همه منابع"
+
+msgid "All statuses"
+msgstr "همه وضعیت‌ها"
+
+msgid "All time"
+msgstr "کل بازه زمانی"
+
+msgid "All types"
+msgstr "همه نوع‌ها"
+
+msgid "Analytics"
+msgstr "تحلیل‌ها"
+
+msgid "An email was sent via wp_mail."
+msgstr "An email was sent via wp_mail."
+
+msgid "A new %1$s account was created on your site."
+msgstr "A new %1$s account was created on your site."
+
+msgid "A new comment by %1$s was %2$s."
+msgstr "A new comment by %1$s was %2$s."
+
+msgid "A new comment by %1$s was %2$s. Preview: \"%3$s\""
+msgstr "A new comment by %1$s was %2$s. Preview: \"%3$s\""
+
+msgid "A new order was placed. Total: %s."
+msgstr "A new order was placed. Total: %s."
+
+msgid "A new order was placed by %1$s. Total: %2$s."
+msgstr "A new order was placed by %1$s. Total: %2$s."
+
+msgid "A new order was placed by %s."
+msgstr "A new order was placed by %s."
+
+msgid "A new user account was created on your site."
+msgstr "A new user account was created on your site."
+
+msgid "A new WooCommerce order #%s was created."
+msgstr "A new WooCommerce order #%s was created."
+
+msgid "A new WooCommerce order was created."
+msgstr "A new WooCommerce order was created."
+
+msgid "Archive"
+msgstr "بایگانی"
+
+msgid "Archived"
+msgstr "بایگانی‌شده"
+
+msgid "Auto Draft"
+msgstr "Auto Draft"
+
+msgid "Automation Rules"
+msgstr "قوانین خودکارسازی"
+
+msgid "awaiting moderation"
+msgstr "awaiting moderation"
+
+msgid "Bulk action failed."
+msgstr "Bulk action failed."
+
+msgid "Bulk handler missing."
+msgstr "Bulk handler missing."
+
+msgid "Cancel"
+msgstr "انصراف"
+
+msgid "Cannot export CSV because headers were already sent."
+msgstr "Cannot export CSV because headers were already sent."
+
+msgid "Channels"
+msgstr "کانال‌ها"
+
+msgid "Channel Test"
+msgstr "کانال آزمایش"
+
+msgid "Choose which events should create and send notifications."
+msgstr "انتخاب کنید کدام رویدادها اعلان ایجاد و ارسال کنند."
+
+msgid "Clear filters"
+msgstr "پاک کردن فیلترها"
+
+msgid "Close dialog"
+msgstr "بستن پنجره"
+
+msgid "Conditions"
+msgstr "Conditions"
+
+msgid "Conditions (JSON)"
+msgstr "Conditions (JSON)"
+
+msgid "Contact Form 7"
+msgstr "Contact Form 7"
+
+msgid "Contact Form 7: Form submitted"
+msgstr "Contact Form 7: Form submitted"
+
+msgid "Count"
+msgstr "تعداد"
+
+msgid "Created"
+msgstr "ایجاد شد"
+
+msgid "Create Rule"
+msgstr "ایجاد قانون"
+
+msgid "Custom Hook"
+msgstr "Custom Hook"
+
+msgid "Custom hook \"%s\" was triggered."
+msgstr "Custom hook \"%s\" was triggered."
+
+msgid "Custom Hooks"
+msgstr "هوک‌های سفارشی"
+
+msgid "Custom Hooks: Hook triggered"
+msgstr "Custom هوک‌ها: Hook triggered"
+
+msgid "Custom hook test notification"
+msgstr "Custom hook test اعلان"
+
+msgid "Custom Hook Triggered"
+msgstr "Custom Hook Triggered"
+
+msgid "Dashboard"
+msgstr "داشبورد"
+
+msgid "Dashboard class is missing."
+msgstr "داشبورد class is missing."
+
+msgid "Database table missing."
+msgstr "Database table missing."
+
+msgid "Date"
+msgstr "تاریخ"
+
+msgid "Delete"
+msgstr "حذف"
+
+msgid "Delete failed."
+msgstr "حذف ناموفق بود."
+
+msgid "Delete this hook?"
+msgstr "حذف this hook?"
+
+msgid "Delete this rule?"
+msgstr "حذف this rule?"
+
+msgid "Details: %1$s%2$s"
+msgstr "Details: %1$s%2$s"
+
+msgid "Direct link: %s"
+msgstr "Direct link: %s"
+
+msgid "Do not delete plugin tables on uninstall"
+msgstr "هنگام حذف افزونه، جداول حذف نشوند"
+
+msgid "Draft"
+msgstr "پیش‌نویس"
+
+msgid "Duplicate"
+msgstr "تکثیر"
+
+msgid "Edit"
+msgstr "ویرایش"
+
+msgid "Edit Rule"
+msgstr "ویرایش قانون"
+
+msgid "Email"
+msgstr "ایمیل"
+
+msgid "Email sent"
+msgstr "ایمیل sent"
+
+msgid "Email Sent"
+msgstr "ایمیل Sent"
+
+msgid "Email To"
+msgstr "ایمیل مقصد"
+
+msgid "Enabled"
+msgstr "فعال"
+
+msgid "Enable this rule"
+msgstr "فعال‌سازی this rule"
+
+msgid "Enter your BotFather token. Example: %s"
+msgstr "Enter your BotFather token. Example: %s"
+
+msgid "Export CSV"
+msgstr "خروجی CSV"
+
+msgid "Export route is missing."
+msgstr "Export route is missing."
+
+msgid "Failed to delete notification."
+msgstr "حذف اعلان ناموفق بود."
+
+msgid "Failed to load notification."
+msgstr "ناموفق to load اعلان."
+
+msgid "Failed to update notification."
+msgstr "به‌روزرسانی اعلان ناموفق بود."
+
+msgid "Filter"
+msgstr "فیلتر"
+
+msgid "Forbidden"
+msgstr "ممنوع"
+
+msgid "Form #%d"
+msgstr "Form #%d"
+
+msgid "Form Submitted"
+msgstr "Form Submitted"
+
+msgid "From"
+msgstr "از"
+
+msgid "General"
+msgstr "عمومی"
+
+msgid "General Notification"
+msgstr "اعلان عمومی"
+
+msgid "Guest"
+msgstr "Guest"
+
+msgid "HelloCode Notification Hub - Settings"
+msgstr "HelloCode اعلان Hub - تنظیمات"
+
+msgid "Higher number runs first."
+msgstr "Higher number runs first."
+
+msgid "Hook created."
+msgstr "هوک ایجاد شد."
+
+msgid "Hook deleted."
+msgstr "هوک حذف شد."
+
+msgid "Hook not found."
+msgstr "Hook not found."
+
+msgid "Hooks"
+msgstr "هوک‌ها"
+
+msgid "Hook Test"
+msgstr "تست هوک"
+
+msgid "Hook triggered."
+msgstr "هوک اجرا شد."
+
+msgid "Hook updated."
+msgstr "هوک به‌روزرسانی شد."
+
+msgid "ID"
+msgstr "ID"
+
+msgid "Important"
+msgstr "مهم"
+
+msgid "Inactive"
+msgstr "غیرفعال"
+
+msgid "Inserted from repository test route."
+msgstr "Inserted from repository test route."
+
+msgid "Insert failed."
+msgstr "درج اطلاعات ناموفق بود."
+
+msgid "Invalid action."
+msgstr "اقدام نامعتبر است."
+
+msgid "Invalid ID."
+msgstr "شناسه نامعتبر است."
+
+msgid "Invalid JSON body."
+msgstr "بدنه JSON نامعتبر است."
+
+msgid "Invalid JSON in conditions/actions."
+msgstr "نامعتبر JSON in conditions/actions."
+
+msgid "Invalid nonce."
+msgstr "نونس نامعتبر است."
+
+msgid "Invalid range."
+msgstr "نامعتبر range."
+
+msgid "Invalid range. Allowed values: 7d, 30d."
+msgstr "نامعتبر range. Allowed values: 7d, 30d."
+
+msgid "Invalid request."
+msgstr "نامعتبر request."
+
+msgid "Invalid REST nonce."
+msgstr "نامعتبر REST nonce."
+
+msgid "Invalid signature."
+msgstr "امضای نامعتبر."
+
+msgid "Invalid signature format."
+msgstr "فرمت امضا نامعتبر است."
+
+msgid "Invalid timestamp."
+msgstr "زمان‌مهر نامعتبر است."
+
+msgid "Keep data on uninstall"
+msgstr "حفظ داده‌ها هنگام حذف"
+
+msgid "Last 7 days"
+msgstr "۷ روز گذشته"
+
+msgid "Last 30 days"
+msgstr "۳۰ روز گذشته"
+
+msgid "Last year"
+msgstr "سال گذشته"
+
+msgid "Low Stock Alert"
+msgstr "Low Stock Alert"
+
+msgid "Low stock alert: %s"
+msgstr "Low stock alert: %s"
+
+msgid "Manage"
+msgstr "مدیریت"
+
+msgid "Mark as read"
+msgstr "علامت‌گذاری به‌عنوان خوانده‌شده"
+
+msgid "Mark as unread"
+msgstr "علامت‌گذاری به‌عنوان خوانده‌نشده"
+
+msgid "Mark important"
+msgstr "علامت‌گذاری مهم"
+
+msgid "Missing signature headers."
+msgstr "هدرهای امضا موجود نیست."
+
+msgid "Moved to Trash: %s"
+msgstr "Moved to Trash: %s"
+
+msgid "Name"
+msgstr "نام"
+
+msgid "New"
+msgstr "جدید"
+
+msgid "New comment on \"%s\""
+msgstr "New comment on \"%s\""
+
+msgid "New Comment Posted"
+msgstr "New Comment Posted"
+
+msgid "New form submission: %s"
+msgstr "New form submission: %s"
+
+msgid "New Notification"
+msgstr "اعلان جدید"
+
+msgid "New order #%s"
+msgstr "New order #%s"
+
+msgid "New Order Created"
+msgstr "New Order Created"
+
+msgid "New User Registered"
+msgstr "New User Registered"
+
+msgid "New user registration: %s"
+msgstr "New user registration: %s"
+
+msgid "No"
+msgstr "خیر"
+
+msgid "No exportable columns found."
+msgstr "No exportable columns found."
+
+msgid "No hooks yet."
+msgstr "هنوز هوکی وجود ندارد."
+
+msgid "No notifications found to export."
+msgstr "No اعلان‌ها found to export."
+
+msgid "No rules yet."
+msgstr "هنوز قانونی وجود ندارد."
+
+msgid "Not allowed"
+msgstr "Not allowed"
+
+msgid "Notification Analytics"
+msgstr "تحلیل اعلان‌ها"
+
+msgid "Notification Details"
+msgstr "اعلان Details"
+
+msgid "Notification events"
+msgstr "رویدادهای اعلان"
+
+msgid "Notification Hub"
+msgstr "مرکز اعلان"
+
+msgid "Notification Hub channel test"
+msgstr "اعلان Hub کانال test"
+
+msgid "Notification not found."
+msgstr "اعلان پیدا نشد."
+
+msgid "Notifications"
+msgstr "اعلان‌ها"
+
+msgid "Notifications Dashboard"
+msgstr "داشبورد اعلان‌ها"
+
+msgid "Notification update"
+msgstr "اعلان update"
+
+msgid "Open Comment"
+msgstr "باز کردن دیدگاه"
+
+msgid "Open details"
+msgstr "باز کردن جزئیات"
+
+msgid "Open Forms"
+msgstr "باز کردن Forms"
+
+msgid "Open Hooks"
+msgstr "باز کردن هوک‌ها"
+
+msgid "Open Hooks Page"
+msgstr "باز کردن هوک‌ها Page"
+
+msgid "Open in WordPress"
+msgstr "باز کردن در وردپرس"
+
+msgid "Open Notification Hub"
+msgstr "باز کردن Notification Hub"
+
+msgid "Open Order"
+msgstr "باز کردن Order"
+
+msgid "Open Post"
+msgstr "باز کردن Post"
+
+msgid "Open Product"
+msgstr "باز کردن Product"
+
+msgid "Open User"
+msgstr "باز کردن User"
+
+msgid "Operation failed."
+msgstr "عملیات ناموفق بود."
+
+msgid "Pending Review"
+msgstr "Pending Review"
+
+msgid "Pending Review: %s"
+msgstr "Pending Review: %s"
+
+msgid "Post #%d"
+msgstr "Post #%d"
+
+msgid "Post Status Changed"
+msgstr "Post وضعیت Changed"
+
+msgid "Presenter is missing."
+msgstr "ارائه‌دهنده موجود نیست."
+
+msgid "Priority"
+msgstr "اولویت"
+
+msgid "Private"
+msgstr "خصوصی"
+
+msgid "Product"
+msgstr "Product"
+
+msgid "Product #%d"
+msgstr "Product #%d"
+
+msgid "published"
+msgstr "published"
+
+msgid "Published"
+msgstr "منتشرشده"
+
+msgid "Published: %s"
+msgstr "Published: %s"
+
+msgid "Read"
+msgstr "خوانده‌شده"
+
+msgid "Remove important"
+msgstr "حذف علامت مهم"
+
+msgid "Replay detected."
+msgstr "بازپخش شناسایی شد."
+
+msgid "Repository test"
+msgstr "Repository test"
+
+msgid "Request failed."
+msgstr "درخواست ناموفق بود."
+
+msgid "Retention (days)"
+msgstr "مدت نگهداری (روز)"
+
+msgid "Revision"
+msgstr "Revision"
+
+msgid "Route is missing."
+msgstr "Route is missing."
+
+msgid "Rule created."
+msgstr "قانون ایجاد شد."
+
+msgid "Rule deleted."
+msgstr "قانون حذف شد."
+
+msgid "Rule duplicated."
+msgstr "قانون تکثیر شد."
+
+msgid "Rule id is missing."
+msgstr "Rule id is missing."
+
+msgid "Rule name is required."
+msgstr "Rule name is required."
+
+msgid "Rules"
+msgstr "قوانین"
+
+msgid "Rule updated."
+msgstr "قانون به‌روزرسانی شد."
+
+msgid "Save Changes"
+msgstr "ذخیره تغییرات"
+
+msgid "Saved Hooks"
+msgstr "ذخیرهd هوک‌ها"
+
+msgid "Saved Rules"
+msgstr "ذخیرهd قوانین"
+
+msgid "Save Hook"
+msgstr "ذخیره Hook"
+
+msgid "Save Rule"
+msgstr "ذخیره قانون"
+
+msgid "Scheduled"
+msgstr "Scheduled"
+
+msgid "Scheduled: %s"
+msgstr "Scheduled: %s"
+
+msgid "Search Notifications"
+msgstr "جستجوی اعلان‌ها"
+
+msgid "Send a message to your bot, then run /getUpdates to find your chat ID."
+msgstr "Send a message to your bot, then run /getبه‌روزرسانیs to find your chat ID."
+
+msgid "Send Test Email"
+msgstr "ارسال ایمیل آزمایشی"
+
+msgid "Send Test Notification"
+msgstr "ارسال اعلان آزمایشی"
+
+msgid "Send Test to Slack"
+msgstr "ارسال آزمایشی به اسلک"
+
+msgid "Send Test to Telegram"
+msgstr "ارسال آزمایشی به تلگرام"
+
+msgid "Sent from %s"
+msgstr "Sent from %s"
+
+msgid "Sent from your website"
+msgstr "Sent from your website"
+
+msgid "Settings"
+msgstr "تنظیمات"
+
+msgid "Settings saved successfully."
+msgstr "تنظیمات با موفقیت ذخیره شد."
+
+msgid "Settings template not found."
+msgstr "تنظیمات template not found."
+
+msgid "Slack"
+msgstr "اسلک"
+
+msgid "Slack Webhook URL"
+msgstr "آدرس وب‌هوک اسلک"
+
+msgid "Source"
+msgstr "منبع"
+
+msgid "Source: %1$s | Event: %2$s"
+msgstr "منبع: %1$s | رویداد: %2$s"
+
+msgid "Status"
+msgstr "وضعیت"
+
+msgid "Status changed: %s"
+msgstr "وضعیت changed: %s"
+
+msgid "Status changed from %1$s to %2$s."
+msgstr "وضعیت changed from %1$s to %2$s."
+
+msgid "Subject: %s"
+msgstr "Subject: %s"
+
+msgid "System"
+msgstr "System"
+
+msgid "System Test"
+msgstr "System آزمایش"
+
+msgid "Telegram"
+msgstr "تلگرام"
+
+msgid "Telegram Bot Token"
+msgstr "توکن ربات تلگرام"
+
+msgid "Telegram Chat ID"
+msgstr "شناسه چت تلگرام"
+
+msgid "Template not found."
+msgstr "قالب پیدا نشد."
+
+msgid "Test failed to send to %s."
+msgstr "ارسال آزمون به %s ناموفق بود."
+
+msgid "Test sent successfully to %s."
+msgstr "آزمون با موفقیت به %s ارسال شد."
+
+msgid "Test triggered."
+msgstr "آزمایش triggered."
+
+msgid "The hook \"%s\" was manually triggered from the Hooks page."
+msgstr "The hook \"%s\" was manually triggered from the هوک‌ها page."
+
+msgid "This is a test notification from your website. If you can read this, the selected channel is working correctly."
+msgstr "This is a test اعلان from your website. If you can read this, the selected کانال is working correctly."
+
+msgid "Timestamp expired."
+msgstr "زمان‌مهر منقضی شده است."
+
+msgid "Timezone"
+msgstr "Timezone"
+
+msgid "Title"
+msgstr "عنوان"
+
+msgid "To"
+msgstr "تا"
+
+msgid "Today"
+msgstr "امروز"
+
+msgid "Too many requests."
+msgstr "درخواست‌ها بیش از حد مجاز است."
+
+msgid "Total"
+msgstr "مجموع"
+
+msgid "Trash"
+msgstr "زباله‌دان"
+
+msgid "Triggered by: %s"
+msgstr "ایجاد شده توسط: %s"
+
+msgid "Triggered via dispatcher test."
+msgstr "Triggered via dispatcher test."
+
+msgid "Triggered via REST API."
+msgstr "Triggered via REST API."
+
+msgid "Trigger failed."
+msgstr "Trigger failed."
+
+msgid "Trigger Test"
+msgstr "اجرای تست"
+
+msgid "Type"
+msgstr "نوع"
+
+msgid "Unable to open output stream."
+msgstr "Unable to open output stream."
+
+msgid "Unarchive"
+msgstr "خروج از بایگانی"
+
+msgid "Unauthorized."
+msgstr "غیرمجاز."
+
+msgid "Unknown"
+msgstr "نامشخص"
+
+msgid "Unread"
+msgstr "خوانده‌نشده"
+
+msgid "Untitled Post"
+msgstr "Untitled Post"
+
+msgid "Updated"
+msgstr "به‌روزرسانی شد"
+
+msgid "Update failed."
+msgstr "به‌روزرسانی ناموفق بود."
+
+msgid "Update Hook"
+msgstr "به‌روزرسانی Hook"
+
+msgid "Update Rule"
+msgstr "به‌روزرسانی قانون"
+
+msgid "Use an Incoming Webhook from Slack App Integrations Webhooks."
+msgstr "Use an Incoming Webhook from اسلک App Integrations Webhooks."
+
+msgid "View details"
+msgstr "مشاهده جزئیات"
+
+msgid "View Notifications"
+msgstr "مشاهده اعلان‌ها"
+
+msgid "WooCommerce"
+msgstr "WooCommerce"
+
+msgid "WooCommerce: Low stock alert"
+msgstr "WooCommerce: Low stock alert"
+
+msgid "WooCommerce: New order created"
+msgstr "WooCommerce: New order created"
+
+msgid "WordPress"
+msgstr "WordPress"
+
+msgid "WordPress: Email sent event"
+msgstr "WordPress: ایمیل sent event"
+
+msgid "WordPress: New comment posted"
+msgstr "WordPress: New comment posted"
+
+msgid "WordPress: New user registered"
+msgstr "WordPress: New user registered"
+
+msgid "WordPress: Post status changed"
+msgstr "WordPress: Post status changed"
+
+msgid "WordPress moved %1$s \"%2$s\" to Trash."
+msgstr "WordPress moved %1$s \"%2$s\" to Trash."
+
+msgid "WordPress published %1$s \"%2$s\"."
+msgstr "WordPress published %1$s \"%2$s\"."
+
+msgid "WordPress scheduled %1$s \"%2$s\" for publication."
+msgstr "WordPress scheduled %1$s \"%2$s\" for publication."
+
+msgid "WordPress sent %1$s \"%2$s\" for review."
+msgstr "WordPress sent %1$s \"%2$s\" for review."
+
+msgid "WordPress updated %1$s \"%2$s\" from %3$s to %4$s."
+msgstr "WordPress updated %1$s \"%2$s\" from %3$s to %4$s."
+
+msgid "Yes"
+msgstr "بله"
+
+msgid "Yesterday"
+msgstr "دیروز"
+
+msgid "You are not allowed to access this endpoint."
+msgstr "You are not allowed to access this endpoint."
+
+msgid "You do not have sufficient permissions."
+msgstr "شما مجوز کافی ندارید."
+

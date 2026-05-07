@@ -1,0 +1,850 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Notification Hub 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-03 09:00+0000\n"
+"PO-Revision-Date: 2026-05-03 09:00+0000\n"
+"Last-Translator: Notification Hub Team\n"
+"Language-Team: \n"
+"Language: it_IT\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Domain: notification-hub\n"
+msgid "%1$s is low on stock. Remaining quantity: %2$d."
+msgstr "%1$s is low on stock. Remaining quantity: %2$d."
+
+msgid "%s is low on stock."
+msgstr "%s is low on stock."
+
+msgid "%s notification"
+msgstr "%s notifica"
+
+msgid "(HTTP %d)"
+msgstr "(HTTP %d)"
+
+msgid "(no title)"
+msgstr "(senza titolo)"
+
+msgid "7 Days"
+msgstr "7 giorni"
+
+msgid "30 Days"
+msgstr "30 giorni"
+
+msgid "Access denied."
+msgstr "Accesso negato."
+
+msgid "A Contact Form 7 submission was received."
+msgstr "A Contact Form 7 submission was received."
+
+msgid "A Contact Form 7 submission was received. Preview: %s"
+msgstr "A Contact Form 7 submission was received. Preview: %s"
+
+msgid "Action"
+msgstr "Azione"
+
+msgid "Action: <%1$s|%2$s>"
+msgstr "Azione: <%1$s|%2$s>"
+
+msgid "Action name"
+msgstr "Azione name"
+
+msgid "Actions"
+msgstr "Azioni"
+
+msgid "Actions (JSON)"
+msgstr "Azioni (JSON)"
+
+msgid "Active"
+msgstr "Attivo"
+
+msgid "AJAX URL not available."
+msgstr "AJAX URL not available."
+
+msgid "All"
+msgstr "All"
+
+msgid "All priorities"
+msgstr "Tutte le priorità"
+
+msgid "All sources"
+msgstr "Tutte le origini"
+
+msgid "All statuses"
+msgstr "Tutti gli stati"
+
+msgid "All time"
+msgstr "Tutto il periodo"
+
+msgid "All types"
+msgstr "Tutti i tipi"
+
+msgid "Analytics"
+msgstr "Analisi"
+
+msgid "An email was sent via wp_mail."
+msgstr "An email was sent via wp_mail."
+
+msgid "A new %1$s account was created on your site."
+msgstr "A new %1$s account was created on your site."
+
+msgid "A new comment by %1$s was %2$s."
+msgstr "A new comment by %1$s was %2$s."
+
+msgid "A new comment by %1$s was %2$s. Preview: \"%3$s\""
+msgstr "A new comment by %1$s was %2$s. Preview: \"%3$s\""
+
+msgid "A new order was placed. Total: %s."
+msgstr "A new order was placed. Total: %s."
+
+msgid "A new order was placed by %1$s. Total: %2$s."
+msgstr "A new order was placed by %1$s. Total: %2$s."
+
+msgid "A new order was placed by %s."
+msgstr "A new order was placed by %s."
+
+msgid "A new user account was created on your site."
+msgstr "A new user account was created on your site."
+
+msgid "A new WooCommerce order #%s was created."
+msgstr "A new WooCommerce order #%s was created."
+
+msgid "A new WooCommerce order was created."
+msgstr "A new WooCommerce order was created."
+
+msgid "Archive"
+msgstr "Archivia"
+
+msgid "Archived"
+msgstr "Archiviato"
+
+msgid "Auto Draft"
+msgstr "Auto Draft"
+
+msgid "Automation Rules"
+msgstr "Regole di automazione"
+
+msgid "awaiting moderation"
+msgstr "awaiting moderation"
+
+msgid "Bulk action failed."
+msgstr "Bulk action failed."
+
+msgid "Bulk handler missing."
+msgstr "Bulk handler missing."
+
+msgid "Cancel"
+msgstr "Annulla"
+
+msgid "Cannot export CSV because headers were already sent."
+msgstr "Cannot export CSV because headers were already sent."
+
+msgid "Channels"
+msgstr "Canali"
+
+msgid "Channel Test"
+msgstr "Canale Test"
+
+msgid "Choose which events should create and send notifications."
+msgstr "Scegli quali eventi devono creare e inviare notifiche."
+
+msgid "Clear filters"
+msgstr "Cancella filtri"
+
+msgid "Close dialog"
+msgstr "Chiudi finestra"
+
+msgid "Conditions"
+msgstr "Conditions"
+
+msgid "Conditions (JSON)"
+msgstr "Conditions (JSON)"
+
+msgid "Contact Form 7"
+msgstr "Contact Form 7"
+
+msgid "Contact Form 7: Form submitted"
+msgstr "Contact Form 7: Form submitted"
+
+msgid "Count"
+msgstr "Conteggio"
+
+msgid "Created"
+msgstr "Creato"
+
+msgid "Create Rule"
+msgstr "Crea regola"
+
+msgid "Custom Hook"
+msgstr "Custom Hook"
+
+msgid "Custom hook \"%s\" was triggered."
+msgstr "Custom hook \"%s\" was triggered."
+
+msgid "Custom Hooks"
+msgstr "Hook personalizzati"
+
+msgid "Custom Hooks: Hook triggered"
+msgstr "Custom Hook: Hook triggered"
+
+msgid "Custom hook test notification"
+msgstr "Custom hook test notifica"
+
+msgid "Custom Hook Triggered"
+msgstr "Custom Hook Triggered"
+
+msgid "Dashboard"
+msgstr "Dashboard"
+
+msgid "Dashboard class is missing."
+msgstr "Dashboard class is missing."
+
+msgid "Database table missing."
+msgstr "Database table missing."
+
+msgid "Date"
+msgstr "Data"
+
+msgid "Delete"
+msgstr "Elimina"
+
+msgid "Delete failed."
+msgstr "Eliminazione non riuscita."
+
+msgid "Delete this hook?"
+msgstr "Elimina this hook?"
+
+msgid "Delete this rule?"
+msgstr "Elimina this rule?"
+
+msgid "Details: %1$s%2$s"
+msgstr "Details: %1$s%2$s"
+
+msgid "Direct link: %s"
+msgstr "Direct link: %s"
+
+msgid "Do not delete plugin tables on uninstall"
+msgstr "Non eliminare le tabelle del plugin alla disinstallazione"
+
+msgid "Draft"
+msgstr "Bozza"
+
+msgid "Duplicate"
+msgstr "Duplica"
+
+msgid "Edit"
+msgstr "Modifica"
+
+msgid "Edit Rule"
+msgstr "Modifica regola"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "Email sent"
+msgstr "Email sent"
+
+msgid "Email Sent"
+msgstr "Email Sent"
+
+msgid "Email To"
+msgstr "Email destinatario"
+
+msgid "Enabled"
+msgstr "Abilitato"
+
+msgid "Enable this rule"
+msgstr "Abilita this rule"
+
+msgid "Enter your BotFather token. Example: %s"
+msgstr "Enter your BotFather token. Example: %s"
+
+msgid "Export CSV"
+msgstr "Esporta CSV"
+
+msgid "Export route is missing."
+msgstr "Export route is missing."
+
+msgid "Failed to delete notification."
+msgstr "Eliminazione notifica non riuscita."
+
+msgid "Failed to load notification."
+msgstr "Non riuscito to load notifica."
+
+msgid "Failed to update notification."
+msgstr "Aggiornamento notifica non riuscito."
+
+msgid "Filter"
+msgstr "Filtro"
+
+msgid "Forbidden"
+msgstr "Vietato"
+
+msgid "Form #%d"
+msgstr "Form #%d"
+
+msgid "Form Submitted"
+msgstr "Form Submitted"
+
+msgid "From"
+msgstr "Da"
+
+msgid "General"
+msgstr "Generale"
+
+msgid "General Notification"
+msgstr "Notifica generale"
+
+msgid "Guest"
+msgstr "Guest"
+
+msgid "HelloCode Notification Hub - Settings"
+msgstr "HelloCode Notifica Hub - Impostazioni"
+
+msgid "Higher number runs first."
+msgstr "Higher number runs first."
+
+msgid "Hook created."
+msgstr "Hook creato."
+
+msgid "Hook deleted."
+msgstr "Hook eliminato."
+
+msgid "Hook not found."
+msgstr "Hook not found."
+
+msgid "Hooks"
+msgstr "Hook"
+
+msgid "Hook Test"
+msgstr "Test hook"
+
+msgid "Hook triggered."
+msgstr "Hook attivato."
+
+msgid "Hook updated."
+msgstr "Hook aggiornato."
+
+msgid "ID"
+msgstr "ID"
+
+msgid "Important"
+msgstr "Importante"
+
+msgid "Inactive"
+msgstr "Inattivo"
+
+msgid "Inserted from repository test route."
+msgstr "Inserted from repository test route."
+
+msgid "Insert failed."
+msgstr "Inserimento non riuscito."
+
+msgid "Invalid action."
+msgstr "Azione non valida."
+
+msgid "Invalid ID."
+msgstr "ID non valido."
+
+msgid "Invalid JSON body."
+msgstr "Corpo JSON non valido."
+
+msgid "Invalid JSON in conditions/actions."
+msgstr "Non valido JSON in conditions/actions."
+
+msgid "Invalid nonce."
+msgstr "Nonce non valido."
+
+msgid "Invalid range."
+msgstr "Non valido range."
+
+msgid "Invalid range. Allowed values: 7d, 30d."
+msgstr "Non valido range. Allowed values: 7d, 30d."
+
+msgid "Invalid request."
+msgstr "Non valido request."
+
+msgid "Invalid REST nonce."
+msgstr "Non valido REST nonce."
+
+msgid "Invalid signature."
+msgstr "Firma non valida."
+
+msgid "Invalid signature format."
+msgstr "Formato firma non valido."
+
+msgid "Invalid timestamp."
+msgstr "Timestamp non valido."
+
+msgid "Keep data on uninstall"
+msgstr "Mantieni i dati alla disinstallazione"
+
+msgid "Last 7 days"
+msgstr "Ultimi 7 giorni"
+
+msgid "Last 30 days"
+msgstr "Ultimi 30 giorni"
+
+msgid "Last year"
+msgstr "Ultimo anno"
+
+msgid "Low Stock Alert"
+msgstr "Low Stock Alert"
+
+msgid "Low stock alert: %s"
+msgstr "Low stock alert: %s"
+
+msgid "Manage"
+msgstr "Gestisci"
+
+msgid "Mark as read"
+msgstr "Segna come letto"
+
+msgid "Mark as unread"
+msgstr "Segna come non letto"
+
+msgid "Mark important"
+msgstr "Segna importante"
+
+msgid "Missing signature headers."
+msgstr "Header di firma mancanti."
+
+msgid "Moved to Trash: %s"
+msgstr "Moved to Trash: %s"
+
+msgid "Name"
+msgstr "Nome"
+
+msgid "New"
+msgstr "Nuovo"
+
+msgid "New comment on \"%s\""
+msgstr "New comment on \"%s\""
+
+msgid "New Comment Posted"
+msgstr "New Comment Posted"
+
+msgid "New form submission: %s"
+msgstr "New form submission: %s"
+
+msgid "New Notification"
+msgstr "Nuova notifica"
+
+msgid "New order #%s"
+msgstr "New order #%s"
+
+msgid "New Order Created"
+msgstr "New Order Created"
+
+msgid "New User Registered"
+msgstr "New User Registered"
+
+msgid "New user registration: %s"
+msgstr "New user registration: %s"
+
+msgid "No"
+msgstr "No"
+
+msgid "No exportable columns found."
+msgstr "No exportable columns found."
+
+msgid "No hooks yet."
+msgstr "Nessun hook ancora."
+
+msgid "No notifications found to export."
+msgstr "No notifiche found to export."
+
+msgid "No rules yet."
+msgstr "Nessuna regola ancora."
+
+msgid "Not allowed"
+msgstr "Not allowed"
+
+msgid "Notification Analytics"
+msgstr "Analisi notifiche"
+
+msgid "Notification Details"
+msgstr "Notifica Details"
+
+msgid "Notification events"
+msgstr "Eventi di notifica"
+
+msgid "Notification Hub"
+msgstr "Notification Hub"
+
+msgid "Notification Hub channel test"
+msgstr "Notifica Hub canale test"
+
+msgid "Notification not found."
+msgstr "Notifica non trovata."
+
+msgid "Notifications"
+msgstr "Notifiche"
+
+msgid "Notifications Dashboard"
+msgstr "Dashboard notifiche"
+
+msgid "Notification update"
+msgstr "Notifica update"
+
+msgid "Open Comment"
+msgstr "Apri commento"
+
+msgid "Open details"
+msgstr "Apri dettagli"
+
+msgid "Open Forms"
+msgstr "Apri Forms"
+
+msgid "Open Hooks"
+msgstr "Apri Hook"
+
+msgid "Open Hooks Page"
+msgstr "Apri Hook Page"
+
+msgid "Open in WordPress"
+msgstr "Apri in WordPress"
+
+msgid "Open Notification Hub"
+msgstr "Apri Notification Hub"
+
+msgid "Open Order"
+msgstr "Apri Order"
+
+msgid "Open Post"
+msgstr "Apri Post"
+
+msgid "Open Product"
+msgstr "Apri Product"
+
+msgid "Open User"
+msgstr "Apri User"
+
+msgid "Operation failed."
+msgstr "Operazione non riuscita."
+
+msgid "Pending Review"
+msgstr "Pending Review"
+
+msgid "Pending Review: %s"
+msgstr "Pending Review: %s"
+
+msgid "Post #%d"
+msgstr "Post #%d"
+
+msgid "Post Status Changed"
+msgstr "Post Stato Changed"
+
+msgid "Presenter is missing."
+msgstr "Presenter mancante."
+
+msgid "Priority"
+msgstr "Priorità"
+
+msgid "Private"
+msgstr "Privato"
+
+msgid "Product"
+msgstr "Product"
+
+msgid "Product #%d"
+msgstr "Product #%d"
+
+msgid "published"
+msgstr "published"
+
+msgid "Published"
+msgstr "Pubblicato"
+
+msgid "Published: %s"
+msgstr "Published: %s"
+
+msgid "Read"
+msgstr "Letto"
+
+msgid "Remove important"
+msgstr "Rimuovi importante"
+
+msgid "Replay detected."
+msgstr "Rilevato replay."
+
+msgid "Repository test"
+msgstr "Repository test"
+
+msgid "Request failed."
+msgstr "Richiesta non riuscita."
+
+msgid "Retention (days)"
+msgstr "Conservazione (giorni)"
+
+msgid "Revision"
+msgstr "Revision"
+
+msgid "Route is missing."
+msgstr "Route is missing."
+
+msgid "Rule created."
+msgstr "Regola creata."
+
+msgid "Rule deleted."
+msgstr "Regola eliminata."
+
+msgid "Rule duplicated."
+msgstr "Regola duplicata."
+
+msgid "Rule id is missing."
+msgstr "Rule id is missing."
+
+msgid "Rule name is required."
+msgstr "Rule name is required."
+
+msgid "Rules"
+msgstr "Regole"
+
+msgid "Rule updated."
+msgstr "Regola aggiornata."
+
+msgid "Save Changes"
+msgstr "Salva modifiche"
+
+msgid "Saved Hooks"
+msgstr "Salvad Hook"
+
+msgid "Saved Rules"
+msgstr "Salvad Regole"
+
+msgid "Save Hook"
+msgstr "Salva Hook"
+
+msgid "Save Rule"
+msgstr "Salva regola"
+
+msgid "Scheduled"
+msgstr "Scheduled"
+
+msgid "Scheduled: %s"
+msgstr "Scheduled: %s"
+
+msgid "Search Notifications"
+msgstr "Cerca notifiche"
+
+msgid "Send a message to your bot, then run /getUpdates to find your chat ID."
+msgstr "Send a message to your bot, then run /getAggiornas to find your chat ID."
+
+msgid "Send Test Email"
+msgstr "Invia email di prova"
+
+msgid "Send Test Notification"
+msgstr "Invia notifica di prova"
+
+msgid "Send Test to Slack"
+msgstr "Invia test a Slack"
+
+msgid "Send Test to Telegram"
+msgstr "Invia test a Telegram"
+
+msgid "Sent from %s"
+msgstr "Sent from %s"
+
+msgid "Sent from your website"
+msgstr "Sent from your website"
+
+msgid "Settings"
+msgstr "Impostazioni"
+
+msgid "Settings saved successfully."
+msgstr "Impostazioni salvate correttamente."
+
+msgid "Settings template not found."
+msgstr "Impostazioni template not found."
+
+msgid "Slack"
+msgstr "Slack"
+
+msgid "Slack Webhook URL"
+msgstr "URL webhook Slack"
+
+msgid "Source"
+msgstr "Origine"
+
+msgid "Source: %1$s | Event: %2$s"
+msgstr "Origine: %1$s | Evento: %2$s"
+
+msgid "Status"
+msgstr "Stato"
+
+msgid "Status changed: %s"
+msgstr "Stato changed: %s"
+
+msgid "Status changed from %1$s to %2$s."
+msgstr "Stato changed from %1$s to %2$s."
+
+msgid "Subject: %s"
+msgstr "Subject: %s"
+
+msgid "System"
+msgstr "System"
+
+msgid "System Test"
+msgstr "System Test"
+
+msgid "Telegram"
+msgstr "Telegram"
+
+msgid "Telegram Bot Token"
+msgstr "Token bot Telegram"
+
+msgid "Telegram Chat ID"
+msgstr "ID chat Telegram"
+
+msgid "Template not found."
+msgstr "Template non trovato."
+
+msgid "Test failed to send to %s."
+msgstr "Invio del test a %s non riuscito."
+
+msgid "Test sent successfully to %s."
+msgstr "Test inviato con successo a %s."
+
+msgid "Test triggered."
+msgstr "Test triggered."
+
+msgid "The hook \"%s\" was manually triggered from the Hooks page."
+msgstr "The hook \"%s\" was manually triggered from the Hook page."
+
+msgid "This is a test notification from your website. If you can read this, the selected channel is working correctly."
+msgstr "This is a test notifica from your website. If you can read this, the selected canale is working correctly."
+
+msgid "Timestamp expired."
+msgstr "Timestamp scaduto."
+
+msgid "Timezone"
+msgstr "Timezone"
+
+msgid "Title"
+msgstr "Titolo"
+
+msgid "To"
+msgstr "A"
+
+msgid "Today"
+msgstr "Oggi"
+
+msgid "Too many requests."
+msgstr "Troppe richieste."
+
+msgid "Total"
+msgstr "Totale"
+
+msgid "Trash"
+msgstr "Cestino"
+
+msgid "Triggered by: %s"
+msgstr "Attivato da: %s"
+
+msgid "Triggered via dispatcher test."
+msgstr "Triggered via dispatcher test."
+
+msgid "Triggered via REST API."
+msgstr "Triggered via REST API."
+
+msgid "Trigger failed."
+msgstr "Trigger failed."
+
+msgid "Trigger Test"
+msgstr "Esegui test"
+
+msgid "Type"
+msgstr "Tipo"
+
+msgid "Unable to open output stream."
+msgstr "Unable to open output stream."
+
+msgid "Unarchive"
+msgstr "Rimuovi da archivio"
+
+msgid "Unauthorized."
+msgstr "Non autorizzato."
+
+msgid "Unknown"
+msgstr "Sconosciuto"
+
+msgid "Unread"
+msgstr "Non letto"
+
+msgid "Untitled Post"
+msgstr "Untitled Post"
+
+msgid "Updated"
+msgstr "Aggiornato"
+
+msgid "Update failed."
+msgstr "Aggiornamento non riuscito."
+
+msgid "Update Hook"
+msgstr "Aggiorna Hook"
+
+msgid "Update Rule"
+msgstr "Aggiorna regola"
+
+msgid "Use an Incoming Webhook from Slack App Integrations Webhooks."
+msgstr "Use an Incoming Webhook from Slack App Integrations Webhooks."
+
+msgid "View details"
+msgstr "Visualizza dettagli"
+
+msgid "View Notifications"
+msgstr "Visualizza notifiche"
+
+msgid "WooCommerce"
+msgstr "WooCommerce"
+
+msgid "WooCommerce: Low stock alert"
+msgstr "WooCommerce: Low stock alert"
+
+msgid "WooCommerce: New order created"
+msgstr "WooCommerce: New order created"
+
+msgid "WordPress"
+msgstr "WordPress"
+
+msgid "WordPress: Email sent event"
+msgstr "WordPress: Email sent event"
+
+msgid "WordPress: New comment posted"
+msgstr "WordPress: New comment posted"
+
+msgid "WordPress: New user registered"
+msgstr "WordPress: New user registered"
+
+msgid "WordPress: Post status changed"
+msgstr "WordPress: Post status changed"
+
+msgid "WordPress moved %1$s \"%2$s\" to Trash."
+msgstr "WordPress moved %1$s \"%2$s\" to Trash."
+
+msgid "WordPress published %1$s \"%2$s\"."
+msgstr "WordPress published %1$s \"%2$s\"."
+
+msgid "WordPress scheduled %1$s \"%2$s\" for publication."
+msgstr "WordPress scheduled %1$s \"%2$s\" for publication."
+
+msgid "WordPress sent %1$s \"%2$s\" for review."
+msgstr "WordPress sent %1$s \"%2$s\" for review."
+
+msgid "WordPress updated %1$s \"%2$s\" from %3$s to %4$s."
+msgstr "WordPress updated %1$s \"%2$s\" from %3$s to %4$s."
+
+msgid "Yes"
+msgstr "Sì"
+
+msgid "Yesterday"
+msgstr "Ieri"
+
+msgid "You are not allowed to access this endpoint."
+msgstr "You are not allowed to access this endpoint."
+
+msgid "You do not have sufficient permissions."
+msgstr "Non hai permessi sufficienti."
+

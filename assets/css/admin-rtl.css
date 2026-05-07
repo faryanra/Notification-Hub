@@ -1,0 +1,15 @@
+/* RTL refinements for Notification Hub admin pages. */
+
+.rtl .nh-settings-wrap,
+.rtl .nh-modal__content {
+  text-align: start;
+}
+
+.rtl .nh-notice-slide-out {
+  transform: translateX(24px);
+}
+
+.rtl .nh-hook-channel {
+  margin-inline-end: 0;
+  margin-inline-start: 12px;
+}

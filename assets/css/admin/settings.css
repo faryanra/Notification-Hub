@@ -1,0 +1,9 @@
+/* Settings page styles. */
+
+.nh-settings-wrap .form-table td label {
+  display: inline-block;
+}
+
+.nh-settings-wrap .form-table td p.description {
+  margin-top: 6px;
+}
